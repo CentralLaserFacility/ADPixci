@@ -52,7 +52,7 @@ extern "C" int pixciConfig(const char *portName, int IDType, const char *IDValue
 pixci::pixci(const char *portName,  int IDType, const char *IDValue,
                          int maxBuffers, size_t maxMemory, int priority, int stackSize)
 
-    : ADDriver(portName, 1, (int)NUM_PERKIN_ELMER_PARAMS, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
+    : ADDriver(portName, 1, (int)0, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         connectCamera();
 
@@ -61,44 +61,44 @@ pixci::pixci(const char *portName,  int IDType, const char *IDValue,
 
 
 int pixci::connectCamera(void){
-   return pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
-    
+//    return pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
+    return 0;
 }
-
 
 
 
 
 
 /* Code for iocsh registration */
+
+/* pixciConfig */
 static const iocshArg pixciConfigArg0 = {"Port name", iocshArgString};
-static const iocshArg pixciConfigArg1 = {"CameraId", iocshArgInt};
-static const iocshArg pixciConfigArg2 = {"maxBuffers", iocshArgInt};
-static const iocshArg pixciConfigArg3 = {"maxMemory", iocshArgInt};
-static const iocshArg pixciConfigArg4 = {"priority", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg6 = {"maxFrames", iocshArgInt};
+static const iocshArg pixciConfigArg1 = {"ID type", iocshArgInt};
+static const iocshArg pixciConfigArg2 = {"ID value", iocshArgString};
+static const iocshArg pixciConfigArg3 = {"maxBuffers", iocshArgInt};
+static const iocshArg pixciConfigArg4 = {"maxMemory", iocshArgInt};
+static const iocshArg pixciConfigArg5 = {"priority", iocshArgInt};
+static const iocshArg pixciConfigArg6 = {"stackSize", iocshArgInt};
 static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
-                                                     &pixciConfigArg1,
-                                                     &pixciConfigArg2,
-                                                     &pixciConfigArg3,
-                                                     &pixciConfigArg4,
-                                                     &pixciConfigArg5,
-                                                     &pixciConfigArg6};
+                                                          &pixciConfigArg1,
+                                                          &pixciConfigArg2,
+                                                          &pixciConfigArg3,
+                                                          &pixciConfigArg4,
+                                                          &pixciConfigArg5,
+                                                          &pixciConfigArg6};
 static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
-    pixciConfig(args[0].sval, args[1].ival, args[2].ival,  args[3].ival, 
-                 args[4].ival, args[5].ival, args[6].ival);
+  pixciConfig(args[0].sval, args[1].ival, args[2].sval, args[3].ival, 
+                    args[4].ival, args[5].ival, args[6].ival);
 }
+
 
 static void pixciRegister(void)
 {
-
-    iocshRegister(&configpixci, configpixciCallFunc);
+  iocshRegister(&configpixci, configpixciCallFunc);
 }
 
 extern "C" {
 epicsExportRegistrar(pixciRegister);
 }
-
