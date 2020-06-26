@@ -61,8 +61,8 @@ pixci::pixci(const char *portName,  int IDType, const char *IDValue,
 
 
 int pixci::connectCamera(void){
-//    return pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
-    return 0;
+   return pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
+   
 }
 
 
