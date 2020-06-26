@@ -4,7 +4,7 @@ include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) configure
 DIRS := $(DIRS) pixciSupport
 DIRS := $(DIRS) pixciApp
-andor3App_DEPEND_DIRS += pixciSupport
+pixciApp_DEPEND_DIRS += pixciSupport
 ifeq ($(BUILD_IOCS), YES)
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard iocs))
 iocs_DEPEND_DIRS += pixciApp
