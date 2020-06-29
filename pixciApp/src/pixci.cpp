@@ -40,7 +40,6 @@ extern "C" {
 #define DRIVERPARMS "" //default , user '-QU 0' for not using interrupts
 
 
-
 extern "C" int pixciConfig(const char *portName, int IDType, const char *IDValue,
                                  int maxBuffers, size_t maxMemory, int priority, int stackSize)
 {
@@ -52,7 +51,7 @@ extern "C" int pixciConfig(const char *portName, int IDType, const char *IDValue
 pixci::pixci(const char *portName,  int IDType, const char *IDValue,
                          int maxBuffers, size_t maxMemory, int priority, int stackSize)
 
-    : ADDriver(portName, 1, (int)0, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
+    : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         connectCamera();
 
@@ -62,7 +61,7 @@ pixci::pixci(const char *portName,  int IDType, const char *IDValue,
 
 int pixci::connectCamera(void){
    return pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
-   
+
 }
 
 

@@ -20,16 +20,19 @@ include $(TOP)/configure/CONFIG
  INC += xclibsc.h
  INC += pxlibcam.h
 
-ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
-LIB_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.lib
-BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.dll
+#ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 
-else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
 
-LIB_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.lib
-BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.dll
+LIB_INSTALLS_WIN32 += ../os/win32-x86/XCLIBWNT.lib
+BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBWNT.dll
+#BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.exp
 
-endif
+#else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
+
+# LIB_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.lib
+# BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.dll
+
+# endif
 #=============================
 
 include $(TOP)/configure/RULES
