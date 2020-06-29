@@ -9,12 +9,11 @@ USR_CPPFLAGS += -D__X64
 endif
 
 
-DBD += pixciSupport.dbd
 LIBRARY_IOC_WIN32 = pixci
 LIB_SRCS_WIN32 += pixci.cpp
-LIB_LIBS += XCLIBW64
+LIB_LIBS += XCLIBWNT
 
-
+DBD += pixciSupport.dbd
 
 
 
