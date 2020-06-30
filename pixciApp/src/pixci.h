@@ -23,7 +23,7 @@ class pixci;
 class pixci: public ADDriver {
 
 public:
-    pixci(const char *portName, int IDType, const char *IDValue, 
+    pixci(const char *portName, 
               int maxBuffers, size_t maxMemory,
               int priority, int stackSize);
 
