@@ -9,6 +9,13 @@
 
 #include "ADDriver.h"
 
+
+static const char *driverName = "PerkinElmer";
+
+
+
+
+
 /*___________________________________________________________________________*/
 
 class pixci;
@@ -23,11 +30,15 @@ public:
 
 
     /* These are the methods that we override from ADDriver */
+    virtual asynStatus connect(asynUser* pasynUser);
+    // virtual asynStatus disconnect(asynUser* pasynUser);
+
+
     // virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
     // virtual asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value);
 
-    int connectCamera(void);
+    private:
 
-
+    asynStatus connectCamera();
 
 };

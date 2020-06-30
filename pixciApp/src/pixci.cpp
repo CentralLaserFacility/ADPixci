@@ -53,16 +53,44 @@ pixci::pixci(const char *portName,  int IDType, const char *IDValue,
 
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
-        connectCamera();
+        // connectCamera();
 
     }
 
 
 
-int pixci::connectCamera(void){
-   return pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
 
-}
+
+
+    asynStatus pixci::connect(asynUser* pasynUser){
+        return connectCamera();
+    }
+
+    asynStatus pixci::connectCamera(){
+        int status = asynSuccess;
+        int connectionStatusCode = 0;
+        static const char *functionName = "connectCamera";
+
+        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT,"");
+        if(connectionStatusCode < 0){          
+        //pxd_mesgFault(1);   // display more information about the open error
+
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                  "%s:%s: Cannot OPEN camera: %s.", 
+                  driverName, functionName,  pxd_mesgErrorCode(connectionStatusCode));
+            return asynError;
+        }
+        else{
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s:%s: Camera connected;", 
+            driverName, functionName);
+        return asynSuccess;
+        }
+
+    }
+
+
+
 
 
 
