@@ -40,15 +40,15 @@ extern "C" {
 #define DRIVERPARMS "" //default , user '-QU 0' for not using interrupts
 
 
-extern "C" int pixciConfig(const char *portName, int IDType, const char *IDValue,
+extern "C" int pixciConfig(const char *portName,
                                  int maxBuffers, size_t maxMemory, int priority, int stackSize)
 {
-    new pixci(portName, IDType, IDValue, maxBuffers, maxMemory, priority, stackSize);
+    new pixci(portName, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
 
-pixci::pixci(const char *portName,  int IDType, const char *IDValue,
+pixci::pixci(const char *portName,  
                          int maxBuffers, size_t maxMemory, int priority, int stackSize)
 
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
@@ -100,24 +100,20 @@ pixci::pixci(const char *portName,  int IDType, const char *IDValue,
 
 /* pixciConfig */
 static const iocshArg pixciConfigArg0 = {"Port name", iocshArgString};
-static const iocshArg pixciConfigArg1 = {"ID type", iocshArgInt};
-static const iocshArg pixciConfigArg2 = {"ID value", iocshArgString};
-static const iocshArg pixciConfigArg3 = {"maxBuffers", iocshArgInt};
-static const iocshArg pixciConfigArg4 = {"maxMemory", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"priority", iocshArgInt};
-static const iocshArg pixciConfigArg6 = {"stackSize", iocshArgInt};
+static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
+static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
+static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
+static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
 static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
                                                           &pixciConfigArg1,
                                                           &pixciConfigArg2,
                                                           &pixciConfigArg3,
-                                                          &pixciConfigArg4,
-                                                          &pixciConfigArg5,
-                                                          &pixciConfigArg6};
-static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
+                                                          &pixciConfigArg4,};
+static const iocshFuncDef configpixci = {"pixciConfig", 5, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
-  pixciConfig(args[0].sval, args[1].ival, args[2].sval, args[3].ival, 
-                    args[4].ival, args[5].ival, args[6].ival);
+  pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival, 
+                    args[4].ival);
 }
 
 
