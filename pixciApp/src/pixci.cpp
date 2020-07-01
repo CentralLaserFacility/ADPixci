@@ -84,10 +84,16 @@ pixci::pixci(const char *portName,
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
             "%s:%s: Camera connected;", 
             driverName, functionName);
+
         return asynSuccess;
         }
 
     }
+
+    // asynStatus pixci::disconnectCamera(){
+    //     int status =  asynSuccess;
+
+    // }
 
 
 
