@@ -61,8 +61,12 @@ $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Mai
 
 # Add locally compiled object code
 $(PROD_NAME)_LIBS += pixci
-$(PROD_NAME)_LIBS += XCLIBW64
 
+ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
+$(PROD_NAME)_LIBS += XCLIBWNT
+else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
+$(PROD_NAME)_LIBS += XCLIBW64
+endif
 
 include $(ADCORE)/ADApp/commonDriverMakefile
 

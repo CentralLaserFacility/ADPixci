@@ -11,28 +11,20 @@ endif
 
 LIBRARY_IOC_WIN32 = pixci
 LIB_SRCS_WIN32 += pixci.cpp
+
+ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
+LIB_LIBS += XCLIBWNT
+else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
 LIB_LIBS += XCLIBW64
+endif
 
 DBD += pixciSupport.dbd
-
-
-
-
-# PROD_IOC_Linux += 
-# PROD_IOC_Linux += 
-# PROD_IOC_Linux += 
-# PROD_IOC_WIN32 +=
-# PROD_IOC_WIN32 += 
 
 
 # Add locally compiled object code
 # PROD_LIBS += 
 # PROD_LIBS_WIN32 += 
 # PROD_SYS_LIBS_Linux += 
-
-# ifeq (windows-x64-debug, $(findstring windows-x64-debug, $(T_A)))
-# USR_LDFLAGS_WIN32 += /NODEFAULTLIB:LIBCMT.lib
-# endif
 
 
 include $(ADCORE)/ADApp/commonLibraryMakefile
