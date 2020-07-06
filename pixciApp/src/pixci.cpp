@@ -87,10 +87,9 @@ pixci::pixci(const char *portName,
             return asynError;
         }
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING, 
-            "%s:%s: Camera connected;", 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING,
+            "%s:%s Camera connected;",
             driverName, functionName);
-
         return asynSuccess;
         }
 
@@ -120,6 +119,7 @@ pixci::pixci(const char *portName,
         }
 
     }
+
 
 /* Code for iocsh registration */
 
