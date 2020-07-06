@@ -11,7 +11,7 @@ endif
 
 LIBRARY_IOC_WIN32 = pixci
 LIB_SRCS_WIN32 += pixci.cpp
-LIB_LIBS += XCLIBWNT
+LIB_LIBS += XCLIBW64
 
 DBD += pixciSupport.dbd
 
