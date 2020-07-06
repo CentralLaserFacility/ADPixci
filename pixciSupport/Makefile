@@ -23,13 +23,8 @@ include $(TOP)/configure/CONFIG
 #ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 
 
-<<<<<<< HEAD
 LIB_INSTALLS_WIN32 += ../os/windows-x64/XCLIBW64.lib
 BIN_INSTALLS_WIN32 += ../os/windows-x64/XCLIBW64.dll
-=======
-LIB_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.lib
-BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.dll
->>>>>>> 3ed6c33b15d9c3449737acee801d49222449649b
 #BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBW64.exp
 
 #else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))

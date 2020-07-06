@@ -40,10 +40,6 @@ public:
     private:
 
     asynStatus connectCamera();
-<<<<<<< HEAD
     asynStatus disconnectCamera();
-=======
-    // asynStatus disConnectCamera();
->>>>>>> 3ed6c33b15d9c3449737acee801d49222449649b
 
 };
