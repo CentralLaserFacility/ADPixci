@@ -1,4 +1,4 @@
-#!../../bin/win32-x86/pixci
+#!../../bin/windows-x64/pixci
 
 #- You may have to change pixci to something else
 #- everywhere it appears in this file
@@ -32,15 +32,14 @@ epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 #pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize)
 
 pixciConfig("$(PORT)", 0,  0, 0, 0)
+dbLoadRecords("ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
-# Create a standard arrays plugin, set it to get data from Driver.
-NDStdArraysConfigure("Image1", 3, 0, "$(PORT)", 0)
-# Set NELEMENTS to at least the total number of pixels in the detector.  The following is a little larger than 4096 x 4096
-dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),TYPE=Int16,SIZE=16,FTVL=SHORT,NELEMENTS=17000000")
-
-## Load record instances
 #dbLoadRecords("db/xxx.db","user=mii48756")
 
+#asynSetTraceIOMask("$(PORT)",0,2)
+asynSetTraceMask("$(PORT)",-1,0x9) 
+#asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR+ASYN_TRACE_WARNING+ASYN_TRACE_FLOW)
+asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR)
 cd "${TOP}/iocBoot/${IOC}"
 iocInit
 

@@ -10,7 +10,7 @@
 #include "ADDriver.h"
 
 
-static const char *driverName = "PerkinElmer";
+static const char *driverName = "pixci";
 
 
 
@@ -40,5 +40,6 @@ public:
     private:
 
     asynStatus connectCamera();
+    // asynStatus disConnectCamera();
 
 };
