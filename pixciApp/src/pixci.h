@@ -31,7 +31,7 @@ public:
 
     /* These are the methods that we override from ADDriver */
     virtual asynStatus connect(asynUser* pasynUser);
-    // virtual asynStatus disconnect(asynUser* pasynUser);
+    virtual asynStatus disconnect(asynUser* pasynUser);
 
 
     // virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
@@ -40,6 +40,6 @@ public:
     private:
 
     asynStatus connectCamera();
-    // asynStatus disConnectCamera();
+    asynStatus disconnectCamera();
 
 };

@@ -37,9 +37,9 @@ dbLoadRecords("ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT
 #dbLoadRecords("db/xxx.db","user=mii48756")
 
 #asynSetTraceIOMask("$(PORT)",0,2)
-asynSetTraceMask("$(PORT)",-1,0x9) 
+#asynSetTraceMask("$(PORT)",-1,0x9) 
 #asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR+ASYN_TRACE_WARNING+ASYN_TRACE_FLOW)
-asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR)
+asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR+ASYN_TRACE_WARNING)
 cd "${TOP}/iocBoot/${IOC}"
 iocInit
 
