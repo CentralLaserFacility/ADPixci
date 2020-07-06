@@ -90,6 +90,7 @@ pixci::pixci(const char *portName,
             asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING, 
             "%s:%s: Camera connected;", 
             driverName, functionName);
+
         return asynSuccess;
         }
 
