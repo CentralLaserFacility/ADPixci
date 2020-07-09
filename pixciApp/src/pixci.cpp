@@ -12,42 +12,41 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* For windows */
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#include <windows.h>
+#endif
+
+/* Pixci headers 
+ source: http://www.epixinc.com/products/xclib.htm
+ XCLW64 .dll and .lib files should be included for windows-64 os
+ XCLIBNT .dll and .lib files should be inlcuded for win32 os
+ xclib_x86_64 .so and .a files should be included for linux_x86_64
+ xclib_i386 .so and .a files should be included for linux_x86 os
+*/
+extern "C"{
+#include "xcliball.h"
+} 
+#include "pixci.h"
+
+/* Epics headers */
 #include <epicsEvent.h>
 #include <epicsTime.h>
 #include <epicsThread.h>
 #include <iocsh.h>
 #include <epicsString.h>
 #include <epicsExit.h>
-
-
-#include "ADDriver.h"
 #include <epicsExport.h>
-
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-#include <windows.h>
-#endif
-
-extern "C" {
-#include "xcliball.h"
-}
-
-#include "pixci.h"
 
 #define FORMAT "default" // Video format configuration name
 #define DRIVERPARMS "" //default , user '-QU 0' for not using interrupts
 #define SETUPFILE "" //Video format configuration file name
 
 
-/** Configuration command for pixci driver; creates a new pixci object.
- * \param[in] portname The name of the asyn port driver to be created.
- * \param[in] maxBuffers The maximum number of NDArray buffer that the NDArrayPool for this
- *            driver is allowed to allocate. Set this -1 to allow an unlimited number of buffers.
- * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is
- *            allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
- * \param[in] priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynflags.
- * \param[in] stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
- */ 
-
+/**
+ * @brief Configuration command for pixci driver; creates a new pixci object.
+ * 
+ */
 extern "C" int pixciConfig(const char *portName,
                                  int maxBuffers, size_t maxMemory, int priority, int stackSize)
 {
@@ -61,7 +60,7 @@ pixci::pixci(const char *portName,
 
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
-        //  Driver-specific parameters for the driver will be defined here
+        /* TODO:  Driver-specific parameters for the driver will be defined here */
 
     }
 
@@ -71,17 +70,18 @@ pixci::pixci(const char *portName,
         return connectCamera();
     }
 
-    /**Connecting to the camera
-     */ 
+    /**
+     * @brief connect to the frame grabber using 'pxd_PIXCIopen(driverparms, formatname, formatfile)' method.
+     *  should be called before any other xclib library function is invoked
+     * @return asynStatus 
+     */
     asynStatus pixci::connectCamera(){
         int connectionStatusCode = 0;
         static const char *functionName = "connectCamera";
 
         connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
         if(connectionStatusCode < 0){          
-        //pxd_mesgFault(1);   // display more information about the open error. !needs gui
-
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s:%s: Cannot OPEN camera: %s.", 
                   driverName, functionName,  pxd_mesgErrorCode(connectionStatusCode));
             return asynError;
@@ -101,6 +101,11 @@ pixci::pixci(const char *portName,
         return disconnectCamera();
     }
 
+    /**
+     * @brief disconnect from frame grabber if already connected to the frame grabber
+     * 
+     * @return asynStatus 
+     */
     asynStatus pixci::disconnectCamera(){
         int disconnectStatusCode = 0;
         static const char *functionName = "disconnectCamera";
@@ -123,7 +128,7 @@ pixci::pixci(const char *portName,
 
 /* Code for iocsh registration */
 
-/* pixciConfig */
+/* pixciConfig parameters from st.cmd */
 static const iocshArg pixciConfigArg0 = {"Port name", iocshArgString};
 static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
 static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
