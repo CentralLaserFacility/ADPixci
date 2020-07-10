@@ -1,12 +1,13 @@
-/*
- * This is a driver for PIXCI frame grabber from epix, inc. 
- * Developed for Eagle XV CCD from Raptor photonics
- * This driver will be using XCLIB Programming Library for PIXCI ® Frame Grabbers
+/**
+ * @file pixci.h
+ * @author Subindev D
+ * @brief This is a driver for PIXCI frame grabber from epix, inc. 
+ *  Developed for Eagle XV CCD from Raptor photonics
+ *  This driver will be using XCLIB Programming Library for PIXCI ® Frame Grabbers
+ * @version 0.1
+ * @date 2020-06-23
  * 
- *  Author: Subindev D
- *
- * Created:  23/06/2020
-*/
+ */
 
 /* AreaDetector headers */
 #include "ADDriver.h"
@@ -43,8 +44,8 @@ private:
      * @return asynStatus 
      */
     asynStatus connectCamera();
-    /**
-     * @brief disconnect to the frame grabber
+    /**s
+     * @brief disconnect from the frame grabber
      * @return asynStatus 
      */
     asynStatus disconnectCamera();

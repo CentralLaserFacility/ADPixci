@@ -1,12 +1,11 @@
-/*
-* pixci.cpp
-* This is a driver for PIXCI frame grabber from epix, inc. 
-* Developed for Eagle XV CCD from Raptor photonics
-*
-*
-* Author: Subindev D
-*         CLF, STFC UK
-*/
+/**
+ * @file pixci.cpp
+ * @author Subindev D (CLF, STFC UK)
+ * @brief This is a driver for PIXCI frame grabber from epix, inc. Developed for Eagle XV CCD from Raptor photonics
+ * @version 0.1
+ * @date 2020-06-23
+ * 
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,10 +18,10 @@
 
 /* Pixci headers 
  source: http://www.epixinc.com/products/xclib.htm
- XCLW64 .dll and .lib files should be included for windows-64 os
- XCLIBNT .dll and .lib files should be inlcuded for win32 os
- xclib_x86_64 .so and .a files should be included for linux_x86_64
- xclib_i386 .so and .a files should be included for linux_x86 os
+ XCLW64 .dll and .lib files should be included for windows-64 OS
+ XCLIBNT .dll and .lib files should be inlcuded for win32 OS
+ xclib_x86_64 .so and .a files should be included for linux_x86_64 OS
+ xclib_i386 .so and .a files should be included for linux_x86 OS
 */
 extern "C"{
 #include "xcliball.h"
@@ -45,7 +44,6 @@ extern "C"{
 
 /**
  * @brief Configuration command for pixci driver; creates a new pixci object.
- * 
  */
 extern "C" int pixciConfig(const char *portName,
                                  int maxBuffers, size_t maxMemory, int priority, int stackSize)
@@ -54,18 +52,17 @@ extern "C" int pixciConfig(const char *portName,
     return(asynSuccess);
 }
 
-
-pixci::pixci(const char *portName,  
-                         int maxBuffers, size_t maxMemory, int priority, int stackSize)
-
+/**
+ * @brief Construct a new pixci::pixci object
+ */
+pixci::pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         /* TODO:  Driver-specific parameters for the driver will be defined here */
 
     }
 
-    /** From asynPortDriver: Connects driver to device;
-     */ 
+    /** @brief From asynPortDriver: Connects driver to device. */ 
     asynStatus pixci::connect(asynUser* pasynUser){
         return connectCamera();
     }
@@ -73,12 +70,16 @@ pixci::pixci(const char *portName,
     /**
      * @brief connect to the frame grabber using 'pxd_PIXCIopen(driverparms, formatname, formatfile)' method.
      *  should be called before any other xclib library function is invoked
-     * @return asynStatus 
+     * @return asynStatus asynSuccess if connected successfully else asynError
      */
     asynStatus pixci::connectCamera(){
         int connectionStatusCode = 0;
         static const char *functionName = "connectCamera";
 
+        /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
+         * returns value <0 if any error occured
+         * pxd_mesgErrorCode(int code) will return description of the error occured
+         */
         connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
         if(connectionStatusCode < 0){          
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
@@ -95,8 +96,7 @@ pixci::pixci(const char *portName,
 
     }
 
-    /** From asynPortDriver: disconnect driver from device;
-     */ 
+    /** @brief From asynPortDriver: disconnect driver from device. */ 
     asynStatus pixci::disconnect(asynUser* pasynUser){
         return disconnectCamera();
     }
@@ -104,11 +104,16 @@ pixci::pixci(const char *portName,
     /**
      * @brief disconnect from frame grabber if already connected to the frame grabber
      * 
-     * @return asynStatus 
+     * @return asynStatus asynSuccess if disconnected else asynError
      */
     asynStatus pixci::disconnectCamera(){
         int disconnectStatusCode = 0;
         static const char *functionName = "disconnectCamera";
+
+        /*pxd_PIXCIclose() disconnect the driver from the device. 
+         * return 0 if disconnect successfull, return integer <0 if error occured
+         * pxd_mesgErrorCode(int code) will return description of the error occured
+        */
         disconnectStatusCode = pxd_PIXCIclose();
         if(disconnectStatusCode < 0){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING,
@@ -124,7 +129,6 @@ pixci::pixci(const char *portName,
         }
 
     }
-
 
 /* Code for iocsh registration */
 

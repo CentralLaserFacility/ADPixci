@@ -4,6 +4,7 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
+#XCLIB header files
  INC += cext.h
  INC += pximage.h
  INC += xcliball.h
@@ -19,6 +20,8 @@ include $(TOP)/configure/CONFIG
  INC += xclibsc.h
  INC += pxlibcam.h
 
+#XCLIB libraries
+#Source: http://www.epixinc.com/products/xclib.htm
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 LIB_INSTALLS_WIN32 += ../os/win32-x86/XCLIBWNT.lib
 BIN_INSTALLS_WIN32 += ../os/win32-x86/XCLIBWNT.dll
