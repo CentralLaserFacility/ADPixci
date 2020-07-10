@@ -1,9 +1,5 @@
 /**
- * @file pixci.cpp
- * @author Subindev D (CLF, STFC UK)
  * @brief This is a driver for PIXCI frame grabber from epix, inc. Developed for Eagle XV CCD from Raptor photonics
- * @version 0.1
- * @date 2020-06-23
  * 
  */
 
@@ -44,35 +40,29 @@ extern "C"{
 
 /**
  * @brief Configuration command for pixci driver; creates a new pixci object.
+ * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
                                  int maxBuffers, size_t maxMemory, int priority, int stackSize)
 {
-    new pixci(portName, maxBuffers, maxMemory, priority, stackSize);
+    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
 /**
- * @brief Construct a new pixci::pixci object
+ * @brief Default constructor to create a new Pixci::Pixci object
  */
-pixci::pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize)
+Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         /* TODO:  Driver-specific parameters for the driver will be defined here */
 
     }
 
-    /** @brief From asynPortDriver: Connects driver to device. */ 
-    asynStatus pixci::connect(asynUser* pasynUser){
-        return connectCamera();
-    }
-
-    /**
-     * @brief connect to the frame grabber using 'pxd_PIXCIopen(driverparms, formatname, formatfile)' method.
-     *  should be called before any other xclib library function is invoked
+    /** @brief From asynPortDriver: attempt to connect driver to device.
      * @return asynStatus asynSuccess if connected successfully else asynError
-     */
-    asynStatus pixci::connectCamera(){
+     *  */ 
+    asynStatus Pixci::connect(asynUser* pasynUser){
         int connectionStatusCode = 0;
         static const char *functionName = "connectCamera";
 
@@ -88,25 +78,18 @@ pixci::pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
             return asynError;
         }
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING,
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
             "%s:%s Camera connected;",
             driverName, functionName);
         return asynSuccess;
         }
-
     }
 
-    /** @brief From asynPortDriver: disconnect driver from device. */ 
-    asynStatus pixci::disconnect(asynUser* pasynUser){
-        return disconnectCamera();
-    }
 
-    /**
-     * @brief disconnect from frame grabber if already connected to the frame grabber
-     * 
-     * @return asynStatus asynSuccess if disconnected else asynError
-     */
-    asynStatus pixci::disconnectCamera(){
+    /** @brief From asynPortDriver: attempts to disconnect driver from device.
+     *  @return asynStatus asynSuccess if disconnected successfully else asynError
+     */ 
+    asynStatus Pixci::disconnect(asynUser* pasynUser){
         int disconnectStatusCode = 0;
         static const char *functionName = "disconnectCamera";
 
@@ -116,7 +99,7 @@ pixci::pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         */
         disconnectStatusCode = pxd_PIXCIclose();
         if(disconnectStatusCode < 0){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING,
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
             "%s:%s camera disconnected;",
             driverName, functionName);
         return asynSuccess;
@@ -127,8 +110,8 @@ pixci::pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                   driverName, functionName,  pxd_mesgErrorCode(disconnectStatusCode));
         return asynError;
         }
-
     }
+        
 
 /* Code for iocsh registration */
 
