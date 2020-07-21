@@ -29,10 +29,10 @@ pixciConfig("$(PORT)", 0,  0, 0, 0)
 dbLoadRecords("ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 
-asynSetTraceIOMask("$(PORT)",0,0x2)
-asynSetTraceMask("$(PORT)",0,0x9) 
+#asynSetTraceIOMask("$(PORT)",0,0x2)
+#asynSetTraceMask("$(PORT)",0,0x9) 
 #asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR+ASYN_TRACE_WARNING+ASYN_TRACE_FLOW)
-#asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR+ASYN_TRACE_WARNING)
+asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR)
 cd "${TOP}/iocBoot/${IOC}"
 iocInit
 
