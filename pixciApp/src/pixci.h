@@ -32,5 +32,9 @@ public:
     /* These are the methods that we override from ADDriver */
     virtual asynStatus connect(asynUser* pasynUser);
     virtual asynStatus disconnect(asynUser* pasynUser);
+    void acquireTask(void);
+private:
+    void acquireImage(void);
+    
 
 };

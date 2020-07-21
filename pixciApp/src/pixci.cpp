@@ -37,6 +37,9 @@ extern "C"{
 #define DRIVERPARMS "" //default , user '-QU 0' for not using interrupts
 #define SETUPFILE "" //Video format configuration file name
 
+static void acquireTaskC(void *drvPvt);
+HANDLE  hEvent;
+
 
 /**
  * @brief Configuration command for pixci driver; creates a new pixci object.
@@ -56,6 +59,18 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         /* TODO:  Driver-specific parameters for the driver will be defined here */
+        pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
+        
+        DWORD   ThreadId;
+        hEvent = pxd_eventCapturedFieldCreate(0x1);
+        int status = asynSuccess;
+        status = (epicsThreadCreate("acquireTask",
+                              epicsThreadPriorityMedium,
+                              epicsThreadGetStackSize(epicsThreadStackMedium),
+                              (EPICSTHREADFUNC)acquireTaskC,
+                              this) == NULL);
+
+
 
     }
 
@@ -92,23 +107,50 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
     asynStatus Pixci::disconnect(asynUser* pasynUser){
         int disconnectStatusCode = 0;
         static const char *functionName = "disconnectCamera";
-
+        
         /*pxd_PIXCIclose() disconnect the driver from the device. 
          * return 0 if disconnect successfull, return integer <0 if error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
         */
         disconnectStatusCode = pxd_PIXCIclose();
         if(disconnectStatusCode < 0){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                  "%s:%s: disconnect camera error: %s.", 
+                  driverName, functionName,  pxd_mesgErrorCode(disconnectStatusCode));
+        return asynError;
+
+        }
+        else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
             "%s:%s camera disconnected;",
             driverName, functionName);
         return asynSuccess;
+             
         }
-        else{
-             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s:%s: disconnect camera error: %s.", 
-                  driverName, functionName,  pxd_mesgErrorCode(disconnectStatusCode));
-        return asynError;
+    }
+
+    void Pixci::acquireImage(){
+
+        int err = 0;
+	    err = pxd_goLive(1, 1L);
+	    if (err < 0)
+            printf("go live error");
+
+    }
+
+    static void acquireTaskC(void *drvPvt)
+    {
+        Pixci *pPvt = (Pixci *)drvPvt;
+        pPvt->acquireTask();
+    }
+
+    
+
+    void Pixci::acquireTask(){
+        
+        for (;;){
+            WaitForSingleObject(hEvent, INFINITE);
+            printf("image recieved \n");
         }
     }
         
