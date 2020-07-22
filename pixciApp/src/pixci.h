@@ -32,9 +32,12 @@ public:
     /* These are the methods that we override from ADDriver */
     virtual asynStatus connect(asynUser* pasynUser);
     virtual asynStatus disconnect(asynUser* pasynUser);
+    virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
+
     void acquireTask(void);
 private:
     void acquireImage(void);
+    void acquireStop(void);
     
 
 };
