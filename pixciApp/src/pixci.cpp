@@ -178,43 +178,44 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         epicsTimeStamp currentTime;
         epicsUInt16   *pInput;
         //void *ptest;
+        epicsInt32 numImagesCounter;
+        epicsInt32 numExposuresCounter;
+        epicsInt32 imageCounter;
+        epicsInt32 arrayCallbacks;
         
         for (;;){
+            
+            //lock();
             WaitForSingleObject(hEvent, INFINITE);
             lock();
-            setIntegerParam(ADStatus, ADStatusIdle);
-            setIntegerParam(ADAcquire, 0);
-            buffer = (ushort*)malloc(sizeof(ushort)*3*pxd_imageXdim());
-            pInput = (epicsUInt16*)malloc(sizeof(epicsUInt16)*3*pxd_imageXdim());
-            printf("buffer is %u \n",buffer);
-            // xrr = pxd_readushort(1, buf, 0, pxd_imageYdim()/2, -1, 1+pxd_imageYdim()/2, buffer, 3*pxd_imageXdim(), "GRAY");
-            pImage = this->pArrays[0];
+            getIntegerParam(NDArrayCounter, &imageCounter);
+            imageCounter++;
+            setIntegerParam(NDArrayCounter, imageCounter);;
+            getIntegerParam(ADNumImagesCounter, &numImagesCounter);
+            numImagesCounter++;
+            setIntegerParam(ADNumImagesCounter, numImagesCounter);
+            callParamCallbacks();
             sizeX = pxd_imageXdim();
             sizeY = pxd_imageYdim();
-            dataType = NDUInt16;
-
             dims[0] = sizeX;
             dims[1] = sizeY;
-            this->pArrays[0] = pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
-
-            if (this->pArrays[0])
-                this->pArrays[0]->release();
-
-            if (this->pArrays[0] == NULL) {
-                printf("null array \n");
-            }
-            fieldCount = pxd_capturedFieldCount(1);
-            pImage = this->pArrays[0];
-            pImage->uniqueId = fieldCount;
-            pImage->getInfo(&arrayInfo);
-            // pInput = pImage->pData;
-            xrr = pxd_readushort(1, buf, 0, pxd_imageYdim()/2, -1, 1+pxd_imageYdim()/2, pInput, 3*pxd_imageXdim(), "GRAY");
-            //memcpy(pImage->pData, pInput, arrayInfo.totalBytes);
-           
+            dataType = NDUInt16;
+            pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
+            xrr = pxd_readushort(1, buf, 0, pxd_imageYdim()/2, -1, 1+pxd_imageYdim()/2, (epicsUInt16*)pImage->pData, 3*pxd_imageXdim(), "GRAY");
+            pImage->uniqueId = imageCounter;
             epicsTimeGetCurrent(&currentTime);
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
             updateTimeStamp(&pImage->epicsTS);
-            //printf("field count %d\n",fieldCount);            
+            //printf("image counter %d", imageCounter);
+            doCallbacksGenericPointer(pImage, NDArrayData, 0);
+            // Save the current frame for use with the SPE file writer which needs the data
+            if (this->pArrays[0]) this->pArrays[0]->release();
+            this->pArrays[0] = pImage;
+            callParamCallbacks();
+            unlock();
+
+
+
         }
     }
 
