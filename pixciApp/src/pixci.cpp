@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>       // std::cout
+#include <exception> 
 
 /* For windows */
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
@@ -158,12 +160,61 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         pPvt->acquireTask();
     }
 
-    
+    /**
+     * @brief Event will be notified whenever a field has beencaptured by pxd_goSnapor pxd_goLive
+     * 
+     */
     void Pixci::acquireTask(){
+        int xrr = 0;
+        NDArray *pImage;
+        NDArrayInfo   arrayInfo;
+        ushort   *buffer;
+        pxbuffer_t  buf = 1;
+        pImage = this->pArrays[0];
+        NDDataType_t  dataType;
+        epicsInt32 sizeX, sizeY;
+        size_t        dims[2];
+        pxvbtime_t fieldCount;
+        epicsTimeStamp currentTime;
+        epicsUInt16   *pInput;
+        //void *ptest;
+        
         for (;;){
             WaitForSingleObject(hEvent, INFINITE);
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "Acquire task note \n");
+            lock();
+            setIntegerParam(ADStatus, ADStatusIdle);
+            setIntegerParam(ADAcquire, 0);
+            buffer = (ushort*)malloc(sizeof(ushort)*3*pxd_imageXdim());
+            pInput = (epicsUInt16*)malloc(sizeof(epicsUInt16)*3*pxd_imageXdim());
+            printf("buffer is %u \n",buffer);
+            // xrr = pxd_readushort(1, buf, 0, pxd_imageYdim()/2, -1, 1+pxd_imageYdim()/2, buffer, 3*pxd_imageXdim(), "GRAY");
+            pImage = this->pArrays[0];
+            sizeX = pxd_imageXdim();
+            sizeY = pxd_imageYdim();
+            dataType = NDUInt16;
+
+            dims[0] = sizeX;
+            dims[1] = sizeY;
+            this->pArrays[0] = pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
+
+            if (this->pArrays[0])
+                this->pArrays[0]->release();
+
+            if (this->pArrays[0] == NULL) {
+                printf("null array \n");
+            }
+            fieldCount = pxd_capturedFieldCount(1);
+            pImage = this->pArrays[0];
+            pImage->uniqueId = fieldCount;
+            pImage->getInfo(&arrayInfo);
+            // pInput = pImage->pData;
+            xrr = pxd_readushort(1, buf, 0, pxd_imageYdim()/2, -1, 1+pxd_imageYdim()/2, pInput, 3*pxd_imageXdim(), "GRAY");
+            //memcpy(pImage->pData, pInput, arrayInfo.totalBytes);
+           
+            epicsTimeGetCurrent(&currentTime);
+            pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
+            updateTimeStamp(&pImage->epicsTS);
+            //printf("field count %d\n",fieldCount);            
         }
     }
 
