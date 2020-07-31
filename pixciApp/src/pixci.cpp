@@ -80,15 +80,16 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
             driverName);
         }
 
+        /*any thread waiting upon the event will be notified whenever a field has beencaptured by pxd_goSnap, 
+        pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
         hEvent = pxd_eventCapturedFieldCreate(0x1);
         int status = asynSuccess;
+        /*Create the thread that does data acquisition */
         status = (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
-
-
 
     }
 
@@ -123,7 +124,7 @@ Pixci::~Pixci(){
                   "live error \n");
         }
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
                   "live started \n");
         }
     }
@@ -136,7 +137,7 @@ Pixci::~Pixci(){
                   "live couldn't stop \n");
         }
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
                   "live stopped \n");
         }
 
@@ -165,7 +166,6 @@ Pixci::~Pixci(){
         pxvbtime_t fieldCount;
         epicsTimeStamp currentTime;
         epicsUInt16   *pInput;
-        //void *ptest;
         epicsInt32 numImagesCounter;
         epicsInt32 numExposuresCounter;
         epicsInt32 imageCounter;
@@ -213,8 +213,8 @@ Pixci::~Pixci(){
         int adstatus;
         static const char *functionName = "writeInt32";
 
-        /* Set the parameter and readback in the parameter library.  This may be overwritten when we read back the
-        * status at the end, but that's OK */
+        /* Set the parameter and readback in the parameter library.  This may be 
+        overwritten when we read back the status at the end, but that's OK */
         status = setIntegerParam(function, value);
 
         if (function == ADAcquire) {
