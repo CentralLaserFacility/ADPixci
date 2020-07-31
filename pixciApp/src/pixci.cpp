@@ -60,7 +60,26 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         /* TODO:  Driver-specific parameters for the driver will be defined here */
-        pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
+
+
+        int connectionStatusCode = 0;
+
+        /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
+         * returns value <0 if any error occured
+         * pxd_mesgErrorCode(int code) will return description of the error occured
+         */
+        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
+        if(connectionStatusCode < 0){          
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                  "%s: Cannot OPEN camera: %s.", 
+                  driverName,  pxd_mesgErrorCode(connectionStatusCode));
+        }
+        else{
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
+            "%s Camera connected;",
+            driverName);
+        }
+
         hEvent = pxd_eventCapturedFieldCreate(0x1);
         int status = asynSuccess;
         status = (epicsThreadCreate("acquireTask",
@@ -73,59 +92,28 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
     }
 
-    /** @brief From asynPortDriver: attempt to connect driver to device.
-     * @return asynStatus asynSuccess if connected successfully else asynError
-     *  */ 
-    asynStatus Pixci::connect(asynUser* pasynUser){
-        int connectionStatusCode = 0;
-        static const char *functionName = "connectCamera";
+Pixci::~Pixci(){
 
-        /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
-         * returns value <0 if any error occured
-         * pxd_mesgErrorCode(int code) will return description of the error occured
-         */
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
-        if(connectionStatusCode < 0){          
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s:%s: Cannot OPEN camera: %s.", 
-                  driverName, functionName,  pxd_mesgErrorCode(connectionStatusCode));
-            return asynError;
-        }
-        else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-            "%s:%s Camera connected;",
-            driverName, functionName);
-        return asynSuccess;
-        }
-    }
-
-
-    /** @brief From asynPortDriver: attempts to disconnect driver from device.
-     *  @return asynStatus asynSuccess if disconnected successfully else asynError
-     */ 
-    asynStatus Pixci::disconnect(asynUser* pasynUser){
-        int disconnectStatusCode = 0;
-        static const char *functionName = "disconnectCamera";
-        /*pxd_PIXCIclose() disconnect the driver from the device. 
-         * return 0 if disconnect successfull, return integer <0 if error occured
-         * pxd_mesgErrorCode(int code) will return description of the error occured
-        */
-        disconnectStatusCode = pxd_PIXCIclose();
-        if(disconnectStatusCode < 0){
+    /* Closing connection to frame grabber */
+    int disconnectStatusCode = 0;
+    /*pxd_PIXCIclose() disconnect the driver from the device. 
+     * return 0 if disconnect successfull, return integer <0 if error occured
+     * pxd_mesgErrorCode(int code) will return description of the error occured
+    */
+    disconnectStatusCode = pxd_PIXCIclose();
+    if(disconnectStatusCode < 0){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s:%s: disconnect camera error: %s .", 
-                  driverName, functionName,  pxd_mesgErrorCode(disconnectStatusCode));
-        return asynError;
-
-        }
-        else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-            "%s:%s camera disconnected;",
-            driverName, functionName);
-        return asynSuccess;
-             
-        }
+                  "%s: disconnect camera error: %s .", 
+                  driverName, pxd_mesgErrorCode(disconnectStatusCode));
     }
+    else{
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
+            "%s: camera disconnected;",
+            driverName);
+    }
+
+}
+
 
     void Pixci::acquireImage(){
         int err;
