@@ -30,11 +30,10 @@ public:
     Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
     /* These are the methods that we override from ADDriver */
-    virtual asynStatus connect(asynUser* pasynUser);
-    virtual asynStatus disconnect(asynUser* pasynUser);
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
 
     void acquireTask(void);
+    ~Pixci();
 private:
     void acquireImage(void);
     void acquireStop(void);
