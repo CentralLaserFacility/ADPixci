@@ -5,8 +5,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <iostream>       // std::cout
 #include <exception> 
 
 /* For windows */
@@ -181,6 +179,7 @@ Pixci::~Pixci(){
         
         for (;;){
             /* waiting for event to be triggered */
+            /* TODO: seperate waiting task for linux */
             WaitForSingleObject(hEvent, INFINITE);
             lock();
             getIntegerParam(NDArrayCounter, &imageCounter);
