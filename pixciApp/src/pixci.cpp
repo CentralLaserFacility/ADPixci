@@ -161,20 +161,14 @@ Pixci::~Pixci(){
      * Event will be notified whenever a field has beencaptured by pxd_goSnapor, pxd_goLive.
      */
     void Pixci::acquireTask(){
-        int xrr = 0;
         NDArray *pImage;
-        NDArrayInfo   arrayInfo;
-        ushort   *buffer;
         pxbuffer_t  buf = 1;
         pImage = this->pArrays[0];
         NDDataType_t  dataType;
         epicsInt32 sizeX, sizeY;
         size_t        dims[2];
-        pxvbtime_t fieldCount;
         epicsTimeStamp currentTime;
-        epicsUInt16   *pInput;
         epicsInt32 numImagesCounter;
-        epicsInt32 numExposuresCounter;
         epicsInt32 imageCounter;
         
         for (;;){
@@ -198,7 +192,7 @@ Pixci::~Pixci(){
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer 
             pxd_readushort(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            xrr = pxd_readushort(UNIT, buf, 0, 0, -1, -1, (epicsUInt16*)pImage->pData, sizeX * sizeY * sizeof(epicsUInt16), "GRAY");
+            pxd_readushort(UNIT, buf, 0, 0, -1, -1, (epicsUInt16*)pImage->pData, sizeX * sizeY * sizeof(epicsUInt16), "GRAY");
             pImage->uniqueId = imageCounter;
             epicsTimeGetCurrent(&currentTime);
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
@@ -215,7 +209,6 @@ Pixci::~Pixci(){
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
         int status = asynSuccess;
-        int adstatus;
         static const char *functionName = "writeInt32";
 
         /* Set the parameter and readback in the parameter library.  This may be 
