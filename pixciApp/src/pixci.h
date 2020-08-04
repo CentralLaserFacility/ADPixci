@@ -31,11 +31,17 @@ public:
 
     /* These are the methods that we override from ADDriver */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
-
+    
     void acquireTask(void);
     ~Pixci();
 private:
+    /**
+     * @brief Live capture image to frame buffer.
+     */
     void acquireImage(void);
+    /**
+     * @brief Stop live capturing.
+     */
     void acquireStop(void);
     
 

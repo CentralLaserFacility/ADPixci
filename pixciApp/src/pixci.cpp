@@ -39,6 +39,11 @@ extern "C"{
 #define DRIVERPARMS "" //default , user '-QU 0' for not using interrupts
 #define SETUPFILE "" //Video format configuration file name
 #define UNIT 1
+/**
+ * @brief C Function prototypes to tie in with EPICS
+ * run acquire task 
+ * @param drvPvt 
+ */
 static void acquireTaskC(void *drvPvt);
 HANDLE  hEvent;
 
@@ -154,8 +159,8 @@ Pixci::~Pixci(){
     }
 
     /**
-     * @brief Event will be notified whenever a field has beencaptured by pxd_goSnapor pxd_goLive
-     * 
+     * @brief Acquistion task for live image capturing.
+     * Event will be notified whenever a field has beencaptured by pxd_goSnapor, pxd_goLive.
      */
     void Pixci::acquireTask(){
         int xrr = 0;
@@ -173,7 +178,6 @@ Pixci::~Pixci(){
         epicsInt32 numImagesCounter;
         epicsInt32 numExposuresCounter;
         epicsInt32 imageCounter;
-        epicsInt32 arrayCallbacks;
         
         for (;;){
             /* waiting for event to be triggered */
@@ -206,8 +210,6 @@ Pixci::~Pixci(){
             callParamCallbacks();
             unlock();
 
-
-
         }
     }
 
@@ -222,14 +224,14 @@ Pixci::~Pixci(){
         status = setIntegerParam(function, value);
 
         if (function == ADAcquire) {
-            /* TODO: adstatus == ADStatusIdle has to be chedked */
+            /* TODO: adstatus == ADStatusIdle has to be checked */
             if (value ) 
             {
                 acquireImage();
             }
 
             // Stop acquisition
-            /* TODO: adstatus != ADStatusIdle has to be chedked */
+            /* TODO: adstatus != ADStatusIdle has to be checked */
             if (!value)
             {
                 acquireStop();
