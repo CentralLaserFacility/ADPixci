@@ -121,12 +121,12 @@ Pixci::~Pixci(){
 
     void Pixci::acquireImage(){
         static const char *functionName = "acquireImage";
-        int err;
+        int error;
         /* live capture the image into frame buffer */
-        err = pxd_goLive(UNIT, 1L);
-        if(err < 0){
+        error = pxd_goLive(UNIT, 1L);
+        if(error < 0){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "live error: %s : %s", functionName, pxd_mesgErrorCode(err));
+                  "live error: %s : %s", functionName, pxd_mesgErrorCode(error));
         }
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
@@ -136,12 +136,12 @@ Pixci::~Pixci(){
 
     void Pixci::acquireStop(){
         static const char *functionName = "acquireStop";
-        int err;
+        int error;
         /* stop the live capturing */
-        err = pxd_goUnLive(UNIT);
-        if(err < 0){
+        error = pxd_goUnLive(UNIT);
+        if(error < 0){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(err));
+                  "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(error));
         }
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 

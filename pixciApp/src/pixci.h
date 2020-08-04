@@ -37,11 +37,11 @@ public:
     ~Pixci();
 private:
     /**
-     * @brief Live capture image to frame buffer.
+     * @brief starts live capture image to frame buffer.
      */
     void acquireImage(void);
     /**
-     * @brief Stop live capturing.
+     * @brief Stops live capturing.
      */
     void acquireStop(void);
     
