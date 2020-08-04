@@ -30,9 +30,19 @@ public:
     Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
     /* These are the methods that we override from ADDriver */
+    /**
+     * @brief Overriden to implement custom write features
+     * 
+     * @param pasynUser 
+     * @param value 
+     * @return asynStatus 
+     */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
     
-    // Should be private, but are called from C so must be public
+    /**
+     * @brief thread that waits for signal from frame grabber during live capture
+     * 
+     */
     void acquireTask(void);
     ~Pixci();
 private:
