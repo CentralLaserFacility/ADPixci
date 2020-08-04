@@ -38,7 +38,7 @@ extern "C"{
 #define FORMAT "default" // Video format configuration name
 #define DRIVERPARMS "" //default , user '-QU 0' for not using interrupts
 #define SETUPFILE "" //Video format configuration file name
-
+#define UNIT 1
 static void acquireTaskC(void *drvPvt);
 HANDLE  hEvent;
 
@@ -82,7 +82,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         /*any thread waiting upon the event will be notified whenever a field has beencaptured by pxd_goSnap, 
         pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
-        hEvent = pxd_eventCapturedFieldCreate(0x1);
+        hEvent = pxd_eventCapturedFieldCreate(UNIT);
         int status = asynSuccess;
         /*Create the thread that does data acquisition */
         status = (epicsThreadCreate("acquireTask",
@@ -117,24 +117,28 @@ Pixci::~Pixci(){
 
 
     void Pixci::acquireImage(){
+        static const char *functionName = "acquireImage";
         int err;
-        err = pxd_goLive(1, 1L);
+        /* live capture the image into frame buffer */
+        err = pxd_goLive(UNIT, 1L);
         if(err < 0){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "live error \n");
+                  "live error: %s : %s", functionName, pxd_mesgErrorCode(err));
         }
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
-                  "live started \n");
+                  "live started");
         }
     }
 
     void Pixci::acquireStop(){
+        static const char *functionName = "acquireStop";
         int err;
-        err = pxd_goUnLive(1);
+        /* stop the live capturing */
+        err = pxd_goUnLive(UNIT);
         if(err < 0){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "live couldn't stop \n");
+                  "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(err));
         }
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
@@ -172,8 +176,7 @@ Pixci::~Pixci(){
         epicsInt32 arrayCallbacks;
         
         for (;;){
-            
-            //lock();
+            /* waiting for event to be triggered */
             WaitForSingleObject(hEvent, INFINITE);
             lock();
             getIntegerParam(NDArrayCounter, &imageCounter);
@@ -183,20 +186,21 @@ Pixci::~Pixci(){
             numImagesCounter++;
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
             callParamCallbacks();
+            /* Allocate NDArray */
             sizeX = pxd_imageXdim();
             sizeY = pxd_imageYdim();
             dims[0] = sizeX;
             dims[1] = sizeY;
             dataType = NDUInt16;
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
-            xrr = pxd_readushort(1, buf, 0, pxd_imageYdim()/2, -1, 1+pxd_imageYdim()/2, (epicsUInt16*)pImage->pData, 3*pxd_imageXdim(), "GRAY");
+            /* Pixel values from an image frame buffer and area of interest are copied into buffer 
+            pxd_readushort(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
+            xrr = pxd_readushort(UNIT, buf, 0, 0, -1, -1, (epicsUInt16*)pImage->pData, sizeX * sizeY * sizeof(epicsUInt16), "GRAY");
             pImage->uniqueId = imageCounter;
             epicsTimeGetCurrent(&currentTime);
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
             updateTimeStamp(&pImage->epicsTS);
-            //printf("image counter %d", imageCounter);
             doCallbacksGenericPointer(pImage, NDArrayData, 0);
-            // Save the current frame for use with the SPE file writer which needs the data
             if (this->pArrays[0]) this->pArrays[0]->release();
             this->pArrays[0] = pImage;
             callParamCallbacks();
@@ -218,18 +222,20 @@ Pixci::~Pixci(){
         status = setIntegerParam(function, value);
 
         if (function == ADAcquire) {
-            if (value && (adstatus == ADStatusIdle) )
+            /* TODO: adstatus == ADStatusIdle has to be chedked */
+            if (value ) 
             {
                 acquireImage();
             }
 
             // Stop acquisition
-            if (!value && (adstatus != ADStatusIdle))
+            /* TODO: adstatus != ADStatusIdle has to be chedked */
+            if (!value)
             {
                 acquireStop();
             }
         
-        }
+        }   /* set  value for default parameters */
         else{   
             status = ADDriver::writeInt32(pasynUser, value);
         }
