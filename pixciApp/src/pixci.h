@@ -32,6 +32,7 @@ public:
     /* These are the methods that we override from ADDriver */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
     
+    // Should be private, but are called from C so must be public
     void acquireTask(void);
     ~Pixci();
 private:
