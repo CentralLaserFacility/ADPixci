@@ -27,7 +27,7 @@ public:
      * @param priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynflags.
      * @param stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
      */
-    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile);
 
     /* These are the methods that we override from ADDriver */
     /**
