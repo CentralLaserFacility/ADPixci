@@ -32,9 +32,8 @@ extern "C"{
 #include <epicsExit.h>
 #include <epicsExport.h>
 
-#define FORMAT "default" // Video format configuration name.
+#define FORMAT "" // Video format configuration name.
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
-#define SETUPFILE "" // Video format configuration file name.
 #define UNIT 1 // Unit to be selected for streaming, eb1 model only have 1 unit.
 #define NOERROR 0 // Errors are defined as integers below zero.
 
@@ -68,13 +67,11 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
 
         int connectionStatusCode = 0;
-        printf("format file %s",formatfile);
-
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
+        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatfile);
         if(connectionStatusCode < NOERROR){          
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot OPEN camera: %s.", 
