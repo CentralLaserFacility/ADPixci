@@ -32,9 +32,8 @@ extern "C"{
 #include <epicsExit.h>
 #include <epicsExport.h>
 
-#define FORMAT "default" // Video format configuration name.
+#define FORMAT "" // Video format configuration name.
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
-#define SETUPFILE "" // Video format configuration file name.
 #define UNIT 1 // Unit to be selected for streaming, eb1 model only have 1 unit.
 #define NOERROR 0 // Errors are defined as integers below zero.
 
@@ -52,28 +51,27 @@ HANDLE  g_hEvent;
  * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
-                                 int maxBuffers, size_t maxMemory, int priority, int stackSize)
+                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
 {
-    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize);
+    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, formatfile);
     return(asynSuccess);
 }
 
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize)
+Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         /* TODO:  Driver-specific parameters for the driver will be defined here */
 
 
         int connectionStatusCode = 0;
-
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, SETUPFILE);
+        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatfile);
         if(connectionStatusCode < NOERROR){          
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot OPEN camera: %s.", 
@@ -256,16 +254,18 @@ static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
 static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
 static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
 static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
+static const iocshArg pixciConfigArg5 = {"Format file", iocshArgString};
 static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
                                                           &pixciConfigArg1,
                                                           &pixciConfigArg2,
                                                           &pixciConfigArg3,
-                                                          &pixciConfigArg4,};
-static const iocshFuncDef configpixci = {"pixciConfig", 5, pixciConfigArgs};
+                                                          &pixciConfigArg4,
+                                                          &pixciConfigArg5};
+static const iocshFuncDef configpixci = {"pixciConfig", 6, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
   pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival, 
-                    args[4].ival);
+                    args[4].ival, args[5].sval);
 }
 
 static void pixciRegister(void)

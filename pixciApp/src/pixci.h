@@ -26,8 +26,9 @@ public:
      * allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
      * @param priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynflags.
      * @param stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
+     * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile);
 
     /* These are the methods that we override from ADDriver */
     /**
