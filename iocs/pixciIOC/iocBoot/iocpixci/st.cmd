@@ -24,8 +24,8 @@ epicsEnvSet("NCHANS", "512")
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
 
-#pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize)
-pixciConfig("$(PORT)", 0,  0, 0, 0, "$(TOP)")
+#pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)
+pixciConfig("$(PORT)", 0,  0, 0, 0, "$(ADPIXCI)/formatFiles/Raptor_Photonics_EagleXV_47-10.fmt")
 dbLoadRecords("ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 NDStdArraysConfigure("Image1", 20, 0, "$(PORT)", 0, 0, 0, 0, 0, 5)
