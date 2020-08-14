@@ -55,6 +55,7 @@ private:
      * @brief Stops live capturing.
      */
     void acquireStop(void);
+    asynStatus writeSerial(int unit, char* serialOut);
     
 
 };

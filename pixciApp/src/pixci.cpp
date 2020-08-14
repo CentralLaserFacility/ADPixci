@@ -36,6 +36,8 @@ extern "C"{
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
 #define UNIT 1 // Unit to be selected for streaming, eb1 model only have 1 unit.
 #define NOERROR 0 // Errors are defined as integers below zero.
+#define RESERVED 0
+#define BAUDRATE 115200
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -67,6 +69,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
 
         int connectionStatusCode = 0;
+        int serialConnection = 0;
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
@@ -76,6 +79,15 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot OPEN camera: %s.", 
                   driverName,  pxd_mesgErrorCode(connectionStatusCode));
+
+        serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
+        if(serialConnection < NOERROR){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                  "%s: Cannot make serial connection: %s.", 
+                  driverName,  pxd_mesgErrorCode(connectionStatusCode));
+
+        }
+            
         }
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
@@ -211,6 +223,19 @@ Pixci::~Pixci(){
             this->pArrays[0] = pImage;
             callParamCallbacks();
         }
+    }
+
+    asynStatus Pixci::writeSerial(int unit, char* serialOut){
+        int status = 0;
+        status = pxd_serialWrite(UNIT, RESERVED, serialOut, strlen(serialOut));
+        if(status<NOERROR){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                  "%s: Cannot make serial connection: %s.", 
+                  driverName,  pxd_mesgErrorCode(status));
+            return asynError;
+
+        }
+        return asynSuccess;
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
