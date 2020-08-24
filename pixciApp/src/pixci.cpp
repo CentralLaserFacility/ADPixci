@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
 /* For windows */
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
@@ -79,20 +80,19 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot OPEN camera: %s.", 
                   driverName,  pxd_mesgErrorCode(connectionStatusCode));
-
-        serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
-        if(serialConnection < NOERROR){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s: Cannot make serial connection: %s.", 
-                  driverName,  pxd_mesgErrorCode(connectionStatusCode));
-
         }
             
-        }
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
             "%s Camera connected;",
             driverName);
+            serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
+            if(serialConnection < NOERROR){
+                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                    "%s: Cannot make serial connection: %s.", 
+                    driverName,  pxd_mesgErrorCode(connectionStatusCode));
+            }
+            
         }
 
         /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap, 
@@ -132,6 +132,7 @@ Pixci::~Pixci(){
 
 
     void Pixci::acquireImage(){
+
         /* TODO: implement all acquisition method like trigger, ringbuffer etc */
         static const char *functionName = "acquireImage";
         int error;
@@ -227,7 +228,10 @@ Pixci::~Pixci(){
 
     asynStatus Pixci::writeSerial(int unit, char* serialOut){
         int status = 0;
-        status = pxd_serialWrite(UNIT, RESERVED, serialOut, strlen(serialOut));
+        int cnt;
+        cnt = (int)strlen(serialOut);
+        printf("count value is %d \n",cnt);
+        status = pxd_serialWrite(UNIT, RESERVED, serialOut, 4);
         if(status<NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot make serial connection: %s.", 
@@ -236,6 +240,82 @@ Pixci::~Pixci(){
 
         }
         return asynSuccess;
+    }
+
+    asynStatus Pixci::readSerialRegister(int unit){
+        int status = 0;
+        //int cnt;
+        int dataread = 0;
+        int stoppoint = 0;
+        char    databuffer[50];
+        //char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
+        char out1[] = {0x56, 0x50};
+        //char out2[] = {0x53, 0xE1, 0x01, 0x50};
+        writeSerial(unit, out1);
+        //Sleep(100);
+        //writeSerial(unit, out2);
+        Sleep(300);
+        for (;;) {
+
+            //status = pxd_seriaRead(unit, 0, &databuffer[dataread], cnt);
+            char test = 0x3F;
+            status = pxd_serialRead(unit, 0, &databuffer[dataread], 256 );
+            if(status < 0){
+                printf("register read error \n");
+            }
+            if(status == 0){
+                printf("read nothing arrived");
+                Sleep(10);
+            }
+            if(status > 0){
+                printf("msg count %d ", status);
+                printf("greater than zero");
+                std::cout << databuffer[dataread];
+                std::cout << test;
+
+            }
+            stoppoint++;
+            dataread += status;
+            if(stoppoint > 100){
+                printf("breaking read \n");
+                break;
+            }
+        }
+
+        return asynSuccess;
+    }
+
+    asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
+        asynStatus status;
+        char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
+        bufout[3] = Register ;
+		bufout[4] = val ;
+        status = writeSerial(unit, bufout);
+        return status;
+        
+    }
+
+    void Pixci::setBin(int val){
+        
+        asynStatus stat;
+        if(val == 1){
+            stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x3F);
+            stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x3F);
+            if(stat == asynSuccess){
+                printf("set the value 0x3Fs");
+            }
+
+        }
+        else if(val == 0){
+            stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x01);
+            stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x01);
+            if(stat == asynSuccess){
+                printf("set the value 0x00 s");
+            }
+
+        }
+        
+
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
@@ -262,6 +342,15 @@ Pixci::~Pixci(){
             }
         
         }   /* set  value for default parameters */
+        else if(function == ADBinX){
+            Pixci::setBin(value);
+        }
+        else if(function == ADBinY){
+            if(value == 1){
+                Pixci::readSerialRegister(UNIT);
+            }
+           
+        }
         else{   
             status = ADDriver::writeInt32(pasynUser, value);
         }
@@ -269,7 +358,8 @@ Pixci::~Pixci(){
 
     }
 
-        
+
+
 
 /* Code for iocsh registration */
 
