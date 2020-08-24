@@ -55,7 +55,27 @@ private:
      * @brief Stops live capturing.
      */
     void acquireStop(void);
+    /**
+     * @brief write serial command to the camera connected.
+     * 
+     * @param unit 
+     * @param serialOut serial command to be send to the camera
+     * @return asynStatus 
+     */
     asynStatus writeSerial(int unit, char* serialOut);
+
+    /**
+     * @brief write value to the registers of the camera using serial command
+     * 
+     * @param unit 
+     * @param Register register number , where value has to be written
+     * @param val value to be written in the register
+     * @return asynStatus 
+     */
+    asynStatus writeSerialRegister(int unit, char Register, char val);
+
+    asynStatus readSerialRegister(int unit);
+    void setBin(int val);
     
 
 };
