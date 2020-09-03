@@ -257,9 +257,14 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
-    asynStatus Pixci::readSerial(int unit, unsigned char* serialIn, int msgReadSize){
+    int Pixci::readSerial(int unit, char* serialIn){
         int count;
+        char intputData[50];
         count = pxd_serialRead(unit, 0, NULL, 0);
+        if(count >0 ){
+            count = pxd_serialRead(unit, 0, serialIn, count );
+        }
+        return count;
     }
 
     asynStatus Pixci::readSerialRegister(int unit, int value){
@@ -268,7 +273,7 @@ Pixci::~Pixci(){
         //int cnt;
         int dataread = 0;
         int stoppoint = 0;
-        char    databuffer[50];
+        char databuffer[50];
         if(value == 1){
         char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
         //unsigned char out1[] = {0x49, 0x50};
@@ -282,11 +287,16 @@ Pixci::~Pixci(){
         }
         if(value == 2){
             int number;
-            status = pxd_serialRead(unit, 0, &c, 1 );
+            int i;
+            //status = pxd_serialRead(unit, 0, &c, 1 );
+            status = readSerial(UNIT, databuffer);
             printf("character to read is %d \n",status);
-            std::cout << c;
-            number = (int)c;
-            printf("integer is %d",(int)c);
+            std::cout << databuffer[0];
+            number = (int)databuffer[0];
+            for(i=0; i<= status ; i++){
+            printf("integer is %d",(int)databuffer[i]);
+            }
+            printf("\n");
         }
        
         return asynSuccess;

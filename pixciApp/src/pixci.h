@@ -74,7 +74,7 @@ private:
      */
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
-    asynStatus readSerial(int unit, unsigned char* serialIn, int msgReadSize);
+    int readSerial(int unit, char* serialIn);
     asynStatus readSerialRegister(int unit, int value);
     void setBin(int val);
     int getBin();
