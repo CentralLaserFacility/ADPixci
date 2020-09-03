@@ -32,6 +32,7 @@ extern "C"{
 #include <epicsString.h>
 #include <epicsExit.h>
 #include <epicsExport.h>
+#include <epicsMessageQueue.h>
 
 #define FORMAT "" // Video format configuration name.
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
@@ -108,6 +109,8 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
+
+        pCallbackMsgQ_ = new epicsMessageQueue(10,20);
 
     }
 
@@ -229,21 +232,21 @@ Pixci::~Pixci(){
         }
     }
 
-    asynStatus Pixci::writeSerial(int unit, unsigned char* serialOut, int msgSize){
+    asynStatus Pixci::writeSerial(int unit, char* serialOut, int msgSize){
         int status = 0;
         int cnt;
         int i;
-        unsigned char chkSum;
-        unsigned char bufOut[50];
+        char chkSum;
+        char bufOut[50];
         cnt = (int)sizeof(serialOut);
         for(i=0; i<msgSize; i++){
             bufOut[i]=serialOut[i];
             chkSum ^= serialOut[i];
         }
         serialOut[msgSize] = chkSum;
-        printf("check sum is %c integer is %d\n",(char)chkSum, int(chkSum));
+        printf("check sum is %c integer is %d\n",chkSum, int(chkSum));
         printf("count value is %d \n",cnt);
-        status = pxd_serialWrite(UNIT, RESERVED, (char*)bufOut, msgSize);
+        status = pxd_serialWrite(UNIT, RESERVED, bufOut, msgSize);
         if(status<NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot make serial connection: %s.", 
@@ -254,6 +257,11 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
+    asynStatus Pixci::readSerial(int unit, unsigned char* serialIn, int msgReadSize){
+        int count;
+        count = pxd_serialRead(unit, 0, NULL, 0);
+    }
+
     asynStatus Pixci::readSerialRegister(int unit, int value){
         int status = 0;
         char c;
@@ -262,9 +270,9 @@ Pixci::~Pixci(){
         int stoppoint = 0;
         char    databuffer[50];
         if(value == 1){
-        unsigned char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
+        char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
         //unsigned char out1[] = {0x49, 0x50};
-        unsigned char out2[] = {0x53, 0xE1, 0x01, 0x50};
+        char out2[] = {0x53, 0xE1, 0x01, 0x50};
         writeSerial(unit, out1, 5);
         Sleep(1);
         writeSerial(unit, out2, 4);
@@ -286,7 +294,7 @@ Pixci::~Pixci(){
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
         asynStatus status;
-        unsigned char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
+        char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
         bufout[3] = Register ;
 		bufout[4] = val ;
         status = writeSerial(unit, bufout,6);
