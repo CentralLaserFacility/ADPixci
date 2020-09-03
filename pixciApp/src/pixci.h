@@ -62,7 +62,7 @@ private:
      * @param serialOut serial command to be send to the camera
      * @return asynStatus 
      */
-    asynStatus writeSerial(int unit, char* serialOut);
+    asynStatus writeSerial(int unit, unsigned char* serialOut, int msgSize);
 
     /**
      * @brief write value to the registers of the camera using serial command
@@ -74,8 +74,7 @@ private:
      */
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
-    asynStatus readSerialRegister(int unit);
+    asynStatus readSerialRegister(int unit, int value);
     void setBin(int val);
-    
-
+    int getBin();
 };
