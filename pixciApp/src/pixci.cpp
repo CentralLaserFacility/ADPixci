@@ -46,9 +46,12 @@ extern "C"{
  * @param drvPvt 
  */
 static void acquireTaskC(void *drvPvt);
+
+static void serialTaskC(void *drvPvt);
+
 /* Event handler for acquire task */
 HANDLE  g_hEvent; 
-
+unsigned char g_ucSerialBuf[256];
 /*
  * @brief Configuration command for pixci driver; creates a new pixci object.
  * @param See the pixci.h
@@ -226,12 +229,21 @@ Pixci::~Pixci(){
         }
     }
 
-    asynStatus Pixci::writeSerial(int unit, char* serialOut){
+    asynStatus Pixci::writeSerial(int unit, unsigned char* serialOut, int msgSize){
         int status = 0;
         int cnt;
-        cnt = (int)strlen(serialOut);
+        int i;
+        unsigned char chkSum;
+        unsigned char bufOut[50];
+        cnt = (int)sizeof(serialOut);
+        for(i=0; i<msgSize; i++){
+            bufOut[i]=serialOut[i];
+            chkSum ^= serialOut[i];
+        }
+        serialOut[msgSize] = chkSum;
+        printf("check sum is %c integer is %d\n",(char)chkSum, int(chkSum));
         printf("count value is %d \n",cnt);
-        status = pxd_serialWrite(UNIT, RESERVED, serialOut, 4);
+        status = pxd_serialWrite(UNIT, RESERVED, (char*)bufOut, msgSize);
         if(status<NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                   "%s: Cannot make serial connection: %s.", 
@@ -242,55 +254,42 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
-    asynStatus Pixci::readSerialRegister(int unit){
+    asynStatus Pixci::readSerialRegister(int unit, int value){
         int status = 0;
+        char c;
         //int cnt;
         int dataread = 0;
         int stoppoint = 0;
         char    databuffer[50];
-        //char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
-        char out1[] = {0x56, 0x50};
-        //char out2[] = {0x53, 0xE1, 0x01, 0x50};
-        writeSerial(unit, out1);
-        //Sleep(100);
-        //writeSerial(unit, out2);
-        Sleep(300);
-        for (;;) {
-
-            //status = pxd_seriaRead(unit, 0, &databuffer[dataread], cnt);
-            char test = 0x3F;
-            status = pxd_serialRead(unit, 0, &databuffer[dataread], 256 );
-            if(status < 0){
-                printf("register read error \n");
-            }
-            if(status == 0){
-                printf("read nothing arrived");
-                Sleep(10);
-            }
-            if(status > 0){
-                printf("msg count %d ", status);
-                printf("greater than zero");
-                std::cout << databuffer[dataread];
-                std::cout << test;
-
-            }
-            stoppoint++;
-            dataread += status;
-            if(stoppoint > 100){
-                printf("breaking read \n");
-                break;
-            }
+        if(value == 1){
+        unsigned char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
+        //unsigned char out1[] = {0x49, 0x50};
+        unsigned char out2[] = {0x53, 0xE1, 0x01, 0x50};
+        writeSerial(unit, out1, 5);
+        Sleep(1);
+        writeSerial(unit, out2, 4);
+        //Sleep(300);
+        status = pxd_serialRead(unit, 0, NULL, 0);
+        printf("characters to read is %d", status);
         }
-
+        if(value == 2){
+            int number;
+            status = pxd_serialRead(unit, 0, &c, 1 );
+            printf("character to read is %d \n",status);
+            std::cout << c;
+            number = (int)c;
+            printf("integer is %d",(int)c);
+        }
+       
         return asynSuccess;
     }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
         asynStatus status;
-        char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
+        unsigned char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
         bufout[3] = Register ;
 		bufout[4] = val ;
-        status = writeSerial(unit, bufout);
+        status = writeSerial(unit, bufout,6);
         return status;
         
     }
@@ -300,15 +299,15 @@ Pixci::~Pixci(){
         asynStatus stat;
         if(val == 1){
             stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x3F);
-            stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x3F);
+            //stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x3F);
             if(stat == asynSuccess){
                 printf("set the value 0x3Fs");
             }
 
         }
         else if(val == 0){
-            stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x01);
-            stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x01);
+            stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x00);
+            //stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x00);
             if(stat == asynSuccess){
                 printf("set the value 0x00 s");
             }
@@ -346,9 +345,10 @@ Pixci::~Pixci(){
             Pixci::setBin(value);
         }
         else if(function == ADBinY){
-            if(value == 1){
-                Pixci::readSerialRegister(UNIT);
-            }
+            // if(value == 1){
+            //     Pixci::readSerialRegister(UNIT, value);
+            // }
+            Pixci::readSerialRegister(UNIT, value);
            
         }
         else{   
@@ -357,8 +357,6 @@ Pixci::~Pixci(){
         return (asynStatus) status;
 
     }
-
-
 
 
 /* Code for iocsh registration */
