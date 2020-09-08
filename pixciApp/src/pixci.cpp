@@ -274,16 +274,26 @@ Pixci::~Pixci(){
         int dataread = 0;
         int stoppoint = 0;
         char databuffer[50];
+        char inputbuff[50];
         if(value == 1){
         char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
         //unsigned char out1[] = {0x49, 0x50};
         char out2[] = {0x53, 0xE1, 0x01, 0x50};
-        writeSerial(unit, out1, 5);
-        Sleep(1);
-        writeSerial(unit, out2, 4);
+        //writeSerial(unit, out1, 5);
+        //Sleep(1);
+        //writeSerial(unit, out2, 4);
         //Sleep(300);
-        status = pxd_serialRead(unit, 0, NULL, 0);
-        printf("characters to read is %d", status);
+        //status = pxd_serialRead(unit, 0, NULL, 0);
+        status = writeReadSerial(unit,out1,5,5,inputbuff,50);
+        status = writeReadSerial(unit,out2,4,4,inputbuff,50);
+        printf("status is %d \n",status);
+        int i;
+        for(i=0; i<status; i++){
+            printf("integer is %d",(int)inputbuff[i]);
+        }
+        printf("\n");
+
+        //printf("characters to read is %d", status);
         }
         if(value == 2){
             int number;
@@ -312,6 +322,49 @@ Pixci::~Pixci(){
         
     }
 
+    int Pixci::writeReadSerial(int unit, char* serialOut, int serialOutBufferSize, int msgOutSize, char* serialIn, int serialInBufferSize){
+        int count;
+        asynStatus status;
+        char bufOut[50];
+        char chkSum;
+        if(pxd_serialRead(unit, 0, NULL, 0) > 0){
+            count = pxd_serialRead(unit, 0, serialIn, serialInBufferSize);
+        }
+
+        int outMsgwait = 0;
+		while(pxd_serialWrite(unit, RESERVED, NULL, 0)<msgOutSize && outMsgwait <50)
+		{
+			outMsgwait++;
+            printf("msg wait %d \n", outMsgwait);
+            Sleep(1);
+		}
+        int i;
+        for (i=0; i <msgOutSize ; i++ ){
+            bufOut[i]=serialOut[i];
+            chkSum ^= serialOut[i];
+        }
+        bufOut[msgOutSize] = chkSum;
+        count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize);
+        printf("serial write count %d \n", count);
+        int inMsgwait = 0;
+       
+        if(count < ERROR){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                  "%s: Cannot serial write: %s.", 
+                  driverName,  pxd_mesgErrorCode(status));
+            return asynError;
+        }
+        else{
+             while(pxd_serialRead(unit,RESERVED,NULL,0)<1 && inMsgwait < 10){
+                inMsgwait++;
+                Sleep(1);
+            }
+            count = pxd_serialRead(UNIT, RESERVED, serialIn, serialInBufferSize);
+        }
+
+        return count;
+    }
+    
     void Pixci::setBin(int val){
         
         asynStatus stat;
