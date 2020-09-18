@@ -45,6 +45,7 @@ public:
      * 
      */
     void acquireTask(void);
+    void serialTask(void);
     ~Pixci();
 private:
     /**
@@ -74,10 +75,23 @@ private:
      */
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
-    int readSerial(int unit, char* serialIn);
-    int writeReadSerial(int unit, char* serialOut, int serialOutBufferSize, int msgOutSize, char* serialIn, int serialInBufferSize);
+    /**
+     * @brief write message to the camera and read the reply after that
+     * 
+     * @param unit unit number of the camera if it supports multiple unit
+     * @param serialOut output message buffer to be send to the camera
+     * @param msgOutSize size of the output message size
+     * @param serialIn input message buffer where message from camera is to be stored
+     * @param serialInBufferSize size of input message buffer
+     * @return int size of input message, return < 0 if there is an error 
+     */
+    int writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize);
+    asynStatus setupAquisition();
     asynStatus readSerialRegister(int unit, int value);
-    void setBin(int val);
+    void setBin(int val, bool coordinate);
     int getBin();
-    epicsMessageQueue *pCallbackMsgQ_;
+    /**
+     * @brief message que for the serial commiunication to the camera
+     */
+    epicsMessageQueue *serialMsgQue;
 };

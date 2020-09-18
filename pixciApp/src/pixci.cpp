@@ -1,18 +1,19 @@
 /**
  * @brief This is a driver for PIXCI frame grabber from epix, inc. Developed for Eagle XV CCD from Raptor photonics
- * 
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <string.h>
 
 /* For windows */
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 #include <windows.h>
 #endif
 
-/* Pixci headers 
+/* Pixci headers
  source: http://www.epixinc.com/products/xclib.htm
  XCLW64 .dll and .lib files should be included for windows-64 OS
  XCLIBNT .dll and .lib files should be inlcuded for win32 OS
@@ -21,7 +22,7 @@
 */
 extern "C"{
 #include "xcliball.h"
-} 
+}
 #include "pixci.h"
 
 /* Epics headers */
@@ -40,18 +41,19 @@ extern "C"{
 #define NOERROR 0 // Errors are defined as integers below zero.
 #define RESERVED 0
 #define BAUDRATE 115200
+#define BIN "C:\Users\mii48756\Downloads\bin2.fmt"
 
 /*
  * @brief C Function prototypes to tie in with EPICS
- * run acquire task 
- * @param drvPvt 
+ * run acquire task
+ * @param drvPvt
  */
 static void acquireTaskC(void *drvPvt);
 
 static void serialTaskC(void *drvPvt);
 
 /* Event handler for acquire task */
-HANDLE  g_hEvent; 
+HANDLE  g_hEvent;
 unsigned char g_ucSerialBuf[256];
 /*
  * @brief Configuration command for pixci driver; creates a new pixci object.
@@ -80,26 +82,33 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
         connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatfile);
-        if(connectionStatusCode < NOERROR){          
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s: Cannot OPEN camera: %s.", 
+        // connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, "Default", NULL);
+        // {
+        // #include "C:\epics\support\areaDetector\ADPixci\formatFiles\Raptor_Photonics_EagleXV_47-10.fmt"
+        // pxd_videoFormatAsIncludedInit(0);
+        // pxd_videoFormatAsIncluded(0);
+        // }
+
+        if(connectionStatusCode < NOERROR){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                  "%s: Cannot OPEN camera: %s.",
                   driverName,  pxd_mesgErrorCode(connectionStatusCode));
         }
-            
+
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
             "%s Camera connected;",
             driverName);
             serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
             if(serialConnection < NOERROR){
-                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                    "%s: Cannot make serial connection: %s.", 
+                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                    "%s: Cannot make serial connection: %s.",
                     driverName,  pxd_mesgErrorCode(connectionStatusCode));
             }
-            
+
         }
 
-        /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap, 
+        /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap,
         pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
         g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
         int status = asynSuccess;
@@ -110,7 +119,14 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        pCallbackMsgQ_ = new epicsMessageQueue(10,20);
+        /* Create the thread that does data acquisition */
+        status = (epicsThreadCreate("serialTask",
+                              epicsThreadPriorityMedium,
+                              epicsThreadGetStackSize(epicsThreadStackMedium),
+                              (EPICSTHREADFUNC)serialTaskC,
+                              this) == NULL);
+
+        serialMsgQue = new epicsMessageQueue(20,20);
 
     }
 
@@ -118,14 +134,14 @@ Pixci::~Pixci(){
 
     /* Closing connection to frame grabber */
     int disconnectStatusCode = NOERROR;
-    /*pxd_PIXCIclose() disconnect the driver from the device. 
+    /*pxd_PIXCIclose() disconnect the driver from the device.
      * return 0 if disconnect successfull, return integer <0 if error occured
      * pxd_mesgErrorCode(int code) will return description of the error occured
     */
     disconnectStatusCode = pxd_PIXCIclose();
     if(disconnectStatusCode < NOERROR){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s: disconnect camera error: %s .", 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                  "%s: disconnect camera error: %s .",
                   driverName, pxd_mesgErrorCode(disconnectStatusCode));
     }
     else{
@@ -136,6 +152,43 @@ Pixci::~Pixci(){
 
 }
 
+    asynStatus Pixci::setupAquisition(){
+        int binX, binY, sizeX, sizeY;
+        sizeX = pxd_imageXdim();
+        sizeY = pxd_imageYdim();
+        int test;
+        
+
+        // setIntegerParam(ADSizeX, sizeX);
+        // setIntegerParam(ADSizeY, sizeY);
+
+        getIntegerParam(ADBinX, &binX);
+        if (binX <= 0) {
+            binX = 1;
+            setIntegerParam(ADBinX, binX);
+        }
+        getIntegerParam(ADBinY, &binY);
+        if (binY <= 0) {
+            binY = 1;
+            setIntegerParam(ADBinY, binY);
+        }
+
+        setIntegerParam(ADSizeX, sizeX/binX);
+        setIntegerParam(ADSizeY, sizeY/binY);
+
+        setIntegerParam(ADMaxSizeX, sizeX/binX);
+        setIntegerParam(ADMaxSizeY, sizeY/binY);
+
+        setIntegerParam(NDArraySizeX, sizeX/binX);
+        setIntegerParam(NDArraySizeY, sizeY/binY);
+
+        callParamCallbacks();
+
+        //setIntegerParam(NDArraySizeX, sizeX/binX);
+        //setIntegerParam(NDArraySizeX, sizeX/binX);
+        //setIntegerParam(NDArraySizeX, dims[0]);
+        return asynSuccess;
+    }
 
     void Pixci::acquireImage(){
 
@@ -146,11 +199,11 @@ Pixci::~Pixci(){
         /* live capture the image into frame buffer */
         error = pxd_goLive(UNIT, buffer);
         if(error < NOERROR){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "live error: %s : %s", functionName, pxd_mesgErrorCode(error));
         }
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live started");
         }
     }
@@ -161,11 +214,11 @@ Pixci::~Pixci(){
         /* stop the live capturing */
         error = pxd_goUnLive(UNIT);
         if(error < NOERROR){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(error));
         }
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
         }
 
@@ -188,11 +241,14 @@ Pixci::~Pixci(){
         pImage = this->pArrays[0];
         NDDataType_t  dataType;
         epicsInt32 sizeX, sizeY;
+        epicsInt32 binX, binY;
         size_t        dims[2];
         epicsTimeStamp currentTime;
         epicsInt32 numImagesCounter;
         epicsInt32 imageCounter;
-        
+        setupAquisition();
+        int test;
+
         for (;;){
             /* waiting for event to be triggered */
             /* TODO: seperate waiting task for linux */
@@ -200,14 +256,26 @@ Pixci::~Pixci(){
             lock();
 
             /* Allocate NDArray */
-            dims[0] = pxd_imageXdim();
-            dims[1] = pxd_imageYdim();
+            getIntegerParam(NDArraySizeX, &sizeX);
+            getIntegerParam(NDArraySizeY, &sizeY);
+
+            getIntegerParam(ADBinX, &binX);
+            getIntegerParam(ADBinY, &binY);
+
+            dims[0] = sizeX;
+            dims[1] = sizeY;
+
+
+
             dataType = NDUInt16;
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
-            /* Pixel values from an image frame buffer and area of interest are copied into buffer 
+            /* Pixel values from an image frame buffer and area of interest are copied into buffer
             pxd_readushort(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            pxd_readushort(UNIT, buf, 0, 0, -1, -1, (epicsUInt16*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
+            test = pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt16*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
             
+            pImage->dims[0].binning = binX;
+            pImage->dims[1].binning = binY;
+
              /* uniqueId and timeStamp must be implemented for standard ADDriver. */
             pImage->uniqueId = imageCounter;
             epicsTimeGetCurrent(&currentTime);
@@ -218,11 +286,16 @@ Pixci::~Pixci(){
             getIntegerParam(ADNumImagesCounter, &numImagesCounter);
             imageCounter++;
             numImagesCounter++;
+
+            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt16));
+            //setIntegerParam(NDArraySizeX, dims[0]);
+            //setIntegerParam(NDArraySizeY, dims[1]);
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
+
             unlock();
 
-            /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays. 
+            /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
             Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
              or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
             doCallbacksGenericPointer(pImage, NDArrayData, 0);
@@ -232,97 +305,151 @@ Pixci::~Pixci(){
         }
     }
 
-    asynStatus Pixci::writeSerial(int unit, char* serialOut, int msgSize){
-        int status = 0;
-        int cnt;
-        int i;
-        char chkSum;
-        char bufOut[50];
-        cnt = (int)sizeof(serialOut);
-        for(i=0; i<msgSize; i++){
-            bufOut[i]=serialOut[i];
-            chkSum ^= serialOut[i];
-        }
-        serialOut[msgSize] = chkSum;
-        printf("check sum is %c integer is %d\n",chkSum, int(chkSum));
-        printf("count value is %d \n",cnt);
-        status = pxd_serialWrite(UNIT, RESERVED, bufOut, msgSize);
-        if(status<NOERROR){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s: Cannot make serial connection: %s.", 
-                  driverName,  pxd_mesgErrorCode(status));
-            return asynError;
-
-        }
-        return asynSuccess;
+    static void serialTaskC(void *drvPvt)
+    {
+        Pixci *pPvt = (Pixci *)drvPvt;
+        pPvt->serialTask();
     }
 
-    int Pixci::readSerial(int unit, char* serialIn){
-        int count;
-        char intputData[50];
-        count = pxd_serialRead(unit, 0, NULL, 0);
-        if(count >0 ){
-            count = pxd_serialRead(unit, 0, serialIn, count );
-        }
-        return count;
-    }
 
-    asynStatus Pixci::readSerialRegister(int unit, int value){
-        int status = 0;
-        char c;
-        //int cnt;
-        int dataread = 0;
-        int stoppoint = 0;
-        char databuffer[50];
-        char inputbuff[50];
-        if(value == 1){
-        char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
-        //unsigned char out1[] = {0x49, 0x50};
-        char out2[] = {0x53, 0xE1, 0x01, 0x50};
-        //writeSerial(unit, out1, 5);
-        //Sleep(1);
-        //writeSerial(unit, out2, 4);
-        //Sleep(300);
-        //status = pxd_serialRead(unit, 0, NULL, 0);
-        status = writeReadSerial(unit,out1,5,5,inputbuff,50);
-        status = writeReadSerial(unit,out2,4,4,inputbuff,50);
-        printf("status is %d \n",status);
-        int i;
-        for(i=0; i<status; i++){
-            printf("integer is %d",(int)inputbuff[i]);
-        }
-        printf("\n");
+    void Pixci::serialTask(){
+        char outputMsg[20];
+        char inputMsg[20];
 
-        //printf("characters to read is %d", status);
-        }
-        if(value == 2){
-            int number;
+        for(;;){
             int i;
-            //status = pxd_serialRead(unit, 0, &c, 1 );
-            status = readSerial(UNIT, databuffer);
-            printf("character to read is %d \n",status);
-            std::cout << databuffer[0];
-            number = (int)databuffer[0];
-            for(i=0; i<= status ; i++){
-            printf("integer is %d",(int)databuffer[i]);
+            int outSize, inSize;
+            unsigned char setRegister = 0x02;
+            unsigned char success = 0x50;
+            unsigned char getorset;
+            unsigned char reg;
+            unsigned char sendStatus;
+
+
+            outSize = serialMsgQue->receive(outputMsg,20);
+            printf("size received is %d \n",outSize);
+            for(i=0; i< outSize ; i++){
+                printf("%d-",(int)(unsigned char)outputMsg[i]);
             }
-            printf("\n");
+            //outputMsg[outSize] = 0x01;
+            inSize = writeReadSerial(UNIT, outputMsg, outSize, inputMsg, 20);
+            printf("input message size is %d\n",inSize);
+            for(i=0; i< inSize ; i++){
+                printf("%d-",(int)inputMsg[i]);
+            }
+
+                reg = (unsigned char)outputMsg[3];
+
+                getorset = (unsigned char)outputMsg[2];
+                sendStatus = (unsigned char)inputMsg[0];
+            if(getorset == setRegister && sendStatus == success){
+                switch(reg){
+                    case 0xA1 :
+                        
+                        if((int)(unsigned char)outputMsg[4]==1){
+                            printf("set bin 2\n");
+                        //setIntegerParam(ADBinX,((int)(unsigned char)outputMsg[4])+1);
+                        setupAquisition();
+                        
+                        {
+                        #include BIN
+                        pxd_videoFormatAsIncludedInit(0);
+                        i = pxd_videoFormatAsIncluded(0);
+                        }
+                        }
+                        break;
+                    case 0xA2 :
+                        //setIntegerParam(ADBinY,((int)(unsigned char)outputMsg[4])+1);
+                        //setupAquisition();
+                        break;
+                    default:
+                        printf("none\n %d",(int)(unsigned char)reg);
+                        break;
+
+            }
+            callParamCallbacks();
+
+
+
+            }
+            // memset(outputMsg,' ',20);
+
         }
-       
-        return asynSuccess;
     }
+
+
+    // asynStatus Pixci::readSerialRegister(int unit, int value){
+    //     int status = 0;
+    //     char c;
+    //     //int cnt;
+    //     int dataread = 0;
+    //     int stoppoint = 0;
+    //     char databuffer[50];
+    //     char inputbuff[50];
+    //     if(value == 1){
+    //     char* stest = "hello";
+    //     //char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
+    //     char out1[] = {0x50, 0x80, 0x50, 0x80, 0x50};
+    //     //unsigned char out1[] = {0x49, 0x50};
+    //     char out2[] = {0x53, 0xE1, 0x01, 0x50};
+    //     //writeSerial(unit, out1, 5);
+    //     //Sleep(1);
+    //     //writeSerial(unit, out2, 4);
+    //     //Sleep(300);
+    //     //status = pxd_serialRead(unit, 0, NULL, 0);
+    //     //dataread = serialMsgQue->send(out1,strlen(out1));
+    //     char* msg3 = "dev";
+    //     dataread = serialMsgQue->send(msg3,strlen(msg3));
+    //     printf("string length is %d and %d\n",strlen(msg3),dataread);
+    //    //serialMsgQue->send(out1,5);
+    //     printf("string length is %d and %d\n",5,dataread);
+    //     //serialMsgQue->send(stest,strlen(out2));
+
+
+
+    //     //status = writeReadSerial(unit,out1,5,5,inputbuff,50);
+    //     //status = writeReadSerial(unit,out2,4,4,inputbuff,50);
+    //     printf("status is %d \n",status);
+    //     int i;
+    //     for(i=0; i<status; i++){
+    //         printf("integer is %d",(int)inputbuff[i]);
+    //     }
+    //     printf("\n");
+
+    //     //printf("characters to read is %d", status);
+    //     }
+    //     if(value == 2){
+    //         int number;
+    //         int i;
+    //         //status = pxd_serialRead(unit, 0, &c, 1 );
+    //         status = readSerial(UNIT, databuffer);
+    //         printf("character to read is %d \n",status);
+    //         std::cout << databuffer[0];
+    //         number = (int)databuffer[0];
+    //         for(i=0; i<= status ; i++){
+    //         printf("integer is %d",(int)databuffer[i]);
+    //         }
+    //         printf("\n");
+    //     }
+
+    //     return asynSuccess;
+    // }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
-        asynStatus status;
+        int status;
         char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
         bufout[3] = Register ;
 		bufout[4] = val ;
-        status = writeSerial(unit, bufout,6);
-        return status;
-        
+        status = serialMsgQue->send(bufout,6);
+        if(status < NOERROR){
+            return asynSuccess;
+        }
+        else{
+            return asynError;
+        }
     }
 
-    int Pixci::writeReadSerial(int unit, char* serialOut, int serialOutBufferSize, int msgOutSize, char* serialIn, int serialInBufferSize){
+    int Pixci::writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize){
         int count;
         asynStatus status;
         char bufOut[50];
@@ -336,55 +463,74 @@ Pixci::~Pixci(){
 		{
 			outMsgwait++;
             printf("msg wait %d \n", outMsgwait);
-            Sleep(1);
+            Sleep(10);
 		}
+        outMsgwait = 0;
         int i;
         for (i=0; i <msgOutSize ; i++ ){
             bufOut[i]=serialOut[i];
             chkSum ^= serialOut[i];
+            printf("%d=",(int)(unsigned char)serialOut[i]);
         }
-        bufOut[msgOutSize] = chkSum;
-        count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize);
+        serialOut[msgOutSize] = chkSum;
+        count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize+1);
         printf("serial write count %d \n", count);
         int inMsgwait = 0;
-       
+        int inMsgwaitFlag = 0;
+        Sleep(130);
+
         if(count < ERROR){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                  "%s: Cannot serial write: %s.", 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                  "%s: Cannot serial write: %s.",
                   driverName,  pxd_mesgErrorCode(status));
-            return asynError;
+            return count;;
         }
         else{
-             while(pxd_serialRead(unit,RESERVED,NULL,0)<1 && inMsgwait < 10){
+            inMsgwaitFlag = pxd_serialRead(unit, 0, NULL, 0);
+            printf("message wait flag is %d\n",inMsgwaitFlag);
+             while(inMsgwaitFlag<1 && inMsgwait<20){
                 inMsgwait++;
-                Sleep(1);
+                inMsgwaitFlag = pxd_serialRead(unit, 0, NULL, 0);
+                printf("message wait flag is %d\n",inMsgwaitFlag);
+                Sleep(10);
             }
+            inMsgwait= 0;
             count = pxd_serialRead(UNIT, RESERVED, serialIn, serialInBufferSize);
         }
 
         return count;
     }
-    
-    void Pixci::setBin(int val){
-        
-        asynStatus stat;
-        if(val == 1){
-            stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x3F);
-            //stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x3F);
-            if(stat == asynSuccess){
-                printf("set the value 0x3Fs");
-            }
 
+    void Pixci::setBin(int val, bool coordinate){
+        char hexval;
+        char reg;
+        switch(val){
+            case 1: hexval = 0x00;
+                    break;
+            case 2: hexval = 0x01;
+                    break;
+            case 4: hexval = 0x03;
+                    break;
+            case 8: hexval = 0x07;
+                    break;
+            case 16: hexval = 0x0F;
+                    break;
+            case 32: hexval = 0x1F;
+                    break;
+            case 64: hexval = 0x3F;
+                    break;
+            default:
+                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d",val);
+                    break;
         }
-        else if(val == 0){
-            stat = Pixci::writeSerialRegister(UNIT,  0xA1, 0x00);
-            //stat = Pixci::writeSerialRegister(UNIT,  0xA2, 0x00);
-            if(stat == asynSuccess){
-                printf("set the value 0x00 s");
-            }
+        if(coordinate){
+            reg = 0xA2;
+        }
+        else{
+            reg = 0xA1;
+        }
 
-        }
-        
+        Pixci::writeSerialRegister(UNIT, reg, hexval);
 
     }
 
@@ -393,13 +539,13 @@ Pixci::~Pixci(){
         int status = asynSuccess;
         static const char *functionName = "writeInt32";
 
-        /* Set the parameter and readback in the parameter library.  This may be 
+        /* Set the parameter and readback in the parameter library.  This may be
         overwritten when we read back the status at the end, but that's OK */
         status = setIntegerParam(function, value);
 
         if (function == ADAcquire) {
             /* TODO: adstatus == ADStatusIdle has to be checked */
-            if (value ) 
+            if (value )
             {
                 acquireImage();
             }
@@ -410,19 +556,15 @@ Pixci::~Pixci(){
             {
                 acquireStop();
             }
-        
+
         }   /* set  value for default parameters */
         else if(function == ADBinX){
-            Pixci::setBin(value);
+            Pixci::setBin(value,0);
         }
         else if(function == ADBinY){
-            // if(value == 1){
-            //     Pixci::readSerialRegister(UNIT, value);
-            // }
-            Pixci::readSerialRegister(UNIT, value);
-           
+            Pixci::setBin(value,1);
         }
-        else{   
+        else{
             status = ADDriver::writeInt32(pasynUser, value);
         }
         return (asynStatus) status;
@@ -448,7 +590,7 @@ static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
 static const iocshFuncDef configpixci = {"pixciConfig", 6, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
-  pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival, 
+  pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
                     args[4].ival, args[5].sval);
 }
 
