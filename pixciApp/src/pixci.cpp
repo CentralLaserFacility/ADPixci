@@ -41,7 +41,7 @@ extern "C"{
 #define NOERROR 0 // Errors are defined as integers below zero.
 #define RESERVED 0
 #define BAUDRATE 115200
-#define BIN "C:\Users\mii48756\Downloads\bin2.fmt"
+
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -331,7 +331,7 @@ Pixci::~Pixci(){
             for(i=0; i< outSize ; i++){
                 printf("%d-",(int)(unsigned char)outputMsg[i]);
             }
-            //outputMsg[outSize] = 0x01;
+
             inSize = writeReadSerial(UNIT, outputMsg, outSize, inputMsg, 20);
             printf("input message size is %d\n",inSize);
             for(i=0; i< inSize ; i++){
@@ -345,95 +345,35 @@ Pixci::~Pixci(){
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
                     case 0xA1 :
-                        
-                        if((int)(unsigned char)outputMsg[4]==1){
-                            printf("set bin 2\n");
-                        //setIntegerParam(ADBinX,((int)(unsigned char)outputMsg[4])+1);
                         setupAquisition();
-                        
-                        {
-                        #include BIN
-                        pxd_videoFormatAsIncludedInit(0);
-                        i = pxd_videoFormatAsIncluded(0);
-                        }
-                        }
+                        reloadVideoSettings();                   
                         break;
                     case 0xA2 :
-                        //setIntegerParam(ADBinY,((int)(unsigned char)outputMsg[4])+1);
-                        //setupAquisition();
+                        setupAquisition();
+                        reloadVideoSettings();
                         break;
                     default:
                         printf("none\n %d",(int)(unsigned char)reg);
                         break;
 
             }
+
             callParamCallbacks();
 
-
-
             }
-            // memset(outputMsg,' ',20);
 
         }
     }
 
+    void Pixci::reloadVideoSettings(){
 
-    // asynStatus Pixci::readSerialRegister(int unit, int value){
-    //     int status = 0;
-    //     char c;
-    //     //int cnt;
-    //     int dataread = 0;
-    //     int stoppoint = 0;
-    //     char databuffer[50];
-    //     char inputbuff[50];
-    //     if(value == 1){
-    //     char* stest = "hello";
-    //     //char out1[] = {0x53, 0xE0, 0x01, 0xA1, 0x50};
-    //     char out1[] = {0x50, 0x80, 0x50, 0x80, 0x50};
-    //     //unsigned char out1[] = {0x49, 0x50};
-    //     char out2[] = {0x53, 0xE1, 0x01, 0x50};
-    //     //writeSerial(unit, out1, 5);
-    //     //Sleep(1);
-    //     //writeSerial(unit, out2, 4);
-    //     //Sleep(300);
-    //     //status = pxd_serialRead(unit, 0, NULL, 0);
-    //     //dataread = serialMsgQue->send(out1,strlen(out1));
-    //     char* msg3 = "dev";
-    //     dataread = serialMsgQue->send(msg3,strlen(msg3));
-    //     printf("string length is %d and %d\n",strlen(msg3),dataread);
-    //    //serialMsgQue->send(out1,5);
-    //     printf("string length is %d and %d\n",5,dataread);
-    //     //serialMsgQue->send(stest,strlen(out2));
+        {
+            #include "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
+            pxd_videoFormatAsIncludedInit(0);
+            pxd_videoFormatAsIncluded(0);
+        }
 
-
-
-    //     //status = writeReadSerial(unit,out1,5,5,inputbuff,50);
-    //     //status = writeReadSerial(unit,out2,4,4,inputbuff,50);
-    //     printf("status is %d \n",status);
-    //     int i;
-    //     for(i=0; i<status; i++){
-    //         printf("integer is %d",(int)inputbuff[i]);
-    //     }
-    //     printf("\n");
-
-    //     //printf("characters to read is %d", status);
-    //     }
-    //     if(value == 2){
-    //         int number;
-    //         int i;
-    //         //status = pxd_serialRead(unit, 0, &c, 1 );
-    //         status = readSerial(UNIT, databuffer);
-    //         printf("character to read is %d \n",status);
-    //         std::cout << databuffer[0];
-    //         number = (int)databuffer[0];
-    //         for(i=0; i<= status ; i++){
-    //         printf("integer is %d",(int)databuffer[i]);
-    //         }
-    //         printf("\n");
-    //     }
-
-    //     return asynSuccess;
-    // }
+    }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
         int status;

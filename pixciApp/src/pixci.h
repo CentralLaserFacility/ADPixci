@@ -86,10 +86,38 @@ private:
      * @return int size of input message, return < 0 if there is an error 
      */
     int writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize);
+
+    /**
+     * @brief load initial settings parameters
+     * 
+     * @return asynStatus asynSuccess or asynError
+     */
     asynStatus setupAquisition();
+    
+    /**
+     * @brief reload of video settings file. Change in some of the video parameters require reload of 
+     * video settings in order to reflect in image. Example binning.
+     * 
+     */
+    void reloadVideoSettings();
+
+    /**
+     * @brief To-Do
+     * 
+     * @param unit 
+     * @param value 
+     * @return asynStatus 
+     */
     asynStatus readSerialRegister(int unit, int value);
+
+    /**
+     * @brief Set the Binning settings.
+     * 
+     * @param val Binning value to set
+     * @param coordinate 0 for x axis and 1 for y axis.
+     */
     void setBin(int val, bool coordinate);
-    int getBin();
+
     /**
      * @brief message que for the serial commiunication to the camera
      */
