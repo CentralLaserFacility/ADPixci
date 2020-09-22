@@ -292,8 +292,8 @@ Pixci::~Pixci(){
     void Pixci::serialTask(){
         char outputMsg[20];
         char inputMsg[20];
-        const int regAddress = 2;
-        const int readOrWriteAdress = 3;
+        const int regAddress = 2; /* index of register in message template */
+        const int readOrWriteAdress = 3; /* index of read or write message in template */
 
         for(;;){
             int i, acquire;
@@ -314,7 +314,7 @@ Pixci::~Pixci(){
 
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
-                    case 0xA1 :
+                    case 0xA1 : /*set X binning*/
                         getIntegerParam(ADAcquire, &acquire);
                         setupAquisition();
                         reloadVideoSettings();
@@ -323,7 +323,7 @@ Pixci::~Pixci(){
                             acquireImage();
                         }                  
                         break;
-                    case 0xA2 :
+                    case 0xA2 : /*set Y binning*/
                         getIntegerParam(ADAcquire, &acquire);
                         setupAquisition();
                         reloadVideoSettings();
