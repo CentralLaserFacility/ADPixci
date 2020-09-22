@@ -5,8 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
-#include <string.h>
+
 
 /* For windows */
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
@@ -293,6 +292,8 @@ Pixci::~Pixci(){
     void Pixci::serialTask(){
         char outputMsg[20];
         char inputMsg[20];
+        const int regAddress = 2;
+        const int readOrWriteAdress = 3;
 
         for(;;){
             int i, acquire;
@@ -303,11 +304,12 @@ Pixci::~Pixci(){
             unsigned char reg;
             unsigned char sendStatus;
 
+            /* receive message to be send from messageQue */
             outSize = serialMsgQue->receive(outputMsg,20);
             inSize = writeReadSerial(UNIT, outputMsg, outSize, inputMsg, 20);
 
-            reg = (unsigned char)outputMsg[3];
-            getorset = (unsigned char)outputMsg[2];
+            reg = (unsigned char)outputMsg[readOrWriteAdress];
+            getorset = (unsigned char)outputMsg[regAddress];
             sendStatus = (unsigned char)inputMsg[0];
 
             if(getorset == setRegister && sendStatus == success){
