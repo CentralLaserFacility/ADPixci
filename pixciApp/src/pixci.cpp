@@ -82,12 +82,6 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
         connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatfile);
-        // connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, "Default", NULL);
-        // {
-        // #include "C:\epics\support\areaDetector\ADPixci\formatFiles\Raptor_Photonics_EagleXV_47-10.fmt"
-        // pxd_videoFormatAsIncludedInit(0);
-        // pxd_videoFormatAsIncluded(0);
-        // }
 
         if(connectionStatusCode < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -156,11 +150,6 @@ Pixci::~Pixci(){
         int binX, binY, sizeX, sizeY;
         sizeX = pxd_imageXdim();
         sizeY = pxd_imageYdim();
-        int test;
-        
-
-        // setIntegerParam(ADSizeX, sizeX);
-        // setIntegerParam(ADSizeY, sizeY);
 
         getIntegerParam(ADBinX, &binX);
         if (binX <= 0) {
@@ -184,9 +173,6 @@ Pixci::~Pixci(){
 
         callParamCallbacks();
 
-        //setIntegerParam(NDArraySizeX, sizeX/binX);
-        //setIntegerParam(NDArraySizeX, sizeX/binX);
-        //setIntegerParam(NDArraySizeX, dims[0]);
         return asynSuccess;
     }
 
@@ -255,26 +241,20 @@ Pixci::~Pixci(){
             WaitForSingleObject(g_hEvent, INFINITE);
             lock();
 
-            /* Allocate NDArray */
             getIntegerParam(NDArraySizeX, &sizeX);
             getIntegerParam(NDArraySizeY, &sizeY);
-
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
 
             dims[0] = sizeX;
             dims[1] = sizeY;
-
-
-
             dataType = NDUInt16;
+
+            /* Allocate NDArray */
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer
             pxd_readushort(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
             test = pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt16*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
-            
-            pImage->dims[0].binning = binX;
-            pImage->dims[1].binning = binY;
 
              /* uniqueId and timeStamp must be implemented for standard ADDriver. */
             pImage->uniqueId = imageCounter;
@@ -288,8 +268,6 @@ Pixci::~Pixci(){
             numImagesCounter++;
 
             setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt16));
-            //setIntegerParam(NDArraySizeX, dims[0]);
-            //setIntegerParam(NDArraySizeY, dims[1]);
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
 
@@ -317,7 +295,7 @@ Pixci::~Pixci(){
         char inputMsg[20];
 
         for(;;){
-            int i;
+            int i, acquire;
             int outSize, inSize;
             unsigned char setRegister = 0x02;
             unsigned char success = 0x50;
@@ -325,35 +303,34 @@ Pixci::~Pixci(){
             unsigned char reg;
             unsigned char sendStatus;
 
-
             outSize = serialMsgQue->receive(outputMsg,20);
-            printf("size received is %d \n",outSize);
-            for(i=0; i< outSize ; i++){
-                printf("%d-",(int)(unsigned char)outputMsg[i]);
-            }
-
             inSize = writeReadSerial(UNIT, outputMsg, outSize, inputMsg, 20);
-            printf("input message size is %d\n",inSize);
-            for(i=0; i< inSize ; i++){
-                printf("%d-",(int)inputMsg[i]);
-            }
 
-                reg = (unsigned char)outputMsg[3];
+            reg = (unsigned char)outputMsg[3];
+            getorset = (unsigned char)outputMsg[2];
+            sendStatus = (unsigned char)inputMsg[0];
 
-                getorset = (unsigned char)outputMsg[2];
-                sendStatus = (unsigned char)inputMsg[0];
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
                     case 0xA1 :
-                        setupAquisition();
-                        reloadVideoSettings();                   
-                        break;
-                    case 0xA2 :
+                        getIntegerParam(ADAcquire, &acquire);
                         setupAquisition();
                         reloadVideoSettings();
+                        acquireStop();
+                        if(acquire == 1){
+                            acquireImage();
+                        }                  
+                        break;
+                    case 0xA2 :
+                        getIntegerParam(ADAcquire, &acquire);
+                        setupAquisition();
+                        reloadVideoSettings();
+                        acquireStop();
+                        if(acquire == 1){
+                            acquireImage();
+                        }     
                         break;
                     default:
-                        printf("none\n %d",(int)(unsigned char)reg);
                         break;
 
             }
@@ -377,9 +354,13 @@ Pixci::~Pixci(){
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
         int status;
+
+        /* template of message to write value to registers */
         char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
         bufout[3] = Register ;
 		bufout[4] = val ;
+
+        /*sending buffer data to the que */
         status = serialMsgQue->send(bufout,6);
         if(status < NOERROR){
             return asynSuccess;
@@ -390,51 +371,54 @@ Pixci::~Pixci(){
     }
 
     int Pixci::writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize){
-        int count;
-        asynStatus status;
+        int count, i;
         char bufOut[50];
         char chkSum;
-        if(pxd_serialRead(unit, 0, NULL, 0) > 0){
+        int outMsgwait = 0;
+        int inMsgwait = 0;
+        int inMsgwaitFlag = 0;
+
+
+        /* checking if any message packer left to read, and clear the buffer by reading it */
+        if(pxd_serialRead(unit, RESERVED, NULL, 0) > 0){
             count = pxd_serialRead(unit, 0, serialIn, serialInBufferSize);
         }
 
-        int outMsgwait = 0;
+        /* wait if any message is in the send que*/
 		while(pxd_serialWrite(unit, RESERVED, NULL, 0)<msgOutSize && outMsgwait <50)
 		{
 			outMsgwait++;
-            printf("msg wait %d \n", outMsgwait);
             Sleep(10);
 		}
         outMsgwait = 0;
-        int i;
+
+        /* creating checksum to send as the last character of the message */
         for (i=0; i <msgOutSize ; i++ ){
             bufOut[i]=serialOut[i];
             chkSum ^= serialOut[i];
-            printf("%d=",(int)(unsigned char)serialOut[i]);
         }
         serialOut[msgOutSize] = chkSum;
+
+        /* sending the seriaOut message */
         count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize+1);
-        printf("serial write count %d \n", count);
-        int inMsgwait = 0;
-        int inMsgwaitFlag = 0;
         Sleep(130);
 
         if(count < ERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot serial write: %s.",
-                  driverName,  pxd_mesgErrorCode(status));
+                  driverName,  pxd_mesgErrorCode(count));
             return count;;
         }
         else{
+            /*waiting for the reply */
             inMsgwaitFlag = pxd_serialRead(unit, 0, NULL, 0);
-            printf("message wait flag is %d\n",inMsgwaitFlag);
              while(inMsgwaitFlag<1 && inMsgwait<20){
                 inMsgwait++;
                 inMsgwaitFlag = pxd_serialRead(unit, 0, NULL, 0);
-                printf("message wait flag is %d\n",inMsgwaitFlag);
                 Sleep(10);
             }
             inMsgwait= 0;
+            /* read the message and message count */
             count = pxd_serialRead(UNIT, RESERVED, serialIn, serialInBufferSize);
         }
 
@@ -444,6 +428,8 @@ Pixci::~Pixci(){
     void Pixci::setBin(int val, bool coordinate){
         char hexval;
         char reg;
+
+        /* Assigning corresponding Hex value to send*/
         switch(val){
             case 1: hexval = 0x00;
                     break;
@@ -464,10 +450,10 @@ Pixci::~Pixci(){
                     break;
         }
         if(coordinate){
-            reg = 0xA2;
+            reg = 0xA2; /*register for Y coordinate */
         }
         else{
-            reg = 0xA1;
+            reg = 0xA1; /*register for X coordinate */
         }
 
         Pixci::writeSerialRegister(UNIT, reg, hexval);
@@ -507,8 +493,8 @@ Pixci::~Pixci(){
         else{
             status = ADDriver::writeInt32(pasynUser, value);
         }
-        return (asynStatus) status;
 
+        return (asynStatus) status;
     }
 
 

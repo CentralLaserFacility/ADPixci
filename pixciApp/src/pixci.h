@@ -102,10 +102,10 @@ private:
     void reloadVideoSettings();
 
     /**
-     * @brief To-Do
+     * @brief read camera registers over serial communication.
      * 
-     * @param unit 
-     * @param value 
+     * @param unit unit numner of camera
+     * @param value address to store the value
      * @return asynStatus 
      */
     asynStatus readSerialRegister(int unit, int value);
