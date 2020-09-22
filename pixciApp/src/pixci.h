@@ -45,6 +45,7 @@ public:
      * 
      */
     void acquireTask(void);
+    void serialTask(void);
     ~Pixci();
 private:
     /**
@@ -55,6 +56,70 @@ private:
      * @brief Stops live capturing.
      */
     void acquireStop(void);
-    
+    /**
+     * @brief write serial command to the camera connected.
+     * 
+     * @param unit 
+     * @param serialOut serial command to be send to the camera
+     * @return asynStatus 
+     */
+    asynStatus writeSerial(int unit, char* serialOut, int msgSize);
 
+    /**
+     * @brief write value to the registers of the camera using serial command
+     * 
+     * @param unit 
+     * @param Register register number , where value has to be written
+     * @param val value to be written in the register
+     * @return asynStatus 
+     */
+    asynStatus writeSerialRegister(int unit, char Register, char val);
+
+    /**
+     * @brief write message to the camera and read the reply after that
+     * 
+     * @param unit unit number of the camera if it supports multiple unit
+     * @param serialOut output message buffer to be send to the camera
+     * @param msgOutSize size of the output message size
+     * @param serialIn input message buffer where message from camera is to be stored
+     * @param serialInBufferSize size of input message buffer
+     * @return int size of input message, return < 0 if there is an error 
+     */
+    int writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize);
+
+    /**
+     * @brief load initial settings parameters
+     * 
+     * @return asynStatus asynSuccess or asynError
+     */
+    asynStatus setupAquisition();
+    
+    /**
+     * @brief reload of video settings file. Change in some of the video parameters require reload of 
+     * video settings in order to reflect in image. Example binning.
+     * 
+     */
+    void reloadVideoSettings();
+
+    /**
+     * @brief read camera registers over serial communication.
+     * 
+     * @param unit unit numner of camera
+     * @param value address to store the value
+     * @return asynStatus 
+     */
+    asynStatus readSerialRegister(int unit, int value);
+
+    /**
+     * @brief Set the Binning settings.
+     * 
+     * @param val Binning value to set
+     * @param coordinate 0 for x axis and 1 for y axis.
+     */
+    void setBin(int val, bool coordinate);
+
+    /**
+     * @brief message que for the serial commiunication to the camera
+     */
+    epicsMessageQueue *serialMsgQue;
 };
