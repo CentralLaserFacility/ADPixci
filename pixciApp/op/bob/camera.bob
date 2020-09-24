@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <macros>
+    <CAM>13PS1</CAM>
+  </macros>
+  <width>650</width>
+  <height>400</height>
+  <widget type="image" version="2.0.0">
+    <name>Image</name>
+    <pv_name>$(CAM):image1:ArrayData</pv_name>
+    <x>20</x>
+    <y>60</y>
+    <width>440</width>
+    <height>340</height>
+    <color_map>
+      <name>GRAY</name>
+    </color_map>
+    <scripts>
+      <script file="EmbeddedPy" check_connections="false">
+        <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+
+# widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
+
+sizex = PVUtil.getLong(pvs[0])
+sizey = PVUtil.getLong(pvs[1])
+
+widget.setPropertyValue("data_width",sizex)
+widget.setPropertyValue("data_height",sizey)
+widget.setPropertyValue("x_axis_maximum",sizex)
+widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
+        <pv_name>$(CAM):image1:ArraySize0_RBV</pv_name>
+        <pv_name>$(CAM):image1:ArraySize1_RBV</pv_name>
+        <pv_name>=1</pv_name>
+      </script>
+    </scripts>
+    <color_mode>0</color_mode>
+    <unsigned>true</unsigned>
+  </widget>
+  <widget type="picture" version="2.0.0">
+    <name>Picture</name>
+    <x>110</x>
+    <y>30</y>
+    <width>1</width>
+    <height>1</height>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Acquire</text>
+    <x>470</x>
+    <y>100</y>
+    <width>60</width>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_1</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>0</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Stop</text>
+    <x>530</x>
+    <y>100</y>
+    <width>60</width>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="led" version="2.0.0">
+    <name>LED</name>
+    <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
+    <x>600</x>
+    <y>100</y>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_1</name>
+    <text>Image counter</text>
+    <x>470</x>
+    <y>150</y>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update</name>
+    <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
+    <x>570</x>
+    <y>150</y>
+    <width>40</width>
+    <format>1</format>
+  </widget>
+  <widget type="rectangle" version="2.0.0">
+    <name>Rectangle</name>
+    <x>470</x>
+    <y>200</y>
+    <width>150</width>
+    <height>100</height>
+    <background_color>
+      <color name="Background" red="255" green="255" blue="255">
+      </color>
+    </background_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_2</name>
+    <text>Binning</text>
+    <x>500</x>
+    <y>210</y>
+    <width>60</width>
+    <font>
+      <font family="Liberation Sans" style="BOLD" size="14.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_3</name>
+    <text>X</text>
+    <x>490</x>
+    <y>240</y>
+    <width>20</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_4</name>
+    <text>Y</text>
+    <x>490</x>
+    <y>270</y>
+    <width>20</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_2</name>
+    <pv_name>$(CAM):cam1:BinX_RBV</pv_name>
+    <x>590</x>
+    <y>240</y>
+    <width>20</width>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>Combo Box</name>
+    <pv_name>$(CAM):cam1:BinX</pv_name>
+    <x>520</x>
+    <y>240</y>
+    <width>30</width>
+    <height>20</height>
+    <items>
+      <item>1</item>
+      <item>2</item>
+      <item>4</item>
+      <item>8</item>
+    </items>
+    <items_from_pv>false</items_from_pv>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>Combo Box_1</name>
+    <pv_name>$(CAM):cam1:BinY</pv_name>
+    <x>520</x>
+    <y>270</y>
+    <width>40</width>
+    <height>20</height>
+    <items>
+      <item>1</item>
+      <item>2</item>
+      <item>4</item>
+      <item>8</item>
+    </items>
+    <items_from_pv>false</items_from_pv>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_3</name>
+    <pv_name>$(CAM):cam1:BinY_RBV</pv_name>
+    <x>590</x>
+    <y>270</y>
+    <width>20</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label</name>
+    <text>Raptor Eagle-XV</text>
+    <x>70</x>
+    <y>10</y>
+    <width>210</width>
+    <height>40</height>
+    <font>
+      <font family="Liberation Sans" style="BOLD" size="22.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="rectangle" version="2.0.0">
+    <name>Rectangle_2</name>
+    <x>10</x>
+    <width>630</width>
+    <height>410</height>
+    <transparent>true</transparent>
+  </widget>
+</display>
