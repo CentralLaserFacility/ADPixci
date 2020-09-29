@@ -38,13 +38,6 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
     <color_mode>0</color_mode>
     <unsigned>true</unsigned>
   </widget>
-  <widget type="picture" version="2.0.0">
-    <name>Picture</name>
-    <x>110</x>
-    <y>30</y>
-    <width>1</width>
-    <height>1</height>
-  </widget>
   <widget type="action_button" version="3.0.0">
     <name>Action Button</name>
     <actions>
@@ -142,30 +135,34 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
   <widget type="combo" version="2.0.0">
     <name>Combo Box</name>
     <pv_name>$(CAM):cam1:BinX</pv_name>
-    <x>520</x>
+    <x>510</x>
     <y>240</y>
-    <width>30</width>
+    <width>70</width>
     <height>20</height>
     <items>
       <item>1</item>
-      <item>2</item>
-      <item>4</item>
+      <item>2 x 2</item>
+      <item>4 x 4</item>
       <item>8</item>
+      <item>16</item>
+      <item>32</item>
     </items>
     <items_from_pv>false</items_from_pv>
   </widget>
   <widget type="combo" version="2.0.0">
     <name>Combo Box_1</name>
     <pv_name>$(CAM):cam1:BinY</pv_name>
-    <x>520</x>
+    <x>510</x>
     <y>270</y>
-    <width>40</width>
+    <width>70</width>
     <height>20</height>
     <items>
       <item>1</item>
       <item>2</item>
       <item>4</item>
       <item>8</item>
+      <item>16</item>
+      <item>32</item>
     </items>
     <items_from_pv>false</items_from_pv>
   </widget>
@@ -190,8 +187,8 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>Rectangle_2</name>
-    <x>10</x>
-    <width>630</width>
+    <x>20</x>
+    <width>620</width>
     <height>410</height>
     <transparent>true</transparent>
   </widget>
