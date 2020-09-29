@@ -303,6 +303,8 @@ Pixci::~Pixci(){
             unsigned char getorset;
             unsigned char reg;
             unsigned char sendStatus;
+            int val;
+            
 
             /* receive message to be send from messageQue */
             outSize = serialMsgQue->receive(outputMsg,20);
@@ -311,6 +313,7 @@ Pixci::~Pixci(){
             reg = (unsigned char)outputMsg[readOrWriteAdress];
             getorset = (unsigned char)outputMsg[regAddress];
             sendStatus = (unsigned char)inputMsg[0];
+            val =  (int)(unsigned char)outputMsg[4];
 
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
@@ -318,7 +321,7 @@ Pixci::~Pixci(){
                         break;
                     case 0xA2 : /*set Y binning*/
                         getIntegerParam(ADAcquire, &acquire);
-                        reloadVideoSettings(c);
+                        reloadVideoSettings(val);
                         acquireStop();
                         setupAquisition();
                         if(acquire == 1){
