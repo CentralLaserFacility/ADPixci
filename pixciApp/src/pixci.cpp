@@ -314,14 +314,7 @@ Pixci::~Pixci(){
 
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
-                    case 0xA1 : /*set X binning*/
-                        // getIntegerParam(ADAcquire, &acquire);
-                        // //reloadVideoSettings(c);
-                        // acquireStop();
-                        // setupAquisition();
-                        // if(acquire == 1){
-                        //     acquireImage();
-                        // }                  
+                    case 0xA1 : /*set X binning*/                 
                         break;
                     case 0xA2 : /*set Y binning*/
                         getIntegerParam(ADAcquire, &acquire);
@@ -480,12 +473,7 @@ Pixci::~Pixci(){
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d",val);
                     break;
         }
-        // if(coordinate){
-        //     reg = 0xA2; /*register for Y coordinate */
-        // }
-        // else{
-        //     reg = 0xA1; /*register for X coordinate */
-        // }
+
         reg = 0xA1;
         Pixci::writeSerialRegister(UNIT, reg, hexval);
          reg = 0xA2;
