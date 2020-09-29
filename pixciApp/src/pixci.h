@@ -99,7 +99,7 @@ private:
      * video settings in order to reflect in image. Example binning.
      * 
      */
-    void reloadVideoSettings();
+    void reloadVideoSettings(int binn);
 
     /**
      * @brief read camera registers over serial communication.
