@@ -16,6 +16,14 @@
     <color_map>
       <name>GRAY</name>
     </color_map>
+    <color_bar>
+      <visible>false</visible>
+      <bar_size>40</bar_size>
+      <scale_font>
+        <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+        </font>
+      </scale_font>
+    </color_bar>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script

@@ -41,6 +41,19 @@ extern "C"{
 #define RESERVED 0
 #define BAUDRATE 115200
 
+#define BINNING1 0
+#define BINNING2 1
+#define BINNING4 3
+#define BINNING8 7
+
+#define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
+#define BINNINGSETTINGS_2X2 "videoSettings\binning21.fmt"
+#define BINNINGSETTINGS_4X4 "videoSettings\binning4.fmt"
+#define BINNINGSETTINGS_8X8 "videoSettings\binning8.fmt"
+
+
+
+
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -161,14 +174,14 @@ Pixci::~Pixci(){
             setIntegerParam(ADBinY, binY);
         }
 
-        setIntegerParam(ADSizeX, sizeX/1);
-        setIntegerParam(ADSizeY, sizeY/01);
+        setIntegerParam(ADSizeX, sizeX);
+        setIntegerParam(ADSizeY, sizeY);
 
-        setIntegerParam(ADMaxSizeX, sizeX/1);
-        setIntegerParam(ADMaxSizeY, sizeY/01);
+        setIntegerParam(ADMaxSizeX, sizeX);
+        setIntegerParam(ADMaxSizeY, sizeY);
 
-        setIntegerParam(NDArraySizeX, sizeX/1);
-        setIntegerParam(NDArraySizeY, sizeY/01);
+        setIntegerParam(NDArraySizeX, sizeX);
+        setIntegerParam(NDArraySizeY, sizeY);
 
         callParamCallbacks();
 
@@ -318,7 +331,6 @@ Pixci::~Pixci(){
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
                     case 0xA1 : /*set X binning*/                 
-                        break;
                     case 0xA2 : /*set Y binning*/
                         getIntegerParam(ADAcquire, &acquire);
                         reloadVideoSettings(val);
@@ -342,39 +354,35 @@ Pixci::~Pixci(){
 
     void Pixci::reloadVideoSettings(int binn){
 
-        if(binn == 7){
-            {
-            #include "videoSettings\binning8.fmt"
-            pxd_videoFormatAsIncludedInit(0);
-            pxd_videoFormatAsIncluded(0);
-            }
-            printf("reload with bin8\n");
-
-        }
-        else if(binn == 1){
-            {
-            #include "videoSettings\binning21.fmt"
-            pxd_videoFormatAsIncludedInit(0);
-            pxd_videoFormatAsIncluded(0);  
-            }
-
-        }
-        else if(binn == 3){
-            {
-            #include "videoSettings\binning4.fmt"
-            pxd_videoFormatAsIncludedInit(0);
-            pxd_videoFormatAsIncluded(0);  
-            }
-
-        }
-        else{
-
-        
-        {
-            #include "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
-            pxd_videoFormatAsIncludedInit(0);
-            pxd_videoFormatAsIncluded(0);
-        }
+        switch(binn){
+            case BINNING2:
+                {
+                    #include BINNINGSETTINGS_2X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            case BINNING4:
+                {
+                    #include BINNINGSETTINGS_4X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            case BINNING8:
+                {
+                    #include BINNINGSETTINGS_8X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            default:
+                {
+                    #include BINNINGSETTINGS_1X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
         }
 
     }
