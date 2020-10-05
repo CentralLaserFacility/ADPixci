@@ -279,7 +279,7 @@ Pixci::~Pixci(){
             imageCounter++;
             numImagesCounter++;
 
-            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt16));
+            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt8));
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
 
