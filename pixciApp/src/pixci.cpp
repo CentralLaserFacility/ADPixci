@@ -245,7 +245,6 @@ Pixci::~Pixci(){
         epicsInt32 numImagesCounter;
         epicsInt32 imageCounter;
         setupAquisition();
-        int test;
 
         for (;;){
             /* waiting for event to be triggered */
@@ -265,8 +264,8 @@ Pixci::~Pixci(){
             /* Allocate NDArray */
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer
-            pxd_readushort(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            test = pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
+            pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
+            pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
 
              /* uniqueId and timeStamp must be implemented for standard ADDriver. */
             pImage->uniqueId = imageCounter;
