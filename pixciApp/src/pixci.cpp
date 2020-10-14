@@ -42,9 +42,9 @@ extern "C"{
 #define BAUDRATE 115200
 
 #define BINNING1 0
-#define BINNING2 1
-#define BINNING4 3
-#define BINNING8 7
+#define BINNING2 2
+#define BINNING4 4
+#define BINNING8 8
 
 #define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
 #define BINNINGSETTINGS_2X2 "videoSettings\binning21.fmt"
@@ -210,6 +210,7 @@ Pixci::~Pixci(){
                   "live error: %s : %s", functionName, pxd_mesgErrorCode(error));
         }
         else{
+            setIntegerParam(ADAcquire, 1);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live started");
         }
@@ -225,6 +226,7 @@ Pixci::~Pixci(){
                   "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(error));
         }
         else{
+            setIntegerParam(ADAcquire, 0);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
         }
@@ -370,7 +372,8 @@ Pixci::~Pixci(){
         epicsInt32 functionAndVal[2];
         epicsInt32 function;
         epicsInt32 val;
-
+        asynStatus status;
+        epicsInt32 acquire;
         for(;;){
             paramMsgQue->receive(functionAndVal,8);
             function = functionAndVal[0];
@@ -378,6 +381,21 @@ Pixci::~Pixci(){
 
             if(function==ADBinX){
                 printf("Binx is triggered\n");
+                status = Pixci::setBin(val,0);
+                if (status==asynSuccess)
+                {
+                    setIntegerParam(ADBinX, val);
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
+                    reloadVideoSettings(val);
+                    acquireStop();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
+                    printf("Bin value is set successfully");
+                }
+                
             }
             printf("%d and %d ",functionAndVal[0],functionAndVal[1]);
 
@@ -492,7 +510,7 @@ Pixci::~Pixci(){
         return count;
     }
 
-    void Pixci::setBin(int val, bool coordinate){
+    asynStatus Pixci::setBin(int val, bool coordinate){
         char hexval;
         char reg;
 
@@ -518,9 +536,9 @@ Pixci::~Pixci(){
         }
 
         reg = 0xA1;
-        Pixci::writeSerialRegister(UNIT, reg, hexval);
+        Pixci::writeSerialRegister2(UNIT, reg, hexval);
          reg = 0xA2;
-        Pixci::writeSerialRegister(UNIT, reg, hexval);
+        return Pixci::writeSerialRegister2(UNIT, reg, hexval);
 
     }
 
@@ -531,7 +549,7 @@ Pixci::~Pixci(){
 
         /* Set the parameter and readback in the parameter library.  This may be
         overwritten when we read back the status at the end, but that's OK */
-        status = setIntegerParam(function, value);
+        //status = setIntegerParam(function, value);
 
         if (function == ADAcquire) {
             /* TODO: adstatus == ADStatusIdle has to be checked */
@@ -549,7 +567,7 @@ Pixci::~Pixci(){
 
         }   /* set  value for default parameters */
         else if(function == ADBinX){
-            Pixci::setBin(value,0);
+            //Pixci::setBin(value,0);
             addToParamQue(function,value);
         }
         else if(function == ADBinY){
@@ -575,7 +593,11 @@ Pixci::~Pixci(){
     }
 
     asynStatus Pixci::writeSerialRegister2(int unit, char Register, char val){
-        int status;
+        asynStatus status;
+        int inSize;
+        char inputMsg[20];
+        unsigned char success = 0x50;
+        
 
         /* template of message to write value to registers */
         char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
@@ -583,13 +605,20 @@ Pixci::~Pixci(){
 		bufout[4] = val ;
 
         /*sending buffer data to the que */
-        status = serialMsgQue->send(bufout,6);
-        if(status < NOERROR){
-            return asynSuccess;
-        }
-        else{
+        //status = serialMsgQue->send(bufout,6);
+
+        inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
+        printf("input size is %d zeroth char is %X",inSize,inputMsg[0]);
+
+        if(inSize<NOERROR){
             return asynError;
         }
+
+        if(inputMsg[0]==success){
+            return asynSuccess;
+        }
+
+        return asynError;
     }
 
 
