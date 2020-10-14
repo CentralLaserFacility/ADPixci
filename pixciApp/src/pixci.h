@@ -45,7 +45,14 @@ public:
      * 
      */
     void acquireTask(void);
+
+    /**
+     * @brief thread that wait for serial message to send
+     * 
+     */
     void serialTask(void);
+
+    void paramTask(void);
     ~Pixci();
 private:
     /**
@@ -122,4 +129,23 @@ private:
      * @brief message que for the serial commiunication to the camera
      */
     epicsMessageQueue *serialMsgQue;
+    epicsMessageQueue *paramMsgQue;
+
+    /**
+     * @brief add change in parameter value to the que if it needs serial communication
+     * 
+     * @param function 
+     * @param value 
+     */
+    void addToParamQue(int function, int value);
+
+    /**
+     * @brief write value to the registers of the camera using serial command
+     * 
+     * @param unit 
+     * @param Register register number , where value has to be written
+     * @param val value to be written in the register
+     * @return asynStatus 
+     */
+    asynStatus writeSerialRegister2(int unit, char Register, char val);
 };

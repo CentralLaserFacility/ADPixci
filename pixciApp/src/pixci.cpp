@@ -63,6 +63,7 @@ extern "C"{
 static void acquireTaskC(void *drvPvt);
 
 static void serialTaskC(void *drvPvt);
+static void paramTaskC(void *drvPvt);
 
 /* Event handler for acquire task */
 HANDLE  g_hEvent;
@@ -131,8 +132,16 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)serialTaskC,
                               this) == NULL);
+                        
+        /* Create the thread that does data acquisition */
+        status = (epicsThreadCreate("serialTask",
+                              epicsThreadPriorityMedium,
+                              epicsThreadGetStackSize(epicsThreadStackMedium),
+                              (EPICSTHREADFUNC)paramTaskC,
+                              this) == NULL);
 
         serialMsgQue = new epicsMessageQueue(20,20);
+        paramMsgQue = new epicsMessageQueue(20,8);
 
     }
 
@@ -351,6 +360,30 @@ Pixci::~Pixci(){
         }
     }
 
+    static void paramTaskC(void *drvPvt)
+    {
+        Pixci *pPvt = (Pixci *)drvPvt;
+        pPvt->paramTask();
+    }
+
+    void Pixci::paramTask(){
+        epicsInt32 functionAndVal[2];
+        epicsInt32 function;
+        epicsInt32 val;
+
+        for(;;){
+            paramMsgQue->receive(functionAndVal,8);
+            function = functionAndVal[0];
+            val = functionAndVal[1];
+
+            if(function==ADBinX){
+                printf("Binx is triggered\n");
+            }
+            printf("%d and %d ",functionAndVal[0],functionAndVal[1]);
+
+        }
+    }
+
     void Pixci::reloadVideoSettings(int binn){
 
         switch(binn){
@@ -517,6 +550,7 @@ Pixci::~Pixci(){
         }   /* set  value for default parameters */
         else if(function == ADBinX){
             Pixci::setBin(value,0);
+            addToParamQue(function,value);
         }
         else if(function == ADBinY){
             Pixci::setBin(value,1);
@@ -526,6 +560,36 @@ Pixci::~Pixci(){
         }
 
         return (asynStatus) status;
+    }
+
+    void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
+        epicsInt32 functionAndVal[2];
+        functionAndVal[0] = function;
+        functionAndVal[1] = value;
+
+        printf("out is %d and %d ",functionAndVal[0],functionAndVal[1]);
+
+        /*sending buffer data to the que */
+        paramMsgQue->send(functionAndVal,8);
+
+    }
+
+    asynStatus Pixci::writeSerialRegister2(int unit, char Register, char val){
+        int status;
+
+        /* template of message to write value to registers */
+        char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
+        bufout[3] = Register ;
+		bufout[4] = val ;
+
+        /*sending buffer data to the que */
+        status = serialMsgQue->send(bufout,6);
+        if(status < NOERROR){
+            return asynSuccess;
+        }
+        else{
+            return asynError;
+        }
     }
 
 
