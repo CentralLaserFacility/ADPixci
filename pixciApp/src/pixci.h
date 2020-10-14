@@ -122,8 +122,9 @@ private:
      * 
      * @param val Binning value to set
      * @param coordinate 0 for x axis and 1 for y axis.
+     * @return asynStatus 
      */
-    void setBin(int val, bool coordinate);
+    asynStatus setBin(int val, bool coordinate);
 
     /**
      * @brief message que for the serial commiunication to the camera
