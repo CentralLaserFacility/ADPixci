@@ -62,7 +62,7 @@ extern "C"{
  */
 static void acquireTaskC(void *drvPvt);
 
-static void serialTaskC(void *drvPvt);
+// static void serialTaskC(void *drvPvt);
 static void paramTaskC(void *drvPvt);
 
 /* Event handler for acquire task */
@@ -126,21 +126,12 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        /* Create the thread that does data acquisition */
-        status = (epicsThreadCreate("serialTask",
-                              epicsThreadPriorityMedium,
-                              epicsThreadGetStackSize(epicsThreadStackMedium),
-                              (EPICSTHREADFUNC)serialTaskC,
-                              this) == NULL);
-                        
-        /* Create the thread that does data acquisition */
-        status = (epicsThreadCreate("serialTask",
+        status = (epicsThreadCreate("paramTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
 
-        serialMsgQue = new epicsMessageQueue(20,20);
         paramMsgQue = new epicsMessageQueue(20,8);
 
     }
@@ -305,62 +296,6 @@ Pixci::~Pixci(){
         }
     }
 
-    static void serialTaskC(void *drvPvt)
-    {
-        Pixci *pPvt = (Pixci *)drvPvt;
-        pPvt->serialTask();
-    }
-
-
-    void Pixci::serialTask(){
-        char outputMsg[20];
-        char inputMsg[20];
-        const int regAddress = 2; /* index of register in message template */
-        const int readOrWriteAdress = 3; /* index of read or write message in template */
-
-        for(;;){
-            int i, acquire;
-            int outSize, inSize;
-            unsigned char setRegister = 0x02;
-            unsigned char success = 0x50;
-            unsigned char getorset;
-            unsigned char reg;
-            unsigned char sendStatus;
-            int val;
-            
-
-            /* receive message to be send from messageQue */
-            outSize = serialMsgQue->receive(outputMsg,20);
-            inSize = writeReadSerial(UNIT, outputMsg, outSize, inputMsg, 20);
-
-            reg = (unsigned char)outputMsg[readOrWriteAdress];
-            getorset = (unsigned char)outputMsg[regAddress];
-            sendStatus = (unsigned char)inputMsg[0];
-            val =  (int)(unsigned char)outputMsg[4];
-
-            if(getorset == setRegister && sendStatus == success){
-                switch(reg){
-                    case 0xA1 : /*set X binning*/                 
-                    case 0xA2 : /*set Y binning*/
-                        getIntegerParam(ADAcquire, &acquire);
-                        reloadVideoSettings(val);
-                        acquireStop();
-                        setupAquisition();
-                        if(acquire == 1){
-                            acquireImage();
-                        }     
-                        break;
-                    default:
-                        break;
-
-            }
-
-            callParamCallbacks();
-
-            }
-
-        }
-    }
 
     static void paramTaskC(void *drvPvt)
     {
@@ -379,12 +314,12 @@ Pixci::~Pixci(){
             function = functionAndVal[0];
             val = functionAndVal[1];
 
-            if(function==ADBinX){
-                printf("Binx is triggered\n");
+            if(function==ADBinX | function==ADBinY){
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
                 {
                     setIntegerParam(ADBinX, val);
+                    setIntegerParam(ADBinY, val);
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
                     reloadVideoSettings(val);
@@ -393,17 +328,14 @@ Pixci::~Pixci(){
                     if(acquire == 1){
                         acquireImage();
                     }       
-                    printf("Bin value is set successfully");
                 }
                 
             }
-            printf("%d and %d ",functionAndVal[0],functionAndVal[1]);
 
         }
     }
 
     void Pixci::reloadVideoSettings(int binn){
-
         switch(binn){
             case BINNING2:
                 {
@@ -434,25 +366,6 @@ Pixci::~Pixci(){
                 }
                 break;
         }
-
-    }
-
-    asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
-        int status;
-
-        /* template of message to write value to registers */
-        char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
-        bufout[3] = Register ;
-		bufout[4] = val ;
-
-        /*sending buffer data to the que */
-        status = serialMsgQue->send(bufout,6);
-        if(status < NOERROR){
-            return asynSuccess;
-        }
-        else{
-            return asynError;
-        }
     }
 
     int Pixci::writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize){
@@ -462,7 +375,6 @@ Pixci::~Pixci(){
         int outMsgwait = 0;
         int inMsgwait = 0;
         int inMsgwaitFlag = 0;
-
 
         /* checking if any message packer left to read, and clear the buffer by reading it */
         if(pxd_serialRead(unit, RESERVED, NULL, 0) > 0){
@@ -536,9 +448,9 @@ Pixci::~Pixci(){
         }
 
         reg = 0xA1;
-        Pixci::writeSerialRegister2(UNIT, reg, hexval);
+        Pixci::writeSerialRegister(UNIT, reg, hexval);
          reg = 0xA2;
-        return Pixci::writeSerialRegister2(UNIT, reg, hexval);
+        return Pixci::writeSerialRegister(UNIT, reg, hexval);
 
     }
 
@@ -546,10 +458,6 @@ Pixci::~Pixci(){
         int function = pasynUser->reason;
         int status = asynSuccess;
         static const char *functionName = "writeInt32";
-
-        /* Set the parameter and readback in the parameter library.  This may be
-        overwritten when we read back the status at the end, but that's OK */
-        //status = setIntegerParam(function, value);
 
         if (function == ADAcquire) {
             /* TODO: adstatus == ADStatusIdle has to be checked */
@@ -567,11 +475,10 @@ Pixci::~Pixci(){
 
         }   /* set  value for default parameters */
         else if(function == ADBinX){
-            //Pixci::setBin(value,0);
             addToParamQue(function,value);
         }
         else if(function == ADBinY){
-            Pixci::setBin(value,1);
+            addToParamQue(function,value);
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
@@ -584,31 +491,24 @@ Pixci::~Pixci(){
         epicsInt32 functionAndVal[2];
         functionAndVal[0] = function;
         functionAndVal[1] = value;
-
-        printf("out is %d and %d ",functionAndVal[0],functionAndVal[1]);
-
         /*sending buffer data to the que */
         paramMsgQue->send(functionAndVal,8);
 
     }
 
-    asynStatus Pixci::writeSerialRegister2(int unit, char Register, char val){
+    asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
         asynStatus status;
         int inSize;
         char inputMsg[20];
         unsigned char success = 0x50;
         
-
         /* template of message to write value to registers */
         char bufout[]  = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
         bufout[3] = Register ;
 		bufout[4] = val ;
 
-        /*sending buffer data to the que */
-        //status = serialMsgQue->send(bufout,6);
-
+        /*writing to serial connection*/
         inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
-        printf("input size is %d zeroth char is %X",inSize,inputMsg[0]);
 
         if(inSize<NOERROR){
             return asynError;
