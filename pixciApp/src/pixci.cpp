@@ -45,11 +45,13 @@ extern "C"{
 #define BINNING2 2
 #define BINNING4 4
 #define BINNING8 8
+#define BINNING16 16
 
 #define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
 #define BINNINGSETTINGS_2X2 "videoSettings\binning21.fmt"
 #define BINNINGSETTINGS_4X4 "videoSettings\binning4.fmt"
 #define BINNINGSETTINGS_8X8 "videoSettings\binning8.fmt"
+#define BINNINGSETTINGS_16X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x16.fmt"
 
 
 
@@ -354,6 +356,13 @@ Pixci::~Pixci(){
             case BINNING8:
                 {
                     #include BINNINGSETTINGS_8X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            case BINNING16:
+                {
+                    #include BINNINGSETTINGS_16X16
                     pxd_videoFormatAsIncludedInit(0);
                     pxd_videoFormatAsIncluded(0);
                 }
