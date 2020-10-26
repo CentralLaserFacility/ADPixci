@@ -48,9 +48,9 @@ extern "C"{
 #define BINNING16 16
 
 #define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
-#define BINNINGSETTINGS_2X2 "videoSettings\binning21.fmt"
-#define BINNINGSETTINGS_4X4 "videoSettings\binning4.fmt"
-#define BINNINGSETTINGS_8X8 "videoSettings\binning8.fmt"
+#define BINNINGSETTINGS_2X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x2.fmt"
+#define BINNINGSETTINGS_4X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x4.fmt"
+#define BINNINGSETTINGS_8X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x8.fmt"
 #define BINNINGSETTINGS_16X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x16.fmt"
 
 
