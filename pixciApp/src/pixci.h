@@ -93,10 +93,10 @@ private:
     
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of 
-     * video settings in order to reflect in image. Example binning.
+     * video settings in order to reflect in image.
      * 
      */
-    void reloadVideoSettings(int binn);
+    void reloadVideoSettings();
 
     /**
      * @brief read camera registers over serial communication.
