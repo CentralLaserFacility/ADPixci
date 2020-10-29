@@ -37,4 +37,5 @@ dbLoadRecords("NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,
 asynSetTraceMask("$(PORT)",0,ASYN_TRACE_ERROR)
 cd "${TOP}/iocBoot/${IOC}"
 iocInit
+dbpf $(PREFIX)image1:EnableCallbacks 1
 
