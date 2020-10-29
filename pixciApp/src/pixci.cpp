@@ -41,6 +41,19 @@ extern "C"{
 #define RESERVED 0
 #define BAUDRATE 115200
 
+#define BINNING1 0
+#define BINNING2 1
+#define BINNING4 3
+#define BINNING8 7
+
+#define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
+#define BINNINGSETTINGS_2X2 "videoSettings\binning21.fmt"
+#define BINNINGSETTINGS_4X4 "videoSettings\binning4.fmt"
+#define BINNINGSETTINGS_8X8 "videoSettings\binning8.fmt"
+
+
+
+
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -161,14 +174,14 @@ Pixci::~Pixci(){
             setIntegerParam(ADBinY, binY);
         }
 
-        setIntegerParam(ADSizeX, sizeX/binX);
-        setIntegerParam(ADSizeY, sizeY/binY);
+        setIntegerParam(ADSizeX, sizeX);
+        setIntegerParam(ADSizeY, sizeY);
 
-        setIntegerParam(ADMaxSizeX, sizeX/binX);
-        setIntegerParam(ADMaxSizeY, sizeY/binY);
+        setIntegerParam(ADMaxSizeX, sizeX);
+        setIntegerParam(ADMaxSizeY, sizeY);
 
-        setIntegerParam(NDArraySizeX, sizeX/binX);
-        setIntegerParam(NDArraySizeY, sizeY/binY);
+        setIntegerParam(NDArraySizeX, sizeX);
+        setIntegerParam(NDArraySizeY, sizeY);
 
         callParamCallbacks();
 
@@ -232,7 +245,6 @@ Pixci::~Pixci(){
         epicsInt32 numImagesCounter;
         epicsInt32 imageCounter;
         setupAquisition();
-        int test;
 
         for (;;){
             /* waiting for event to be triggered */
@@ -247,13 +259,13 @@ Pixci::~Pixci(){
 
             dims[0] = sizeX;
             dims[1] = sizeY;
-            dataType = NDUInt16;
+            dataType = NDUInt8;
 
             /* Allocate NDArray */
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer
-            pxd_readushort(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            test = pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt16*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
+            pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
+            pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
 
              /* uniqueId and timeStamp must be implemented for standard ADDriver. */
             pImage->uniqueId = imageCounter;
@@ -266,7 +278,7 @@ Pixci::~Pixci(){
             imageCounter++;
             numImagesCounter++;
 
-            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt16));
+            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt8));
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
 
@@ -303,6 +315,8 @@ Pixci::~Pixci(){
             unsigned char getorset;
             unsigned char reg;
             unsigned char sendStatus;
+            int val;
+            
 
             /* receive message to be send from messageQue */
             outSize = serialMsgQue->receive(outputMsg,20);
@@ -311,23 +325,16 @@ Pixci::~Pixci(){
             reg = (unsigned char)outputMsg[readOrWriteAdress];
             getorset = (unsigned char)outputMsg[regAddress];
             sendStatus = (unsigned char)inputMsg[0];
+            val =  (int)(unsigned char)outputMsg[4];
 
             if(getorset == setRegister && sendStatus == success){
                 switch(reg){
-                    case 0xA1 : /*set X binning*/
-                        getIntegerParam(ADAcquire, &acquire);
-                        setupAquisition();
-                        reloadVideoSettings();
-                        acquireStop();
-                        if(acquire == 1){
-                            acquireImage();
-                        }                  
-                        break;
+                    case 0xA1 : /*set X binning*/                 
                     case 0xA2 : /*set Y binning*/
                         getIntegerParam(ADAcquire, &acquire);
-                        setupAquisition();
-                        reloadVideoSettings();
+                        reloadVideoSettings(val);
                         acquireStop();
+                        setupAquisition();
                         if(acquire == 1){
                             acquireImage();
                         }     
@@ -344,12 +351,37 @@ Pixci::~Pixci(){
         }
     }
 
-    void Pixci::reloadVideoSettings(){
+    void Pixci::reloadVideoSettings(int binn){
 
-        {
-            #include "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
-            pxd_videoFormatAsIncludedInit(0);
-            pxd_videoFormatAsIncluded(0);
+        switch(binn){
+            case BINNING2:
+                {
+                    #include BINNINGSETTINGS_2X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            case BINNING4:
+                {
+                    #include BINNINGSETTINGS_4X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            case BINNING8:
+                {
+                    #include BINNINGSETTINGS_8X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
+            default:
+                {
+                    #include BINNINGSETTINGS_1X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                break;
         }
 
     }
@@ -451,13 +483,10 @@ Pixci::~Pixci(){
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d",val);
                     break;
         }
-        if(coordinate){
-            reg = 0xA2; /*register for Y coordinate */
-        }
-        else{
-            reg = 0xA1; /*register for X coordinate */
-        }
 
+        reg = 0xA1;
+        Pixci::writeSerialRegister(UNIT, reg, hexval);
+         reg = 0xA2;
         Pixci::writeSerialRegister(UNIT, reg, hexval);
 
     }
