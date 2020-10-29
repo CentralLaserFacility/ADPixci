@@ -45,8 +45,14 @@ public:
      * 
      */
     void acquireTask(void);
-    void serialTask(void);
+
+    /**
+     * @brief Thread that wait for parameter changes from the que
+     */
+    void paramTask(void);
+
     ~Pixci();
+
 private:
     /**
      * @brief starts live capture image to frame buffer.
@@ -65,15 +71,6 @@ private:
      */
     asynStatus writeSerial(int unit, char* serialOut, int msgSize);
 
-    /**
-     * @brief write value to the registers of the camera using serial command
-     * 
-     * @param unit 
-     * @param Register register number , where value has to be written
-     * @param val value to be written in the register
-     * @return asynStatus 
-     */
-    asynStatus writeSerialRegister(int unit, char Register, char val);
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -111,15 +108,38 @@ private:
     asynStatus readSerialRegister(int unit, int value);
 
     /**
-     * @brief Set the Binning settings.
+     * @brief Set the Binning settings. Uses serial communication. 
      * 
      * @param val Binning value to set
      * @param coordinate 0 for x axis and 1 for y axis.
+     * @return asynStatus 
      */
-    void setBin(int val, bool coordinate);
+    asynStatus setBin(int val, bool coordinate);
 
     /**
-     * @brief message que for the serial commiunication to the camera
+     * @brief que for changing parameters that uses serial communication.
      */
-    epicsMessageQueue *serialMsgQue;
+    epicsMessageQueue *paramMsgQue;
+
+    /**
+     * @brief add change in parameter value to the que if it needs serial communication.
+     * Serial communication takes more times. So that it is added to the que and the change in parameters
+     * is communicated by FIFO. Parameters that doesn't require serial comminication dont need to be
+     * added to the que.
+     * 
+     * @param function 
+     * @param value 
+     */
+    void addToParamQue(int function, int value);
+
+    /**
+     * @brief write value to the registers of the camera using serial command, might take longer
+     * time to execute. Advised to run in seperate thread.
+     * 
+     * @param unit 
+     * @param Register register number , where value has to be written
+     * @param val value to be written in the register
+     * @return asynStatus 
+     */
+    asynStatus writeSerialRegister(int unit, char Register, char val);
 };
