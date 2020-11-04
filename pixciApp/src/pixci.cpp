@@ -361,7 +361,7 @@ Pixci::~Pixci(){
                 }
                 
             }
-            if(function==ADBinY){
+            else if(function==ADBinY){
                 status = Pixci::setBin(val,1);
                 if(status==asynSuccess){
                     setIntegerParam(ADBinY, val);
@@ -375,6 +375,35 @@ Pixci::~Pixci(){
                     }       
                 }
             }
+            else if(function==ADReadStatus){
+                printf("read status triggered \n");
+                int inSize;
+                char inputMsg[20];
+                unsigned char success = 0x50;
+                int i;
+                if(val == 1){
+                /* template of message to write value to registers */
+                    char bufout[]  = {0x4F, 0x1E, 0x50};
+                    /*writing to serial connection*/
+                    inSize = writeReadSerial(UNIT, bufout, 3, inputMsg, 20);
+                    for(i=0;i<inSize;i++){
+                        printf("%x ",inputMsg[i]);
+                    }
+                    printf("\n");
+                }
+                else{
+                    char bufout[]  = {0x49, 0x50};
+                    /*writing to serial connection*/
+                    inSize = writeReadSerial(UNIT, bufout, 2, inputMsg, 20);
+                    for(i=0;i<inSize;i++){
+                        printf("%x ",inputMsg[i]);
+                    }
+                    printf("\n");
+                }
+                
+                
+            }
+
 
         }
     }
@@ -713,6 +742,10 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == ADBinY){
+            addToParamQue(function,value);
+        }
+        else if(function == ADReadStatus){
+            printf("read status called \n");
             addToParamQue(function,value);
         }
         else{
