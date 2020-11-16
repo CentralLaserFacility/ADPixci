@@ -142,4 +142,7 @@ private:
      * @return asynStatus 
      */
     asynStatus writeSerialRegister(int unit, char Register, char val);
+
+    asynStatus getTriggerStatus();
+    asynStatus readSerialRegister()
 };
