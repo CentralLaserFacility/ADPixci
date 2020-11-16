@@ -101,11 +101,10 @@ private:
     /**
      * @brief read camera registers over serial communication.
      * 
-     * @param unit unit numner of camera
-     * @param value address to store the value
-     * @return asynStatus 
+     * @param reg register address to be read
+     * @return register value 
      */
-    asynStatus readSerialRegister(int unit, int value);
+    int readSerialRegister(char Register);
 
     /**
      * @brief Set the Binning settings. Uses serial communication. 
@@ -144,5 +143,4 @@ private:
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
     asynStatus getTriggerStatus();
-    asynStatus readSerialRegister()
 };
