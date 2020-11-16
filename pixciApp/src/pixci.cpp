@@ -379,7 +379,7 @@ Pixci::~Pixci(){
                 int test;
                 char reg = 0xD4;
                 printf("read status triggered \n");
-                test= readSerialRegister(reg);
+                test = readSerialRegister(reg);
 
             }
 
@@ -776,8 +776,9 @@ Pixci::~Pixci(){
         first_bufout[3] = Register;
 
         /*writing to serial connection*/
-        inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
-        printf("read input size is %d",inSize);
+        inSize = writeReadSerial(UNIT, first_bufout, 5, inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, 5, inputMsg, 20);
+        printf("read input size is %d\n",inSize);
     }
 
 
