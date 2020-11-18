@@ -377,9 +377,11 @@ Pixci::~Pixci(){
             }
             else if(function==ADReadStatus){
                 int test;
+                char one;
                 char reg = 0xD4;
                 printf("read status triggered \n");
-                test = readSerialRegister(reg);
+                test = readSerialRegister(reg, &one);
+                printf("one val is %X",one);
 
             }
 
@@ -768,7 +770,7 @@ Pixci::~Pixci(){
         return asynError;
     }
 
-    int Pixci::readSerialRegister(char Register){
+    int Pixci::readSerialRegister(char Register, char *val){
         char inputMsg[20];
         int inSize;
         char first_bufout[] = {0x53, 0xE0, 0x01, 0xFF, 0x50};
@@ -779,6 +781,9 @@ Pixci::~Pixci(){
         inSize = writeReadSerial(UNIT, first_bufout, 5, inputMsg, 20);
         inSize = writeReadSerial(UNIT, last_bufout, 5, inputMsg, 20);
         printf("read input size is %d\n",inSize);
+        printf("char is %x and %x \n",inputMsg[0],inputMsg[1]);
+        *val = inputMsg[0];
+        return inSize;
     }
 
 
