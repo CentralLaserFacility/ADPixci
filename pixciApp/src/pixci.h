@@ -104,7 +104,7 @@ private:
      * @param reg register address to be read
      * @return register value 
      */
-    int readSerialRegister(char Register);
+    int readSerialRegister(char Register, char* val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication. 
