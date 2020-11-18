@@ -9,6 +9,15 @@
 
 static const char *driverName = "Pixci";
 
+typedef enum
+{
+  PR_INTERNAL_ITR,
+  PR_INTERNAL_FFR,
+  PR_EXTERNAL,
+  PR_BUTTON
+} PRAcquisitionMode_t;
+
+
 /** 
  * @brief Inherited from ADDriver class which has all the parameters that all areaDetector drivers should implemented.
  * parameters that are specific to the pixci frame grabber  is also included in this class.
@@ -102,9 +111,9 @@ private:
      * @brief read camera registers over serial communication.
      * 
      * @param reg register address to be read
-     * @return register value 
+     * @return status, asynSuccess if read was successfull , else asynError
      */
-    int readSerialRegister(char Register, char* val);
+    asynStatus readSerialRegister(char Register, char* val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication. 
@@ -143,4 +152,17 @@ private:
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
     asynStatus getTriggerStatus();
+    /**
+     * @brief Set the Trigger Mode for the image capturing
+     * 
+     * @param mode index of the mode
+     * 0 = internal itr mode
+     * 1 = internal ffr mode
+     * 2 = External mode
+     * 3 = Button (software trigger mode)
+     * @return asynStatus 
+     */
+    asynStatus setTriggerMode(int mode);
+
+
 };

@@ -41,6 +41,8 @@ extern "C"{
 #define RESERVED 0
 #define BAUDRATE 115200
 
+#define SUCCESS_MESSAGE 0x50
+
 #define BINNING1 1
 #define BINNING2 2
 #define BINNING4 4
@@ -379,10 +381,14 @@ Pixci::~Pixci(){
                 int test;
                 char one;
                 char reg = 0xD4;
-                printf("read status triggered \n");
-                test = readSerialRegister(reg, &one);
+                asynStatus status;
+                status = readSerialRegister(reg, &one);
+                if(status == asynSuccess){
                 printf("one val is %X",one);
-
+                }
+            }
+            else if(function==ADTriggerMode){
+                status = setTriggerMode(val);
             }
 
 
@@ -729,6 +735,9 @@ Pixci::~Pixci(){
             printf("read status called \n");
             addToParamQue(function,value);
         }
+        else if(function == ADTriggerMode){
+            addToParamQue(function,value);
+        }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
         }
@@ -770,7 +779,7 @@ Pixci::~Pixci(){
         return asynError;
     }
 
-    int Pixci::readSerialRegister(char Register, char *val){
+    asynStatus Pixci::readSerialRegister(char Register, char *val){
         char inputMsg[20];
         int inSize;
         char first_bufout[] = {0x53, 0xE0, 0x01, 0xFF, 0x50};
@@ -783,9 +792,32 @@ Pixci::~Pixci(){
         printf("read input size is %d\n",inSize);
         printf("char is %x and %x \n",inputMsg[0],inputMsg[1]);
         *val = inputMsg[0];
-        return inSize;
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+        return asynError;
     }
 
+    asynStatus Pixci::setTriggerMode(int mode){
+        char reg = 0xD4;
+        char hexval;
+        switch(mode){
+            case PR_INTERNAL_ITR:
+                hexval = 0x04;
+                break;
+            case PR_INTERNAL_FFR:
+                hexval = 0X06;
+                break;
+            case PR_EXTERNAL:
+                hexval = 0X40;
+                break;
+            default:
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d",mode);
+                return asynError;
+                break;
+        }
+        return Pixci::writeSerialRegister(UNIT, reg, hexval);
+    }
 
 /* Code for iocsh registration */
 
