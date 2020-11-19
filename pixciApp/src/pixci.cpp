@@ -736,7 +736,8 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == ADTriggerMode){
-            addToParamQue(function,value);
+            printf("trigger mode is %d",value);
+            //addToParamQue(function,value);
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
