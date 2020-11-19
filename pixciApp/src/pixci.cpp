@@ -237,6 +237,7 @@ Pixci::~Pixci(){
             setIntegerParam(ADAcquire, 1);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live started");
+            callParamCallbacks();
         }
     }
 
@@ -253,6 +254,7 @@ Pixci::~Pixci(){
             setIntegerParam(ADAcquire, 0);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
+            callParamCallbacks();
         }
 
     }
@@ -736,8 +738,7 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == ADTriggerMode){
-            printf("trigger mode is %d",value);
-            //addToParamQue(function,value);
+            addToParamQue(function,value);
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
