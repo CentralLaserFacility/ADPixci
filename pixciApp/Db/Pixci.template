@@ -1,0 +1,36 @@
+include "ADBase.template"
+
+######################
+# Override ADBase to extend Trigger Mode
+######################
+record(mbbo, "$(P)$(R)TriggerMode")
+{
+   field(ZRST, "Live - ITR")
+   field(ZRVL, "0")
+   field(ONST, "Live - FFR")
+   field(ONVL, "1")
+   field(TWST, "Ext. Triggered")
+   field(TWVL, "2")
+   field(THST, "Btn. Triggered")
+   field(THVL, "3")
+ }
+
+record(mbbi, "$(P)$(R)TriggerMode_RBV")
+{
+   field(ZRST, "Live - ITR")
+   field(ZRVL, "0")
+   field(ONST, "Live - FFR")
+   field(ONVL, "1")
+   field(TWST, "Ext. Triggered")
+   field(TWVL, "2")
+   field(THST, "Btn. Triggered")
+   field(THVL, "3")
+}
+
+record(bo, "$(P)$(R)SoftTrigger")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_SOFT_TRIGGER")
+   field(ZNAM, "Done")
+   field(ONAM, "Trigger")
+}
