@@ -72,11 +72,11 @@ private:
     /**
      * @brief starts live capture image to frame buffer.
      */
-    void acquireImage(void);
+    asynStatus acquireImage(void);
     /**
      * @brief Stops live capturing.
      */
-    void acquireStop(void);
+    asynStatus acquireStop(void);
     /**
      * @brief write serial command to the camera connected.
      * 
