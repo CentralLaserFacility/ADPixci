@@ -123,6 +123,9 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         int connectionStatusCode = 0;
         int serialConnection = 0;
+
+        createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
+
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
@@ -241,6 +244,7 @@ Pixci::~Pixci(){
         }
     }
 
+   
     void Pixci::acquireStop(){
         static const char *functionName = "acquireStop";
         int error;
@@ -391,6 +395,11 @@ Pixci::~Pixci(){
             }
             else if(function==ADTriggerMode){
                 status = setTriggerMode(val);
+            }
+            else if(function==PR_SoftTrigger){
+                char reg = 0xD4;
+                char hexval = 0x01;
+                Pixci::writeSerialRegister(UNIT, reg, hexval);
             }
 
 
@@ -740,6 +749,9 @@ Pixci::~Pixci(){
         else if(function == ADTriggerMode){
             addToParamQue(function,value);
         }
+        else if(function == PR_SoftTrigger){
+            addToParamQue(function,value);
+        }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
         }
@@ -812,6 +824,9 @@ Pixci::~Pixci(){
                 break;
             case PR_EXTERNAL:
                 hexval = 0X40;
+                break;
+            case PR_BUTTON_TRIGGER:
+                hexval = 0x00;
                 break;
             default:
                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d",mode);

@@ -9,12 +9,14 @@
 
 static const char *driverName = "Pixci";
 
+#define SoftTriggerParamString "PR_SOFT_TRIGGER"
+
 typedef enum
 {
   PR_INTERNAL_ITR,
   PR_INTERNAL_FFR,
   PR_EXTERNAL,
-  PR_BUTTON
+  PR_BUTTON_TRIGGER
 } PRAcquisitionMode_t;
 
 
@@ -61,6 +63,10 @@ public:
     void paramTask(void);
 
     ~Pixci();
+
+protected:
+  int PR_SoftTrigger;
+  #define FIRST_PIXCI_PARAM PR_SoftTrigger
 
 private:
     /**
