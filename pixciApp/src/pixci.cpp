@@ -224,7 +224,7 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
-    void Pixci::acquireImage(){
+    asynStatus Pixci::acquireImage(){
 
         /* TODO: implement all acquisition method like trigger, ringbuffer etc */
         static const char *functionName = "acquireImage";
@@ -234,18 +234,18 @@ Pixci::~Pixci(){
         error = pxd_goLive(UNIT, buffer);
         if(error < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "live error: %s : %s", functionName, pxd_mesgErrorCode(error));
+                  "acquisition error: %s : %s", functionName, pxd_mesgErrorCode(error));
+            return asynError;
         }
         else{
-            setIntegerParam(ADAcquire, 1);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "live started");
-            callParamCallbacks();
+                  "acquisition initiated ");
+            return asynSuccess;
         }
     }
 
    
-    void Pixci::acquireStop(){
+    asynStatus Pixci::acquireStop(){
         static const char *functionName = "acquireStop";
         int error;
         /* stop the live capturing */
@@ -253,12 +253,12 @@ Pixci::~Pixci(){
         if(error < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(error));
+            return asynError;
         }
         else{
-            setIntegerParam(ADAcquire, 0);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
-            callParamCallbacks();
+            return asynSuccess;
         }
 
     }
@@ -394,7 +394,28 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADTriggerMode){
+                int acquisitionStatus;
+                int previousTriggerMode;
                 status = setTriggerMode(val);
+                if(status == asynSuccess){
+                    if(val == PR_BUTTON_TRIGGER){
+                        acquireImage();
+                    }
+                    else{
+                        getIntegerParam(ADTriggerMode, &previousTriggerMode);
+                        if (previousTriggerMode == PR_BUTTON_TRIGGER)
+                        {
+                            getIntegerParam(ADAcquire, &acquisitionStatus);
+
+                            if (acquisitionStatus == 0)
+                            {
+                                printf("acquire stopped from triggermode\n");
+                                acquireStop();
+                            }
+                        }
+                    }
+                    setIntegerParam(ADTriggerMode, val);
+                }
             }
             else if(function==PR_SoftTrigger){
                 char reg = 0xD4;
@@ -718,21 +739,38 @@ Pixci::~Pixci(){
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
-        int status = asynSuccess;
+        asynStatus status = asynSuccess;
         static const char *functionName = "writeInt32";
 
         if (function == ADAcquire) {
             /* TODO: adstatus == ADStatusIdle has to be checked */
             if (value )
             {
-                acquireImage();
+                status = acquireImage();
+                if(status == asynSuccess){
+                    setIntegerParam(ADAcquire, 1);
+                    callParamCallbacks();
+                }
             }
 
             // Stop acquisition
             /* TODO: adstatus != ADStatusIdle has to be checked */
             if (!value)
-            {
-                acquireStop();
+            {   int acquireMode;
+                getIntegerParam(ADTriggerMode, &acquireMode);
+                if(acquireMode == PR_BUTTON_TRIGGER){
+                    printf("button triggermode is on#n");
+                    status = asynSuccess;
+                }
+                else{
+                    status = acquireStop();
+                    printf("not in button triggoer\n");
+                }
+                
+                if(status == asynSuccess){
+                    setIntegerParam(ADAcquire, 0);
+                    callParamCallbacks();
+                }
             }
 
         }   /* set  value for default parameters */
@@ -756,7 +794,7 @@ Pixci::~Pixci(){
             status = ADDriver::writeInt32(pasynUser, value);
         }
 
-        return (asynStatus) status;
+        return asynSuccess;
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
