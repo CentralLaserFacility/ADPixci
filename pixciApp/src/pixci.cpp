@@ -356,15 +356,15 @@ Pixci::~Pixci(){
             if(function==ADBinX){
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
-                {
-                    setIntegerParam(ADBinX, val);
+                {   
+                    setIntegerParam(ADBinX, val); //Updating the binX value.
                     callParamCallbacks();
-                    getIntegerParam(ADAcquire, &acquire);
-                    reloadVideoSettings();
-                    acquireStop();
+                    getIntegerParam(ADAcquire, &acquire); //Getting the ADAcquire value. 
+                    reloadVideoSettings(); //Video settings have to be loaded respective of binning value.
+                    acquireStop(); //Acquire have to be stopped before calling setupAcquisition.
                     setupAquisition();
                     if(acquire == 1){
-                        acquireImage();
+                        acquireImage();//starting acquisition if acquisition was running before.
                     }       
                 }
                 
@@ -384,7 +384,6 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                int test;
                 char one;
                 char reg = 0xD4;
                 asynStatus status;
@@ -399,16 +398,27 @@ Pixci::~Pixci(){
                 status = setTriggerMode(val);
                 if(status == asynSuccess){
                     if(val == PR_BUTTON_TRIGGER){
-                        acquireImage();
+                        /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
+                        called. For that acquireImage() function is called.
+                        */
+                        status = acquireImage();
+                        if(status == asynSuccess){
+                            printf("button acquire success\n");
+                        }
                     }
                     else{
+                        /* When changes the acquiremode from button triggered to any another trigger mode,
+                            we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
+                            Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
+                        */
                         getIntegerParam(ADTriggerMode, &previousTriggerMode);
                         if (previousTriggerMode == PR_BUTTON_TRIGGER)
                         {
                             getIntegerParam(ADAcquire, &acquisitionStatus);
 
                             if (acquisitionStatus == 0)
-                            {
+                            {   
+                                /* acquisiton is stopped if ADAcquire is on stop state*/
                                 printf("acquire stopped from triggermode\n");
                                 acquireStop();
                             }
@@ -422,8 +432,7 @@ Pixci::~Pixci(){
                 char hexval = 0x01;
                 Pixci::writeSerialRegister(UNIT, reg, hexval);
             }
-
-
+            callParamCallbacks();
         }
     }
 
@@ -742,6 +751,21 @@ Pixci::~Pixci(){
         asynStatus status = asynSuccess;
         static const char *functionName = "writeInt32";
 
+        /* There are two way of implementing int32 parameter changes,parameters that doesn't 
+        need to use serial communication  to implement and Parameteters that uses serial communication
+        for implementation.
+
+        Parameters that dont use serial communication, can be implemented by calling respective function
+        directly ex: ADAcquire.
+
+        Parameters that uses serial communication cannot be implmented directly here because,
+        serial communication may take some time to execute and return the status. To manage that issue
+        a paramTask thread is created. functions that uses serial communicaiton is called inside that
+        thread. So waiting for the status from serial communication won't affect the whole program.
+        addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
+        read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
+        */
+        
         if (function == ADAcquire) {
             /* TODO: adstatus == ADStatusIdle has to be checked */
             if (value )
@@ -756,7 +780,13 @@ Pixci::~Pixci(){
             // Stop acquisition
             /* TODO: adstatus != ADStatusIdle has to be checked */
             if (!value)
-            {   int acquireMode;
+            {   
+                /* In button trigger mode , acquisition should no be stoped, that will 
+                affect the WaitForSingleObject. So only status is updated to STOP. once 
+                the trigger mode is changed from button trigger mode, the actual implementation 
+                of acquireStop() will be done.
+                */
+                int acquireMode;
                 getIntegerParam(ADTriggerMode, &acquireMode);
                 if(acquireMode == PR_BUTTON_TRIGGER){
                     printf("button triggermode is on#n");
