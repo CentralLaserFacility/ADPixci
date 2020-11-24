@@ -125,6 +125,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         int serialConnection = 0;
 
         createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
+        createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -827,6 +828,9 @@ Pixci::~Pixci(){
         }
         else if(function == PR_SoftTrigger){
             addToParamQue(function,value);
+        }
+        else if(function == PR_TriggerPolarity){
+            printf("trigger polarity \n");
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);

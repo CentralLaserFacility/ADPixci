@@ -10,6 +10,7 @@
 static const char *driverName = "Pixci";
 
 #define SoftTriggerParamString "PR_SOFT_TRIGGER"
+#define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 
 typedef enum
 {
@@ -18,6 +19,12 @@ typedef enum
   PR_EXTERNAL,
   PR_BUTTON_TRIGGER
 } PRAcquisitionMode_t;
+
+typedef enum
+{
+  PR_EXT_RISING_EDGE,
+  PR_EXT_FALLING_EDGE
+}PR_TriggerPolarity_t;
 
 
 /** 
@@ -67,6 +74,7 @@ public:
 protected:
   int PR_SoftTrigger;
   #define FIRST_PIXCI_PARAM PR_SoftTrigger
+  int PR_TriggerPolarity;
 
 private:
     /**

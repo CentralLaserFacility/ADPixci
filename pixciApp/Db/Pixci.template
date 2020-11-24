@@ -34,3 +34,19 @@ record(bo, "$(P)$(R)SoftTrigger")
    field(ZNAM, "Done")
    field(ONAM, "Trigger")
 }
+
+record(bo, "$(P)$(R)TriggerPolarity")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
+   field(ZNAM, "Rising Edge")
+   field(ONAM, "Falling Edge")
+}
+
+record(bi, "$(P)$(R)TriggerPolarity")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
+   field(ZNAM, "Rising Edge")
+   field(ONAM, "Falling Edge")
+}
