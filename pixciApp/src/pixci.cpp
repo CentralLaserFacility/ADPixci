@@ -428,9 +428,17 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==PR_SoftTrigger){
-                char reg = 0xD4;
-                char hexval = 0x01;
-                Pixci::writeSerialRegister(UNIT, reg, hexval);
+                /* if trigger mode is button trigger then, do the soft trigger else print error */
+                int triggerMode;
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_BUTTON_TRIGGER){
+                    char reg = 0xD4;
+                    char hexval = 0x01;
+                    status = Pixci::writeSerialRegister(UNIT, reg, hexval);
+                }
+                else{
+                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+                }         
             }
             callParamCallbacks();
         }
