@@ -43,7 +43,7 @@ record(bo, "$(P)$(R)TriggerPolarity")
    field(ONAM, "Falling Edge")
 }
 
-record(bi, "$(P)$(R)TriggerPolarity")
+record(bi, "$(P)$(R)TriggerPolarity_RBV")
 {
    field(DTYP, "asynInt32")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
