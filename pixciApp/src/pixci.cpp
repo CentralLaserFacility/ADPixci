@@ -390,7 +390,7 @@ Pixci::~Pixci(){
                 asynStatus status;
                 status = readSerialRegister(reg, &one);
                 if(status == asynSuccess){
-                printf("one val is %X",one);
+                printf("one val is %X",(unsigned char)one);
                 }
             }
             else if(function==ADTriggerMode){
@@ -795,9 +795,9 @@ Pixci::~Pixci(){
                 the trigger mode is changed from button trigger mode, the actual implementation 
                 of acquireStop() will be done.
                 */
-                int acquireMode;
-                getIntegerParam(ADTriggerMode, &acquireMode);
-                if(acquireMode == PR_BUTTON_TRIGGER){
+                int triggerMode;
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_BUTTON_TRIGGER){
                     printf("button triggermode is on#n");
                     status = asynSuccess;
                 }
@@ -830,7 +830,19 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
-            printf("trigger polarity \n");
+            int triggerMode;
+            if(value == PR_EXT_RISING_EDGE){
+                setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+            }
+            else if(value == PR_EXT_FALLING_EDGE){
+                setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+            }
+            callParamCallbacks();
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            if(triggerMode == PR_EXTERNAL){
+                setTriggerMode(PR_EXTERNAL);
+            }
+
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
@@ -903,7 +915,15 @@ Pixci::~Pixci(){
                 hexval = 0X06;
                 break;
             case PR_EXTERNAL:
-                hexval = 0X40;
+                int triggerPolarity;
+                getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+                if(triggerPolarity == PR_EXT_FALLING_EDGE){
+                    hexval = 0xc0;
+                }
+                else{
+                    hexval = 0x40;
+                }
+                
                 break;
             case PR_BUTTON_TRIGGER:
                 hexval = 0x00;
