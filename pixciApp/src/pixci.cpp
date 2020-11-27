@@ -444,217 +444,239 @@ Pixci::~Pixci(){
         getIntegerParam(ADBinX, &sizeX);
         getIntegerParam(ADBinY, &sizeY);
 
-        switch(sizeX){
-            case BINNING1:
-                {
-                    if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_1X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_1X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_1X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_1X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_1X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_1X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING2:
-                {
-                    if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_2X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_2X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_2X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_2X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_2X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_2X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    
-                }
-                break;
-            case BINNING4:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_4X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_4X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_4X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_4X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_4X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_4X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING8:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_8X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_8X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_8X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_8X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_8X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_8X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING16:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_16X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_16X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_16X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_16X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_16X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_16X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING32:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_32X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_32X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_32X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_32X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_32X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_32X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            default:
-                {
-                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
-                }
-                break;
+        switch (sizeX)
+        {
+        case BINNING1:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_1X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_1X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_1X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_1X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_1X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_1X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING2:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_2X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_2X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_2X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_2X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_2X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_2X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING4:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_4X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_4X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_4X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_4X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_4X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_4X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING8:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_8X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_8X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_8X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_8X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_8X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_8X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING16:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_16X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_16X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_16X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_16X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_16X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_16X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING32:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_32X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_32X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_32X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_32X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_32X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_32X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
+            break;
         }
     }
 
