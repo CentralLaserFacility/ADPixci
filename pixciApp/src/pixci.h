@@ -12,6 +12,7 @@ static const char *driverName = "Pixci";
 #define SoftTriggerParamString "PR_SOFT_TRIGGER"
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 
+/* Trigger modes of Raptor Eagle-XV" */
 typedef enum
 {
   PR_INTERNAL_ITR,
@@ -20,6 +21,7 @@ typedef enum
   PR_BUTTON_TRIGGER
 } PRAcquisitionMode_t;
 
+/* Trigger Polarity */
 typedef enum
 {
   PR_EXT_RISING_EDGE,
@@ -165,11 +167,16 @@ private:
      */
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
+    /**
+     * @brief Get the Trigger Status of camera
+     * 
+     * @return asynStatus 
+     */
     asynStatus getTriggerStatus();
     /**
      * @brief Set the Trigger Mode for the image capturing
      * 
-     * @param mode index of the mode
+     * @param mode index of the mode,
      * 0 = internal itr mode
      * 1 = internal ffr mode
      * 2 = External mode
