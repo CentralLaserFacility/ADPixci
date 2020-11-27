@@ -385,13 +385,10 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                char one;
+                char input;
                 char reg = 0xD4;
                 asynStatus status;
-                status = readSerialRegister(reg, &one);
-                if(status == asynSuccess){
-                printf("one val is %X",(unsigned char)one);
-                }
+                status = readSerialRegister(reg, &input);
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -403,9 +400,6 @@ Pixci::~Pixci(){
                         called. For that acquireImage() function is called.
                         */
                         status = acquireImage();
-                        if(status == asynSuccess){
-                            printf("button acquire success\n");
-                        }
                     }
                     else{
                         /* When changes the acquiremode from button triggered to any another trigger mode,
@@ -420,7 +414,6 @@ Pixci::~Pixci(){
                             if (acquisitionStatus == 0)
                             {   
                                 /* acquisiton is stopped if ADAcquire is on stop state*/
-                                printf("acquire stopped from triggermode\n");
                                 acquireStop();
                             }
                         }
@@ -798,12 +791,10 @@ Pixci::~Pixci(){
                 int triggerMode;
                 getIntegerParam(ADTriggerMode, &triggerMode);
                 if(triggerMode == PR_BUTTON_TRIGGER){
-                    printf("button triggermode is on#n");
                     status = asynSuccess;
                 }
                 else{
                     status = acquireStop();
-                    printf("not in button triggoer\n");
                 }
                 
                 if(status == asynSuccess){
@@ -820,7 +811,6 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == ADReadStatus){
-            printf("read status called \n");
             addToParamQue(function,value);
         }
         else if(function == ADTriggerMode){
@@ -895,8 +885,7 @@ Pixci::~Pixci(){
         /*writing to serial connection*/
         inSize = writeReadSerial(UNIT, first_bufout, 5, inputMsg, 20);
         inSize = writeReadSerial(UNIT, last_bufout, 5, inputMsg, 20);
-        printf("read input size is %d\n",inSize);
-        printf("char is %x and %x \n",inputMsg[0],inputMsg[1]);
+
         *val = inputMsg[0];
         if(inputMsg[1] == SUCCESS_MESSAGE){
             return asynSuccess;
