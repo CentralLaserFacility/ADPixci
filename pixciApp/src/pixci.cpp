@@ -118,9 +118,6 @@ extern "C" int pixciConfig(const char *portName,
 Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
-        /* TODO:  Driver-specific parameters for the driver will be defined here */
-
-
         int connectionStatusCode = 0;
         int serialConnection = 0;
 
@@ -286,34 +283,48 @@ Pixci::~Pixci(){
         epicsTimeStamp currentTime;
         epicsInt32 numImagesCounter;
         epicsInt32 imageCounter;
+        epicsInt32 arrayCallbacks;
         setupAquisition();
 
         for (;;){
             /* waiting for event to be triggered */
             /* TODO: seperate waiting task for linux */
             WaitForSingleObject(g_hEvent, INFINITE);
-            lock();
+            
 
             getIntegerParam(NDArraySizeX, &sizeX);
             getIntegerParam(NDArraySizeY, &sizeY);
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
+            getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
 
             dims[0] = sizeX;
             dims[1] = sizeY;
             dataType = NDUInt8;
 
-            /* Allocate NDArray */
-            pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
-            /* Pixel values from an image frame buffer and area of interest are copied into buffer
-            pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
+            if (arrayCallbacks)
+            {
+                lock();
+                /* Allocate NDArray */
+                pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
+                /* Pixel values from an image frame buffer and area of interest are copied into buffer
+                pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
+                pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8 *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
 
-             /* uniqueId and timeStamp must be implemented for standard ADDriver. */
-            pImage->uniqueId = imageCounter;
-            epicsTimeGetCurrent(&currentTime);
-            pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
-            updateTimeStamp(&pImage->epicsTS);
+                /* uniqueId and timeStamp must be implemented for standard ADDriver. */
+                pImage->uniqueId = imageCounter;
+                epicsTimeGetCurrent(&currentTime);
+                pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
+                updateTimeStamp(&pImage->epicsTS);
+                unlock();
+                /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
+                Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
+                or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
+                doCallbacksGenericPointer(pImage, NDArrayData, 0);
+                if (this->pArrays[0])
+                    this->pArrays[0]->release();
+                this->pArrays[0] = pImage;
+            }
 
             getIntegerParam(NDArrayCounter, &imageCounter);
             getIntegerParam(ADNumImagesCounter, &numImagesCounter);
@@ -323,15 +334,6 @@ Pixci::~Pixci(){
             setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt8));
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
-
-            unlock();
-
-            /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
-            Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
-             or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
-            doCallbacksGenericPointer(pImage, NDArrayData, 0);
-            if (this->pArrays[0]) this->pArrays[0]->release();
-            this->pArrays[0] = pImage;
             callParamCallbacks();
         }
     }
