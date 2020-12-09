@@ -41,6 +41,8 @@ extern "C"{
 #define RESERVED 0
 #define BAUDRATE 115200
 
+#define SUCCESS_MESSAGE 0x50
+
 #define BINNING1 1
 #define BINNING2 2
 #define BINNING4 4
@@ -116,11 +118,12 @@ extern "C" int pixciConfig(const char *portName,
 Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
-        /* TODO:  Driver-specific parameters for the driver will be defined here */
-
-
         int connectionStatusCode = 0;
         int serialConnection = 0;
+
+        createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
+        createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
+
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
@@ -219,7 +222,7 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
-    void Pixci::acquireImage(){
+    asynStatus Pixci::acquireImage(){
 
         /* TODO: implement all acquisition method like trigger, ringbuffer etc */
         static const char *functionName = "acquireImage";
@@ -229,16 +232,18 @@ Pixci::~Pixci(){
         error = pxd_goLive(UNIT, buffer);
         if(error < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "live error: %s : %s", functionName, pxd_mesgErrorCode(error));
+                  "acquisition error: %s : %s", functionName, pxd_mesgErrorCode(error));
+            return asynError;
         }
         else{
-            setIntegerParam(ADAcquire, 1);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "live started");
+                  "acquisition initiated ");
+            return asynSuccess;
         }
     }
 
-    void Pixci::acquireStop(){
+   
+    asynStatus Pixci::acquireStop(){
         static const char *functionName = "acquireStop";
         int error;
         /* stop the live capturing */
@@ -246,11 +251,12 @@ Pixci::~Pixci(){
         if(error < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "live couldn't stop: %s : %s",functionName, pxd_mesgErrorCode(error));
+            return asynError;
         }
         else{
-            setIntegerParam(ADAcquire, 0);
             asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
+            return asynSuccess;
         }
 
     }
@@ -277,34 +283,48 @@ Pixci::~Pixci(){
         epicsTimeStamp currentTime;
         epicsInt32 numImagesCounter;
         epicsInt32 imageCounter;
+        epicsInt32 arrayCallbacks;
         setupAquisition();
 
         for (;;){
             /* waiting for event to be triggered */
             /* TODO: seperate waiting task for linux */
             WaitForSingleObject(g_hEvent, INFINITE);
-            lock();
+            
 
             getIntegerParam(NDArraySizeX, &sizeX);
             getIntegerParam(NDArraySizeY, &sizeY);
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
+            getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
 
             dims[0] = sizeX;
             dims[1] = sizeY;
             dataType = NDUInt8;
 
-            /* Allocate NDArray */
-            pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
-            /* Pixel values from an image frame buffer and area of interest are copied into buffer
-            pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8*)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
+            if (arrayCallbacks)
+            {
+                lock();
+                /* Allocate NDArray */
+                pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
+                /* Pixel values from an image frame buffer and area of interest are copied into buffer
+                pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
+                pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8 *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
 
-             /* uniqueId and timeStamp must be implemented for standard ADDriver. */
-            pImage->uniqueId = imageCounter;
-            epicsTimeGetCurrent(&currentTime);
-            pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
-            updateTimeStamp(&pImage->epicsTS);
+                /* uniqueId and timeStamp must be implemented for standard ADDriver. */
+                pImage->uniqueId = imageCounter;
+                epicsTimeGetCurrent(&currentTime);
+                pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
+                updateTimeStamp(&pImage->epicsTS);
+                unlock();
+                /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
+                Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
+                or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
+                doCallbacksGenericPointer(pImage, NDArrayData, 0);
+                if (this->pArrays[0])
+                    this->pArrays[0]->release();
+                this->pArrays[0] = pImage;
+            }
 
             getIntegerParam(NDArrayCounter, &imageCounter);
             getIntegerParam(ADNumImagesCounter, &numImagesCounter);
@@ -314,15 +334,6 @@ Pixci::~Pixci(){
             setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt8));
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
-
-            unlock();
-
-            /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
-            Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
-             or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
-            doCallbacksGenericPointer(pImage, NDArrayData, 0);
-            if (this->pArrays[0]) this->pArrays[0]->release();
-            this->pArrays[0] = pImage;
             callParamCallbacks();
         }
     }
@@ -348,20 +359,20 @@ Pixci::~Pixci(){
             if(function==ADBinX){
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
-                {
-                    setIntegerParam(ADBinX, val);
+                {   
+                    setIntegerParam(ADBinX, val); //Updating the binX value.
                     callParamCallbacks();
-                    getIntegerParam(ADAcquire, &acquire);
-                    reloadVideoSettings();
-                    acquireStop();
+                    getIntegerParam(ADAcquire, &acquire); //Getting the ADAcquire value. 
+                    reloadVideoSettings(); //Video settings have to be loaded respective of binning value.
+                    acquireStop(); //Acquire have to be stopped before calling setupAcquisition.
                     setupAquisition();
                     if(acquire == 1){
-                        acquireImage();
+                        acquireImage();//starting acquisition if acquisition was running before.
                     }       
                 }
                 
             }
-            if(function==ADBinY){
+            else if(function==ADBinY){
                 status = Pixci::setBin(val,1);
                 if(status==asynSuccess){
                     setIntegerParam(ADBinY, val);
@@ -375,7 +386,57 @@ Pixci::~Pixci(){
                     }       
                 }
             }
+            else if(function==ADReadStatus){
+                char input;
+                char reg = 0xD4;
+                asynStatus status;
+                status = readSerialRegister(reg, &input);
+            }
+            else if(function==ADTriggerMode){
+                int acquisitionStatus;
+                int previousTriggerMode;
+                status = setTriggerMode(val);
+                if(status == asynSuccess){
+                    if(val == PR_BUTTON_TRIGGER){
+                        /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
+                        called. For that acquireImage() function is called.
+                        */
+                        status = acquireImage();
+                    }
+                    else{
+                        /* When changes the acquiremode from button triggered to any another trigger mode,
+                            we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
+                            Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
+                        */
+                        getIntegerParam(ADTriggerMode, &previousTriggerMode);
+                        if (previousTriggerMode == PR_BUTTON_TRIGGER)
+                        {
+                            getIntegerParam(ADAcquire, &acquisitionStatus);
 
+                            if (acquisitionStatus == 0)
+                            {   
+                                /* acquisiton is stopped if ADAcquire is on stop state*/
+                                acquireStop();
+                            }
+                        }
+                    }
+                    setIntegerParam(ADTriggerMode, val);
+                }
+            }
+            else if(function==PR_SoftTrigger){
+                /* if trigger mode is button trigger then, do the soft trigger else print error */
+                int triggerMode;
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_BUTTON_TRIGGER){
+                    char reg = 0xD4;
+                    char hexval = 0x01;
+                    status = Pixci::writeSerialRegister(UNIT, reg, hexval);
+                }
+                else{
+                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+                }         
+            }
+            callParamCallbacks();
         }
     }
 
@@ -385,217 +446,239 @@ Pixci::~Pixci(){
         getIntegerParam(ADBinX, &sizeX);
         getIntegerParam(ADBinY, &sizeY);
 
-        switch(sizeX){
-            case BINNING1:
-                {
-                    if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_1X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_1X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_1X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_1X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_1X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_1X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING2:
-                {
-                    if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_2X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_2X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_2X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_2X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_2X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_2X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    
-                }
-                break;
-            case BINNING4:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_4X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_4X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_4X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_4X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_4X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_4X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING8:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_8X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_8X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_8X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_8X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_8X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_8X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING16:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_16X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_16X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_16X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_16X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_16X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_16X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            case BINNING32:
-                {
-                     if(sizeY==BINNING1){
-                        #include BINNINGSETTINGS_32X1
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING2){
-                        #include BINNINGSETTINGS_32X2
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING4){
-                        #include BINNINGSETTINGS_32X4
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING8){
-                        #include BINNINGSETTINGS_32X8
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING16){
-                        #include BINNINGSETTINGS_32X16
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                    else if(sizeY==BINNING32){
-                        #include BINNINGSETTINGS_32X32
-                        pxd_videoFormatAsIncludedInit(0);
-                        pxd_videoFormatAsIncluded(0);
-                    }
-                }
-                break;
-            default:
-                {
-                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
-                }
-                break;
+        switch (sizeX)
+        {
+        case BINNING1:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_1X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_1X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_1X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_1X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_1X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_1X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING2:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_2X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_2X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_2X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_2X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_2X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_2X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING4:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_4X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_4X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_4X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_4X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_4X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_4X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING8:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_8X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_8X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_8X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_8X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_8X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_8X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING16:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_16X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_16X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_16X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_16X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_16X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_16X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        case BINNING32:
+            if (sizeY == BINNING1)
+            {
+                #include BINNINGSETTINGS_32X1
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING2)
+            {
+                #include BINNINGSETTINGS_32X2
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING4)
+            {
+                #include BINNINGSETTINGS_32X4
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING8)
+            {
+                #include BINNINGSETTINGS_32X8
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING16)
+            {
+                #include BINNINGSETTINGS_32X16
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            else if (sizeY == BINNING32)
+            {
+                #include BINNINGSETTINGS_32X32
+                pxd_videoFormatAsIncludedInit(0);
+                pxd_videoFormatAsIncluded(0);
+            }
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
+            break;
         }
     }
 
@@ -691,21 +774,57 @@ Pixci::~Pixci(){
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
-        int status = asynSuccess;
+        asynStatus status = asynSuccess;
         static const char *functionName = "writeInt32";
 
+        /* There are two way of implementing int32 parameter changes,parameters that doesn't 
+        need to use serial communication  to implement and Parameteters that uses serial communication
+        for implementation.
+
+        Parameters that dont use serial communication, can be implemented by calling respective function
+        directly ex: ADAcquire.
+
+        Parameters that uses serial communication cannot be implmented directly here because,
+        serial communication may take some time to execute and return the status. To manage that issue
+        a paramTask thread is created. functions that uses serial communicaiton is called inside that
+        thread. So waiting for the status from serial communication won't affect the whole program.
+        addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
+        read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
+        */
+        
         if (function == ADAcquire) {
             /* TODO: adstatus == ADStatusIdle has to be checked */
             if (value )
             {
-                acquireImage();
+                status = acquireImage();
+                if(status == asynSuccess){
+                    setIntegerParam(ADAcquire, 1);
+                    callParamCallbacks();
+                }
             }
 
             // Stop acquisition
             /* TODO: adstatus != ADStatusIdle has to be checked */
             if (!value)
-            {
-                acquireStop();
+            {   
+                /* In button trigger mode , acquisition should no be stoped, that will 
+                affect the WaitForSingleObject. So only status is updated to STOP. once 
+                the trigger mode is changed from button trigger mode, the actual implementation 
+                of acquireStop() will be done.
+                */
+                int triggerMode;
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_BUTTON_TRIGGER){
+                    status = asynSuccess;
+                }
+                else{
+                    status = acquireStop();
+                }
+                
+                if(status == asynSuccess){
+                    setIntegerParam(ADAcquire, 0);
+                    callParamCallbacks();
+                }
             }
 
         }   /* set  value for default parameters */
@@ -715,11 +834,35 @@ Pixci::~Pixci(){
         else if(function == ADBinY){
             addToParamQue(function,value);
         }
+        else if(function == ADReadStatus){
+            addToParamQue(function,value);
+        }
+        else if(function == ADTriggerMode){
+            addToParamQue(function,value);
+        }
+        else if(function == PR_SoftTrigger){
+            addToParamQue(function,value);
+        }
+        else if(function == PR_TriggerPolarity){
+            int triggerMode;
+            if(value == PR_EXT_RISING_EDGE){
+                setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+            }
+            else if(value == PR_EXT_FALLING_EDGE){
+                setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+            }
+            callParamCallbacks();
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            if(triggerMode == PR_EXTERNAL){
+                setTriggerMode(PR_EXTERNAL);
+            }
+
+        }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
         }
 
-        return (asynStatus) status;
+        return asynSuccess;
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
@@ -756,6 +899,55 @@ Pixci::~Pixci(){
         return asynError;
     }
 
+    asynStatus Pixci::readSerialRegister(char Register, char *val){
+        char inputMsg[20];
+        int inSize;
+        char first_bufout[] = {0x53, 0xE0, 0x01, 0xFF, 0x50};
+        char last_bufout[] = {0x53, 0xE1, 0x01, 0x50};
+        first_bufout[3] = Register;
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, 5, inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, 5, inputMsg, 20);
+
+        *val = inputMsg[0];
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+        return asynError;
+    }
+
+    asynStatus Pixci::setTriggerMode(int mode){
+        char reg = 0xD4;
+        char hexval;
+        switch(mode){
+            case PR_INTERNAL_ITR:
+                hexval = 0x04;
+                break;
+            case PR_INTERNAL_FFR:
+                hexval = 0X06;
+                break;
+            case PR_EXTERNAL:
+                int triggerPolarity;
+                getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+                if(triggerPolarity == PR_EXT_FALLING_EDGE){
+                    hexval = 0xc0;
+                }
+                else{
+                    hexval = 0x40;
+                }
+                
+                break;
+            case PR_BUTTON_TRIGGER:
+                hexval = 0x00;
+                break;
+            default:
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d",mode);
+                return asynError;
+                break;
+        }
+        return Pixci::writeSerialRegister(UNIT, reg, hexval);
+    }
 
 /* Code for iocsh registration */
 
