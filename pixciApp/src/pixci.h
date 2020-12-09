@@ -9,6 +9,26 @@
 
 static const char *driverName = "Pixci";
 
+#define SoftTriggerParamString "PR_SOFT_TRIGGER"
+#define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
+
+/* Trigger modes of Raptor Eagle-XV" */
+typedef enum
+{
+  PR_INTERNAL_ITR,
+  PR_INTERNAL_FFR,
+  PR_EXTERNAL,
+  PR_BUTTON_TRIGGER
+} PRAcquisitionMode_t;
+
+/* Trigger Polarity */
+typedef enum
+{
+  PR_EXT_RISING_EDGE,
+  PR_EXT_FALLING_EDGE
+}PR_TriggerPolarity_t;
+
+
 /** 
  * @brief Inherited from ADDriver class which has all the parameters that all areaDetector drivers should implemented.
  * parameters that are specific to the pixci frame grabber  is also included in this class.
@@ -53,15 +73,20 @@ public:
 
     ~Pixci();
 
+protected:
+  int PR_SoftTrigger;
+  #define FIRST_PIXCI_PARAM PR_SoftTrigger
+  int PR_TriggerPolarity;
+
 private:
     /**
      * @brief starts live capture image to frame buffer.
      */
-    void acquireImage(void);
+    asynStatus acquireImage(void);
     /**
      * @brief Stops live capturing.
      */
-    void acquireStop(void);
+    asynStatus acquireStop(void);
     /**
      * @brief write serial command to the camera connected.
      * 
@@ -101,11 +126,10 @@ private:
     /**
      * @brief read camera registers over serial communication.
      * 
-     * @param unit unit numner of camera
-     * @param value address to store the value
-     * @return asynStatus 
+     * @param reg register address to be read
+     * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(int unit, int value);
+    asynStatus readSerialRegister(char Register, char* val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication. 
@@ -142,4 +166,24 @@ private:
      * @return asynStatus 
      */
     asynStatus writeSerialRegister(int unit, char Register, char val);
+
+    /**
+     * @brief Get the Trigger Status of camera
+     * 
+     * @return asynStatus 
+     */
+    asynStatus getTriggerStatus();
+    /**
+     * @brief Set the Trigger Mode for the image capturing
+     * 
+     * @param mode index of the mode,
+     * 0 = internal itr mode
+     * 1 = internal ffr mode
+     * 2 = External mode
+     * 3 = Button (software trigger mode)
+     * @return asynStatus 
+     */
+    asynStatus setTriggerMode(int mode);
+
+
 };
