@@ -155,6 +155,7 @@ private:
      * @param value 
      */
     void addToParamQue(int function, int value);
+    void addToParamQue(int function, epicsFloat64 value);
 
     /**
      * @brief write value to the registers of the camera using serial command, might take longer
