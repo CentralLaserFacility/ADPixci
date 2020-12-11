@@ -166,7 +166,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
 
-        paramMsgQue = new epicsMessageQueue(20,8);
+        paramMsgQue = new epicsMessageQueue(20,16);
 
     }
 
@@ -871,6 +871,15 @@ Pixci::~Pixci(){
         functionAndVal[1] = value;
         /*sending buffer data to the que */
         paramMsgQue->send(functionAndVal,8);
+
+    }
+
+    void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value){
+        epicsFloat64 functionAndVal[2];
+        functionAndVal[0] = function;
+        functionAndVal[1] = value;
+        /*sending buffer data to the que */
+        paramMsgQue->send(functionAndVal,16);
 
     }
 
