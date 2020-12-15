@@ -346,17 +346,21 @@ Pixci::~Pixci(){
     }
 
     void Pixci::paramTask(){
-        epicsInt32 functionAndVal[2];
+        epicsFloat64 functionAndVal[2];
         epicsInt32 function;
-        epicsInt32 val;
+        epicsFloat64 val;
+        epicsInt32 intVal;
         asynStatus status;
         epicsInt32 acquire;
+        epicsInt32 size;
         for(;;){
-            paramMsgQue->receive(functionAndVal,8);
-            function = functionAndVal[0];
+            size = paramMsgQue->receive(functionAndVal,16);
+            function = (int)functionAndVal[0];
             val = functionAndVal[1];
-
+            printf("size is %d\n",size);
+            printf("function is %d\n",function);
             if(function==ADBinX){
+                printf("binning %f\n",val);
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
                 {   
@@ -435,6 +439,9 @@ Pixci::~Pixci(){
                 else{
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
+            }
+            else if(function == ADAcquireTime){
+                printf("acquiretime is %f\n",val);
             }
             callParamCallbacks();
         }
@@ -865,12 +872,27 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
+    asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value){
+        int function = pasynUser->reason;
+        asynStatus status = asynSuccess;
+        static const char *functionName = "writeFloat64";
+
+        if(function == ADAcquireTime){
+            // printf("acquire time triggered %f\n",value);
+            addToParamQue(function,value);
+        }
+
+        return asynSuccess;
+
+    }
+
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
-        epicsInt32 functionAndVal[2];
+        epicsFloat64 functionAndVal[2];
         functionAndVal[0] = function;
         functionAndVal[1] = value;
         /*sending buffer data to the que */
-        paramMsgQue->send(functionAndVal,8);
+        printf("sending function %d, value %d\n",function, value);
+        paramMsgQue->send(functionAndVal,16);
 
     }
 
