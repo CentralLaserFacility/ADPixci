@@ -187,6 +187,14 @@ private:
      * @return asynStatus 
      */
     asynStatus setTriggerMode(int mode);
-
+    /**
+     * @brief Set the Frame Rate for Internal FFR mode
+     * 
+     * @param frameRate 
+     * @return asynStatus 
+     */
+    asynStatus setFrameRate(double frameRate);
+    unsigned long UcharToLong( char* cval);
+    void longTouchar(long lval, char* cval);
 
 };

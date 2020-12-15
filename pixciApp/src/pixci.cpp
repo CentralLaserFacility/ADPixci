@@ -392,9 +392,31 @@ Pixci::~Pixci(){
             }
             else if(function==ADReadStatus){
                 char input;
+                char cval[5] ={0,0,0,0,0};
+                double framerate;
+                int size;
                 char reg = 0xD4;
+                char dc;
+                char dd;
+                char de;
+                char df;
+                char e0;
                 asynStatus status;
-                status = readSerialRegister(reg, &input);
+                unsigned long long lval;
+                // status = readSerialRegister(reg, &input);
+
+                readSerialRegister(0XDC, &cval[0]);
+                readSerialRegister(0xDD, &cval[1]);
+                readSerialRegister(0xDE, &cval[2]);
+                readSerialRegister(0XDF, &cval[3]);
+                readSerialRegister(0XE0, &cval[4]);
+                lval = UcharToLong(cval);
+                //framerate = 40e6/double(lval);
+                //framerate = floor(framerate*100+0.25)/100.0;
+
+                printf("long value is %lu \n",lval);
+                printf("size of lval is %lu \n",sizeof(size));
+                
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -689,6 +711,26 @@ Pixci::~Pixci(){
         }
     }
 
+    unsigned long Pixci::UcharToLong( char* cval){
+        unsigned lval = 0;
+        lval += (unsigned long )(unsigned char)cval[4];
+        lval += ((unsigned long )(unsigned char)cval[3])<<8;
+        lval += ((unsigned long )(unsigned char)cval[2])<<16;
+        lval += ((unsigned long )(unsigned char)cval[1])<<24;
+        lval += ((unsigned long )(unsigned char)cval[0])<<32;
+        return lval;
+
+    }
+
+    void Pixci::longTouchar(long lval, char* cval){
+        char ucval[5];
+        cval[0] = (char)((lval & 0xFF00000000) >> 32 );
+        cval[1]  = (char)((lval & 0x00FF000000) >> 24 );
+        cval[2] = (char)((lval & 0x0000FF0000) >> 16 );
+        cval[3] = (char)((lval & 0x000000FF00) >> 8 );
+        cval[4] = (char)((lval & 0x00000000FF) );
+    }
+
     int Pixci::writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize){
         int count, i;
         char bufOut[50];
@@ -777,6 +819,21 @@ Pixci::~Pixci(){
         }
         return Pixci::writeSerialRegister(UNIT, reg, hexval);
 
+    }
+
+    asynStatus Pixci::setFrameRate(double frameRate){
+        unsigned long frameRateCount;
+        unsigned long lval;
+        char frameRateHexVal[5] = {0,0,0,0,0};
+        frameRateCount = (unsigned long)(40e6/frameRate);
+        //frameRateHexVal
+        longTouchar(frameRateCount, frameRateHexVal);
+        lval = UcharToLong(frameRateHexVal);
+                //framerate = 40e6/double(lval);
+                //framerate = floor(framerate*100+0.25)/100.0;
+
+        printf("long value is %lu \n",lval);
+        return asynSuccess;
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
@@ -880,6 +937,7 @@ Pixci::~Pixci(){
         if(function == ADAcquireTime){
             // printf("acquire time triggered %f\n",value);
             addToParamQue(function,value);
+            setFrameRate(value);
         }
 
         return asynSuccess;
