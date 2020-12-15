@@ -59,6 +59,8 @@ public:
      * @return asynStatus 
      */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
+
+    virtual asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value);
     
     /**
      * @brief thread that waits for signal from frame grabber during live capture
