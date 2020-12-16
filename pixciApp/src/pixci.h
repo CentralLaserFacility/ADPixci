@@ -194,7 +194,8 @@ private:
      * @return asynStatus 
      */
     asynStatus setFrameRate(double frameRate);
-    unsigned long UcharToLong( char* cval);
+    double getFrameRate();
+    unsigned long long UcharToLong( char* cval);
     void longTouchar(long lval, char* cval);
 
 };

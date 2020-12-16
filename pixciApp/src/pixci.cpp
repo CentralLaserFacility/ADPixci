@@ -391,32 +391,7 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                char input;
-                char cval[5] ={0,0,0,0,0};
-                double framerate;
-                int size;
-                char reg = 0xD4;
-                char dc;
-                char dd;
-                char de;
-                char df;
-                char e0;
-                asynStatus status;
-                unsigned long long lval;
-                // status = readSerialRegister(reg, &input);
-
-                readSerialRegister(0XDC, &cval[0]);
-                readSerialRegister(0xDD, &cval[1]);
-                readSerialRegister(0xDE, &cval[2]);
-                readSerialRegister(0XDF, &cval[3]);
-                readSerialRegister(0XE0, &cval[4]);
-                lval = UcharToLong(cval);
-                //framerate = 40e6/double(lval);
-                //framerate = floor(framerate*100+0.25)/100.0;
-
-                printf("long value is %lu \n",lval);
-                printf("size of lval is %lu \n",sizeof(size));
-                
+                getFrameRate();
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -463,7 +438,14 @@ Pixci::~Pixci(){
                 }         
             }
             else if(function == ADAcquireTime){
-                printf("acquiretime is %f\n",val);
+                status = setFrameRate(val);
+                if(status == asynSuccess){
+                    double readBackFrameRate;
+                    readBackFrameRate = getFrameRate();
+                    if(readBackFrameRate > 0){
+                        setDoubleParam(ADAcquireTime, readBackFrameRate);
+                    }
+                }
             }
             callParamCallbacks();
         }
@@ -711,8 +693,8 @@ Pixci::~Pixci(){
         }
     }
 
-    unsigned long Pixci::UcharToLong( char* cval){
-        unsigned lval = 0;
+    unsigned long long Pixci::UcharToLong( char* cval){
+        unsigned long long lval = 0;
         lval += (unsigned long )(unsigned char)cval[4];
         lval += ((unsigned long )(unsigned char)cval[3])<<8;
         lval += ((unsigned long )(unsigned char)cval[2])<<16;
@@ -823,17 +805,42 @@ Pixci::~Pixci(){
 
     asynStatus Pixci::setFrameRate(double frameRate){
         unsigned long frameRateCount;
-        unsigned long lval;
+        unsigned long long lval;
         char frameRateHexVal[5] = {0,0,0,0,0};
         frameRateCount = (unsigned long)(40e6/frameRate);
         //frameRateHexVal
         longTouchar(frameRateCount, frameRateHexVal);
+        
+
         lval = UcharToLong(frameRateHexVal);
                 //framerate = 40e6/double(lval);
                 //framerate = floor(framerate*100+0.25)/100.0;
 
         printf("long value is %lu \n",lval);
-        return asynSuccess;
+        writeSerialRegister(UNIT, 0xDC, frameRateHexVal[0]);
+        writeSerialRegister(UNIT, 0xDD, frameRateHexVal[1]);
+        writeSerialRegister(UNIT, 0xDE, frameRateHexVal[2]);
+        writeSerialRegister(UNIT, 0xDF, frameRateHexVal[3]);
+        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4]);
+        // return asynSuccess;
+    }
+
+    double Pixci::getFrameRate(){
+        char cval[5] ={0,0,0,0,0};
+        double frameRate = 0.0;
+        asynStatus status;
+        unsigned long long frameRateCount = 0;
+        readSerialRegister(0XDC, &cval[0]);
+        readSerialRegister(0xDD, &cval[1]);
+        readSerialRegister(0xDE, &cval[2]);
+        readSerialRegister(0XDF, &cval[3]);
+        readSerialRegister(0XE0, &cval[4]);
+
+        frameRateCount = UcharToLong(cval);
+        if (frameRateCount > 0){
+            frameRate = 40e6/double(frameRateCount);
+        }
+        return frameRate;
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
@@ -937,7 +944,7 @@ Pixci::~Pixci(){
         if(function == ADAcquireTime){
             // printf("acquire time triggered %f\n",value);
             addToParamQue(function,value);
-            setFrameRate(value);
+           
         }
 
         return asynSuccess;
