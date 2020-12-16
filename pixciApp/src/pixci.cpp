@@ -349,18 +349,14 @@ Pixci::~Pixci(){
         epicsFloat64 functionAndVal[2];
         epicsInt32 function;
         epicsFloat64 val;
-        epicsInt32 intVal;
         asynStatus status;
         epicsInt32 acquire;
-        epicsInt32 size;
+
         for(;;){
-            size = paramMsgQue->receive(functionAndVal,16);
+            paramMsgQue->receive(functionAndVal,16);
             function = (int)functionAndVal[0];
             val = functionAndVal[1];
-            printf("size is %d\n",size);
-            printf("function is %d\n",function);
             if(function==ADBinX){
-                printf("binning %f\n",val);
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
                 {   
@@ -808,21 +804,13 @@ Pixci::~Pixci(){
         unsigned long long lval;
         char frameRateHexVal[5] = {0,0,0,0,0};
         frameRateCount = (unsigned long)(40e6/frameRate);
-        //frameRateHexVal
         longTouchar(frameRateCount, frameRateHexVal);
-        
 
-        lval = UcharToLong(frameRateHexVal);
-                //framerate = 40e6/double(lval);
-                //framerate = floor(framerate*100+0.25)/100.0;
-
-        printf("long value is %lu \n",lval);
         writeSerialRegister(UNIT, 0xDC, frameRateHexVal[0]);
         writeSerialRegister(UNIT, 0xDD, frameRateHexVal[1]);
         writeSerialRegister(UNIT, 0xDE, frameRateHexVal[2]);
         writeSerialRegister(UNIT, 0xDF, frameRateHexVal[3]);
-        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4]);
-        // return asynSuccess;
+        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4
     }
 
     double Pixci::getFrameRate(){
@@ -942,13 +930,9 @@ Pixci::~Pixci(){
         static const char *functionName = "writeFloat64";
 
         if(function == ADAcquireTime){
-            // printf("acquire time triggered %f\n",value);
             addToParamQue(function,value);
-           
         }
-
         return asynSuccess;
-
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
@@ -956,9 +940,7 @@ Pixci::~Pixci(){
         functionAndVal[0] = function;
         functionAndVal[1] = value;
         /*sending buffer data to the que */
-        printf("sending function %d, value %d\n",function, value);
         paramMsgQue->send(functionAndVal,16);
-
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value){
@@ -967,7 +949,6 @@ Pixci::~Pixci(){
         functionAndVal[1] = value;
         /*sending buffer data to the que */
         paramMsgQue->send(functionAndVal,16);
-
     }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){

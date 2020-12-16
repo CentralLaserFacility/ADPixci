@@ -187,6 +187,7 @@ private:
      * @return asynStatus 
      */
     asynStatus setTriggerMode(int mode);
+
     /**
      * @brief Set the Frame Rate for Internal FFR mode
      * 
@@ -194,8 +195,28 @@ private:
      * @return asynStatus 
      */
     asynStatus setFrameRate(double frameRate);
+
+    /**
+     * @brief Get the Frame Rate from the camera
+     * 
+     * @return double framerate 
+     */
     double getFrameRate();
+
+    /**
+     * @brief convert unsigned char to unsigned long long
+     * 
+     * @param cval char array of size 5
+     * @return unsigned long long 
+     */
     unsigned long long UcharToLong( char* cval);
+
+    /**
+     * @brief convert unsigned char value to unsigned long long
+     * 
+     * @param lval unsigned long long value 
+     * @param cval address of unsigned char array of size 5
+     */
     void longTouchar(long lval, char* cval);
 
 };
