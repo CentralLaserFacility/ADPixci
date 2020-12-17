@@ -433,13 +433,15 @@ Pixci::~Pixci(){
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
             }
-            else if(function == ADAcquireTime){
-                status = setFrameRate(val);
-                if(status == asynSuccess){
-                    double readBackFrameRate;
-                    readBackFrameRate = getFrameRate();
-                    if(readBackFrameRate > 0){
-                        setDoubleParam(ADAcquireTime, readBackFrameRate);
+            else if(function == ADAcquirePeriod){
+                if(val != 0){
+                    status = setFrameRate(1/val);
+                    if(status == asynSuccess){
+                        double readBackFrameRate;
+                        readBackFrameRate = getFrameRate();
+                        if(readBackFrameRate > 0){
+                            setDoubleParam(ADAcquirePeriod, (1/readBackFrameRate));
+                        }
                     }
                 }
             }
@@ -697,11 +699,9 @@ Pixci::~Pixci(){
         lval += ((unsigned long )(unsigned char)cval[1])<<24;
         lval += ((unsigned long )(unsigned char)cval[0])<<32;
         return lval;
-
     }
 
     void Pixci::longTouchar(long lval, char* cval){
-        char ucval[5];
         cval[0] = (char)((lval & 0xFF00000000) >> 32 );
         cval[1]  = (char)((lval & 0x00FF000000) >> 24 );
         cval[2] = (char)((lval & 0x0000FF0000) >> 16 );
@@ -810,7 +810,7 @@ Pixci::~Pixci(){
         writeSerialRegister(UNIT, 0xDD, frameRateHexVal[1]);
         writeSerialRegister(UNIT, 0xDE, frameRateHexVal[2]);
         writeSerialRegister(UNIT, 0xDF, frameRateHexVal[3]);
-        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4
+        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4]);
     }
 
     double Pixci::getFrameRate(){
@@ -929,7 +929,7 @@ Pixci::~Pixci(){
         asynStatus status = asynSuccess;
         static const char *functionName = "writeFloat64";
 
-        if(function == ADAcquireTime){
+        if(function == ADAcquirePeriod){
             addToParamQue(function,value);
         }
         return asynSuccess;
