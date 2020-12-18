@@ -13,6 +13,12 @@ static const char *driverName = "Pixci";
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 
 /* Trigger modes of Raptor Eagle-XV" */
+/*ITR mode will be used to capture a continuous sequence of images.
+ The camera will immediately trigger the start of a new integration period 
+ when the previous image readouthas completed.
+
+ In FFR mode, thecamera will generate an internal trigger signal at a user programmable frame rate. 
+*/
 typedef enum
 {
   PR_INTERNAL_ITR,
