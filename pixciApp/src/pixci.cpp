@@ -836,11 +836,10 @@ Pixci::~Pixci(){
         asynStatus status = asynSuccess;
         static const char *functionName = "writeInt32";
 
-        /* There are two way of implementing int32 parameter changes,parameters that doesn't 
-        need to use serial communication  to implement and Parameteters that uses serial communication
-        for implementation.
+        /* There are two types int32 parameters, parameters that uses serial communication and parameters that 
+        does not uses serial communication.
 
-        Parameters that dont use serial communication, can be implemented by calling respective function
+        Parameters that dont use serial communication, can be implemented by calling respective XCLIB function
         directly ex: ADAcquire.
 
         Parameters that uses serial communication cannot be implmented directly here because,
