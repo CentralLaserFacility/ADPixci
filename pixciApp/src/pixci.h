@@ -135,9 +135,20 @@ private:
      * @brief read camera registers over serial communication.
      * 
      * @param reg register address to be read
+     * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
     asynStatus readSerialRegister(char Register, char* val);
+
+    /**
+     * @brief read camera 2 bytes registers over serial communication
+     * 
+     * @param Register1 first register address to be read
+     * @param Register2 second register address to be read
+     * @param val returned value
+     * @return status, asynSuccess if read was successfull , else asynError 
+     */
+    asynStatus readSerialRegister(char Register1, char Register2, char *val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication. 
@@ -209,6 +220,13 @@ private:
      */
     double getFrameRate();
 
+   /**
+    * @brief Get the Actual Temperature from the camera
+    * 
+    * @return double actual temperature
+    */
+    double getTemperatureActual();
+
     /**
      * @brief convert unsigned char to unsigned long long
      * 
@@ -224,5 +242,13 @@ private:
      * @param cval address of unsigned char array of size 5
      */
     void longTouchar(long lval, char* cval);
+
+    // PV Updating Functions
+
+    /**
+     * @brief update the PV ADTemperatureActual
+     * 
+     */
+    void UpdateADTemperatureActual();
 
 };

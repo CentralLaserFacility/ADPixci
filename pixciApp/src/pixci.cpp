@@ -168,6 +168,9 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         paramMsgQue = new epicsMessageQueue(20,16);
 
+        //Updating the necessary PVs
+        UpdateADTemperatureActual();
+
     }
 
 Pixci::~Pixci(){
@@ -386,8 +389,8 @@ Pixci::~Pixci(){
                     }       
                 }
             }
-            else if(function==ADReadStatus){
-                getFrameRate();
+            else if(function==ADReadStatus){                
+
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -831,6 +834,22 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
+    double Pixci::getTemperatureActual()
+    {
+        char cval[5] ={0,0,0,0,0};
+
+        readSerialRegister(0X6E, 0x00, &cval[3]);
+        readSerialRegister(0X6F, 0x00, &cval[4]);
+
+        unsigned long adcCount = UcharToLong(cval);
+        float M = 40.0f/(834.0f-1048.0f);
+        float C = 40.0f-(M*834.0f);
+        double actualTemperature = (M*adcCount)+C; // temperature in Centigrade
+
+        return actualTemperature;
+        
+    }
+
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
         asynStatus status = asynSuccess;
@@ -983,8 +1002,28 @@ Pixci::~Pixci(){
         first_bufout[3] = Register;
 
         /*writing to serial connection*/
-        inSize = writeReadSerial(UNIT, first_bufout, 5, inputMsg, 20);
-        inSize = writeReadSerial(UNIT, last_bufout, 5, inputMsg, 20);
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+
+        *val = inputMsg[0];
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+        return asynError;
+    }
+
+    asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
+    {
+        char inputMsg[20];
+        int inSize;
+        char first_bufout[] = {0x53, 0xE0, 0x02, 0xFF, 0xFF, 0x50};
+        char last_bufout[] = {0x53, 0xE1, 0x01, 0x50};
+        first_bufout[3] = Register1;
+        first_bufout[4] = Register2;
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
 
         *val = inputMsg[0];
         if(inputMsg[1] == SUCCESS_MESSAGE){
@@ -1023,6 +1062,13 @@ Pixci::~Pixci(){
                 break;
         }
         return Pixci::writeSerialRegister(UNIT, reg, hexval);
+    }
+
+    //PV Updating Functions
+    void Pixci::UpdateADTemperatureActual()
+    {
+        setDoubleParam(ADTemperatureActual, getTemperatureActual());
+        callParamCallbacks();
     }
 
 /* Code for iocsh registration */
