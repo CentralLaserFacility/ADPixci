@@ -50,3 +50,12 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
    field(ZNAM, "Rising Edge")
    field(ONAM, "Falling Edge")
 }
+
+record(bo, "$(P)$(R)UpdateActualTemperature")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEMPERATURE_ACTUAL")
+   field(ZNAM, "Updated")
+   field(ONAM, "Updated")
+   field(SCAN, "5 second")
+}
