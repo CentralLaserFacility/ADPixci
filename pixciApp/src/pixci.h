@@ -11,6 +11,7 @@ static const char *driverName = "Pixci";
 
 #define SoftTriggerParamString "PR_SOFT_TRIGGER"
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
+#define UpdateTemperatureActualString "PR_TEMPERATURE_ACTUAL"
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -82,9 +83,10 @@ public:
     ~Pixci();
 
 protected:
-  int PR_SoftTrigger;
+  int PR_SoftTrigger; 
   #define FIRST_PIXCI_PARAM PR_SoftTrigger
-  int PR_TriggerPolarity;
+  int PR_TemperatureActual;
+  int PR_TriggerPolarity;  
 
 private:
     /**

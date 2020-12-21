@@ -123,6 +123,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
+        createParam(UpdateTemperatureActualString,  asynParamInt32, &PR_TemperatureActual);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -435,6 +436,10 @@ Pixci::~Pixci(){
                 else{
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
+            }
+            else if (function==PR_TemperatureActual)
+            {
+                UpdateADTemperatureActual();
             }
             else if(function == ADAcquirePeriod){
                 if(val != 0){
@@ -918,6 +923,10 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == PR_SoftTrigger){
+            addToParamQue(function,value);
+        }
+        else if (function == PR_TemperatureActual)
+        {
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
