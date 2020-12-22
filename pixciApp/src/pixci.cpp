@@ -123,7 +123,8 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
-        createParam(UpdateTemperatureActualString,  asynParamInt32, &PR_TemperatureActual);
+        createParam(UpdateTemperatureString,  asynParamInt32, &PR_UpdateTemperature);
+        createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -169,8 +170,8 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         paramMsgQue = new epicsMessageQueue(20,16);
 
-        //Updating the necessary PVs
-        UpdateADTemperatureActual();
+        //Updating all the PVs related to the status of device
+        UpdateStatus(true); // Also update the manufacturers data
 
     }
 
@@ -390,8 +391,8 @@ Pixci::~Pixci(){
                     }       
                 }
             }
-            else if(function==ADReadStatus){                
-
+            else if(function==ADReadStatus){  
+                
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -437,9 +438,9 @@ Pixci::~Pixci(){
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
             }
-            else if (function==PR_TemperatureActual)
+            else if (function==PR_UpdateTemperature)
             {
-                UpdateADTemperatureActual();
+                UpdateStatus();
             }
             else if(function == ADAcquirePeriod){
                 if(val != 0){
@@ -839,6 +840,14 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
+    double Pixci::ConvertAdcCountToCentigrade(unsigned long adcCount)
+    {
+        float M = 40.0f/(834.0f-1048.0f);
+        float C = 40.0f-(M*834.0f);
+        double temperature = (M*adcCount)+C; // temperature in Centigrade
+        return temperature;
+    }
+
     double Pixci::getTemperatureActual()
     {
         char cval[5] ={0,0,0,0,0};
@@ -847,12 +856,22 @@ Pixci::~Pixci(){
         readSerialRegister(0X6F, 0x00, &cval[4]);
 
         unsigned long adcCount = UcharToLong(cval);
-        float M = 40.0f/(834.0f-1048.0f);
-        float C = 40.0f-(M*834.0f);
-        double actualTemperature = (M*adcCount)+C; // temperature in Centigrade
+        return ConvertAdcCountToCentigrade(adcCount);    
+    }
 
-        return actualTemperature;
-        
+    double Pixci::getTemperaturePcb()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0X70, 0x00, &cval[1]);
+        readSerialRegister(0X71, 0x00, &cval[0]);
+
+        INT16 lval = 0;
+        lval += (INT16 )(unsigned char)cval[0];
+        lval += (INT16 )(unsigned char)(cval[1] & 0x0F)<<8;
+        double temperature  = lval/16.0f;
+       
+        return temperature;  
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
@@ -925,7 +944,7 @@ Pixci::~Pixci(){
         else if(function == PR_SoftTrigger){
             addToParamQue(function,value);
         }
-        else if (function == PR_TemperatureActual)
+        else if (function == PR_UpdateTemperature)
         {
             addToParamQue(function,value);
         }
@@ -1074,10 +1093,26 @@ Pixci::~Pixci(){
     }
 
     //PV Updating Functions
-    void Pixci::UpdateADTemperatureActual()
+    void Pixci::UpdateADTemperatureActual(bool callBackFlag)
     {
-        setDoubleParam(ADTemperatureActual, getTemperatureActual()); // setting the Actual Temperature PV
-        callParamCallbacks();
+        setDoubleParam(ADTemperatureActual, getTemperatureActual()); // setting the Actual Temperature PV       
+        if(callBackFlag)
+            callParamCallbacks();
+    }
+
+    void Pixci::UpdateTemperaturePcb(bool callBackFlag)
+    {
+        setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()); // setting the PCB Temperature PV       
+        if(callBackFlag)
+            callParamCallbacks();
+    }
+
+    void Pixci::UpdateStatus(bool UpdateManufacturersDataFlag)
+    {
+        //TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
+        
+        UpdateADTemperatureActual();
+        UpdateTemperaturePcb(true);
     }
 
 /* Code for iocsh registration */
