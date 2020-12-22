@@ -231,5 +231,5 @@ private:
      * @return double exposure time in seconds/milliseconds
      */
     double getExposure();
-
+    //change to check
 };
