@@ -51,11 +51,19 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
    field(ONAM, "Falling Edge")
 }
 
-record(bo, "$(P)$(R)UpdateActualTemperature")
+record(bo, "$(P)$(R)UpdateTemperature")
 {
    field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEMPERATURE_ACTUAL")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
    field(ZNAM, "Updated")
    field(ONAM, "Updated")
    field(SCAN, "5 second")
+}
+
+record(ai, "$(P)$(R)TemperaturePCB")
+{
+   field(DTYP, "asynFloat64")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEMPERATURE_PCB")
+   field(PREC, "3")
+   field(SCAN, "I/O Intr")
 }

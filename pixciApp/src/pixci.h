@@ -11,7 +11,8 @@ static const char *driverName = "Pixci";
 
 #define SoftTriggerParamString "PR_SOFT_TRIGGER"
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
-#define UpdateTemperatureActualString "PR_TEMPERATURE_ACTUAL"
+#define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
+#define TemperaturePCBString "PR_TEMPERATURE_PCB"
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -85,7 +86,8 @@ public:
 protected:
   int PR_SoftTrigger; 
   #define FIRST_PIXCI_PARAM PR_SoftTrigger
-  int PR_TemperatureActual;
+  int PR_UpdateTemperature;
+  int PR_TemperaturePcb;
   int PR_TriggerPolarity;  
 
 private:
@@ -230,6 +232,13 @@ private:
     double getTemperatureActual();
 
     /**
+     * @brief Get the PCB Temperature from the camera
+     * 
+     * @return double PCB temperature
+     */
+    double getTemperaturePcb();
+
+    /**
      * @brief convert unsigned char to unsigned long long
      * 
      * @param cval char array of size 5
@@ -245,12 +254,34 @@ private:
      */
     void longTouchar(long lval, char* cval);
 
+    /**
+     * @brief Convert the ADC Count to the temperature in centigrade
+     * 
+     * @param adcCount ADC count value
+     * @return double temperature in centigrade
+     */
+    double ConvertAdcCountToCentigrade(unsigned long adcCount); 
+
     // PV Updating Functions
 
     /**
      * @brief update the PV ADTemperatureActual
      * 
+     * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    void UpdateADTemperatureActual();
+    void UpdateADTemperatureActual(bool callBackFlag = false);
+    
+    /**
+     * @brief update the PV TemperaturePCB
+     * 
+     * @param callBackFlag Flag for calling the callParamCallbacks function
+     */
+    void UpdateTemperaturePcb(bool callBackFlag = false);
+
+    /**
+     * @brief update the status related to device
+     * 
+     */
+    void UpdateStatus(bool UpdateManufacturersDataFlag = false);
 
 };
