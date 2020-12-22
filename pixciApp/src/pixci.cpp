@@ -387,7 +387,8 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                getFrameRate();
+                printf("Reading Exposure from the camera \n");
+
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
