@@ -1076,7 +1076,7 @@ Pixci::~Pixci(){
     //PV Updating Functions
     void Pixci::UpdateADTemperatureActual()
     {
-        setDoubleParam(ADTemperatureActual, getTemperatureActual());
+        setDoubleParam(ADTemperatureActual, getTemperatureActual()); // setting the Actual Temperature PV
         callParamCallbacks();
     }
 
