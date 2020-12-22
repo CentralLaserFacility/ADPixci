@@ -125,6 +125,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
         createParam(UpdateTemperatureString,  asynParamInt32, &PR_UpdateTemperature);
         createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
+        createParam(TecSwitchString,  asynParamInt32, &PR_TecSwitch);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -452,6 +453,23 @@ Pixci::~Pixci(){
                             setDoubleParam(ADAcquirePeriod, (1/readBackFrameRate));
                         }
                     }
+                }
+            }
+            else if (function == ADTemperature)
+            {
+                status = setTecTemperature(val);
+                if(status == asynSuccess)
+                {
+                    double tecTemperature = getTecTemperature();
+                    setDoubleParam(ADTemperature,tecTemperature);
+                }
+            }
+            else if (function == PR_TecSwitch)
+            {
+                status = SwitchTec(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_TecSwitch, IsTecEnabled());
                 }
             }
             callParamCallbacks();
@@ -840,22 +858,42 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
-    double Pixci::ConvertAdcCountToCentigrade(unsigned long adcCount)
+    double Pixci::ConvertAdcCountToCentigrade(INT16 adcCount)
     {
+        //TODO: Refactor it
         float M = 40.0f/(834.0f-1048.0f);
         float C = 40.0f-(M*834.0f);
         double temperature = (M*adcCount)+C; // temperature in Centigrade
         return temperature;
     }
 
+    INT16 Pixci::ConvertCentigradeToDacCount(double temperature)
+    {
+        //TODO: Refactor it
+        float M = 40.0f/(2650.0f-2088.0f);
+        float C = 40.0f-(M*2650.0f);
+        return (temperature-C)/M;
+    }
+
+    double Pixci::ConvertDacCountToCentigrade(INT16 dacCount)
+    {
+        //TODO: Refactor it
+        float M = 40.0f/(2650.0f-2088.0f);
+        float C = 40.0f-(M*2650.0f);
+        return (M*dacCount)+C; //temperature in centigrade
+    }
+
     double Pixci::getTemperatureActual()
     {
-        char cval[5] ={0,0,0,0,0};
+        char cval[2] ={0,0};
 
-        readSerialRegister(0X6E, 0x00, &cval[3]);
-        readSerialRegister(0X6F, 0x00, &cval[4]);
+        readSerialRegister(0X6E, 0x00, &cval[0]);
+        readSerialRegister(0X6F, 0x00, &cval[1]);
 
-        unsigned long adcCount = UcharToLong(cval);
+        INT16 adcCount = 0;
+        adcCount += (INT16 )(unsigned char)cval[1];
+        adcCount += ((INT16 )(unsigned char)cval[0])<<8;
+
         return ConvertAdcCountToCentigrade(adcCount);    
     }
 
@@ -872,6 +910,51 @@ Pixci::~Pixci(){
         double temperature  = lval/16.0f;
        
         return temperature;  
+    }
+
+    double Pixci::getTecTemperature()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0X03, &cval[1]);
+        readSerialRegister(0X04, &cval[0]);
+
+        INT16 lval = 0;
+        lval += (INT16)(unsigned char)cval[0];
+        lval += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ConvertDacCountToCentigrade(lval);
+    }
+
+    asynStatus Pixci::setTecTemperature(double temperature)
+    {
+        INT16 dacCount = ConvertCentigradeToDacCount(temperature);
+        
+        char cval[2] ={0,0};
+        cval[0] = (char)((dacCount & 0x0F00) >> 8 );
+        cval[1] = (char)((dacCount & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0x03, cval[0]);
+        return writeSerialRegister(UNIT, 0x04, cval[1]);
+    }
+
+    unsigned char Pixci::getFpgaStatus()
+    {
+        char cval = 0;
+        readSerialRegister(0X00, &cval);
+        return (unsigned char)cval;
+    }
+
+    asynStatus Pixci::SwitchTec(bool enableTec)
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+        return writeSerialRegister(UNIT, 0x00, fpgaStatus|0x01);
+    }
+
+    bool Pixci::IsTecEnabled()
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+        return fpgaStatus & 0x01;
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
@@ -948,6 +1031,10 @@ Pixci::~Pixci(){
         {
             addToParamQue(function,value);
         }
+        else if (function == PR_TecSwitch)
+        {
+            addToParamQue(function,value);
+        }
         else if(function == PR_TriggerPolarity){
             int triggerMode;
             if(value == PR_EXT_RISING_EDGE){
@@ -976,6 +1063,10 @@ Pixci::~Pixci(){
         static const char *functionName = "writeFloat64";
 
         if(function == ADAcquirePeriod){
+            addToParamQue(function,value);
+        }
+        else if (function == ADTemperature)
+        {
             addToParamQue(function,value);
         }
         return asynSuccess;
@@ -1114,6 +1205,7 @@ Pixci::~Pixci(){
         UpdateADTemperatureActual();
         UpdateTemperaturePcb(true);
     }
+
 
 /* Code for iocsh registration */
 
