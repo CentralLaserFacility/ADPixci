@@ -224,5 +224,12 @@ private:
      * @param cval address of unsigned char array of size 5
      */
     void longTouchar(long lval, char* cval);
+    
+    /**
+     * @brief Get the Exposure data from the camera
+     * 
+     * @return double exposure time in seconds/milliseconds
+     */
+    double getExposure();
 
 };
