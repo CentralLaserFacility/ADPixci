@@ -13,6 +13,7 @@ static const char *driverName = "Pixci";
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 #define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
 #define TemperaturePCBString "PR_TEMPERATURE_PCB"
+#define TecSwitchString "PR_TEC_SWITCH" 
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -88,6 +89,7 @@ protected:
   #define FIRST_PIXCI_PARAM PR_SoftTrigger
   int PR_UpdateTemperature;
   int PR_TemperaturePcb;
+  int PR_TecSwitch;
   int PR_TriggerPolarity;  
 
 private:
@@ -218,6 +220,22 @@ private:
     asynStatus setFrameRate(double frameRate);
 
     /**
+     * @brief Set the TEC Temperature 
+     * 
+     * @param temperature 
+     * @return asynStatus 
+     */
+    asynStatus setTecTemperature(double temperature);
+
+    /**
+     * @brief Enable/ Disable TEC controller
+     * 
+     * @param enableTec 
+     * @return asynStatus 
+     */
+    asynStatus SwitchTec(bool enableTec);
+
+    /**
      * @brief Get the Frame Rate from the camera
      * 
      * @return double framerate 
@@ -237,6 +255,32 @@ private:
      * @return double PCB temperature
      */
     double getTemperaturePcb();
+
+    /**
+     * @brief Get the Tec Temperature from the camera
+     * 
+     * @return double TEC temperature in centigrade
+     */
+    double getTecTemperature();
+
+    /**
+     * @brief Get the FPGA Status from camera
+     * 
+     * @return unsigned char return 1 byte of FPGA flags
+     * Bit 7 = 0 to enable high pre amp gain
+     * Bit 6,5,4,3,2 = reserved (Default=0)
+     * Bit 1 = 1 OverTemp >80°C tripped (Default=0)
+     * Bit 0 = 1 to enable TEC (Default=0)
+     */
+    unsigned char getFpgaStatus();
+
+    /**
+     * @brief Get the TEC enable status
+     * 
+     * @return true - TEC Enabled 
+     * @return false - TEC Disabled 
+     */
+    bool IsTecEnabled();
 
     /**
      * @brief convert unsigned char to unsigned long long
@@ -260,7 +304,23 @@ private:
      * @param adcCount ADC count value
      * @return double temperature in centigrade
      */
-    double ConvertAdcCountToCentigrade(unsigned long adcCount); 
+    double ConvertAdcCountToCentigrade(INT16 adcCount);
+
+    /**
+     * @brief Convert the temperature in centigrade to DAC Count
+     * 
+     * @param temperature Temperature in centigrade
+     * @return unsigned INT16 output DAC count
+     */
+    INT16 ConvertCentigradeToDacCount(double temperature) ;
+
+    /**
+     * @brief Convert the DAC count to temperature in centigrade
+     * 
+     * @param dacCount DAC count
+     * @return double temperature in centigrade
+     */
+    double ConvertDacCountToCentigrade(INT16 dacCount);
 
     // PV Updating Functions
 
