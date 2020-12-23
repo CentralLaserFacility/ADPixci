@@ -13,7 +13,7 @@ static const char *driverName = "Pixci";
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 #define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
 #define TemperaturePCBString "PR_TEMPERATURE_PCB"
-#define TecSwitchString "PR_TEC_SWITCH" 
+#define ToggleTecString "PR_TOGGLE_TEC" 
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -89,7 +89,7 @@ protected:
   #define FIRST_PIXCI_PARAM PR_SoftTrigger
   int PR_UpdateTemperature;
   int PR_TemperaturePcb;
-  int PR_TecSwitch;
+  int PR_ToggleTec;
   int PR_TriggerPolarity;  
 
 private:
@@ -233,7 +233,7 @@ private:
      * @param enableTec 
      * @return asynStatus 
      */
-    asynStatus SwitchTec(bool enableTec);
+    asynStatus toggleTec(bool enableTec);
 
     /**
      * @brief Get the Frame Rate from the camera
@@ -280,7 +280,7 @@ private:
      * @return true - TEC Enabled 
      * @return false - TEC Disabled 
      */
-    bool IsTecEnabled();
+    bool isTecEnabled();
 
     /**
      * @brief convert unsigned char to unsigned long long
@@ -304,7 +304,7 @@ private:
      * @param adcCount ADC count value
      * @return double temperature in centigrade
      */
-    double ConvertAdcCountToCentigrade(INT16 adcCount);
+    double convertAdcCountToCentigrade(INT16 adcCount);
 
     /**
      * @brief Convert the temperature in centigrade to DAC Count
@@ -312,7 +312,7 @@ private:
      * @param temperature Temperature in centigrade
      * @return unsigned INT16 output DAC count
      */
-    INT16 ConvertCentigradeToDacCount(double temperature) ;
+    INT16 convertCentigradeToDacCount(double temperature) ;
 
     /**
      * @brief Convert the DAC count to temperature in centigrade
@@ -320,7 +320,7 @@ private:
      * @param dacCount DAC count
      * @return double temperature in centigrade
      */
-    double ConvertDacCountToCentigrade(INT16 dacCount);
+    double convertDacCountToCentigrade(INT16 dacCount);
 
     // PV Updating Functions
 
@@ -329,19 +329,19 @@ private:
      * 
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    void UpdateADTemperatureActual(bool callBackFlag = false);
+    void updateADTemperatureActual(bool callBackFlag = false);
     
     /**
      * @brief update the PV TemperaturePCB
      * 
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    void UpdateTemperaturePcb(bool callBackFlag = false);
+    void updateTemperaturePcb(bool callBackFlag = false);
 
     /**
      * @brief update the status related to device
      * 
      */
-    void UpdateStatus(bool UpdateManufacturersDataFlag = false);
+    void updateStatus(bool updateManufacturersDataFlag = false);
 
 };
