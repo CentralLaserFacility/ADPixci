@@ -83,3 +83,19 @@ record(bi, "$(P)$(R)ToggleTEC_RBV")
    field(ZNAM, "Disabled")
    field(ONAM, "Enabled")
 }
+
+record(bo, "$(P)$(R)ToggleGain")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_GAIN")
+   field(ZNAM, "Disabled")
+   field(ONAM, "Enabled")
+}
+
+record(bi, "$(P)$(R)ToggleGain_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_GAIN")
+   field(ZNAM, "Disabled")
+   field(ONAM, "Enabled")
+}
