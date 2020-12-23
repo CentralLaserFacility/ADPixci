@@ -210,6 +210,66 @@ private:
     double getFrameRate();
 
     /**
+     * @brief Set the ROI Size X 
+     * 
+     * @param RoisizeX 
+     * @return asynStatus 
+     */
+    asynStatus setRoiSizeX(int RoisizeX); 
+
+    /**
+     * @brief Set the ROI Size Y
+     * 
+     * @param RoisizeY 
+     * @return asynStatus 
+     */
+    asynStatus setRoiSizeY(int RoisizeY);
+
+    /**
+     * @brief Set the ROI X Offset 
+     * 
+     * @param RoiOffsetX 
+     * @return asynStatus 
+     */
+    asynStatus setRoiOffsetX(int RoiOffsetX); 
+    
+    /**
+     * @brief Set the ROI Y Offset 
+     * 
+     * @param RoiOffsetY 
+     * @return asynStatus 
+     */
+    asynStatus setRoiOffsetY(int RoiOffsetY);
+
+    /**
+     * @brief Get the Roi Size X 
+     * 
+     * @return int 
+     */
+    int getRoiSizeX();
+
+    /**
+     * @brief Get the ROI Size Y 
+     * 
+     * @return int 
+     */
+    int getRoiSizeY();
+
+    /**
+     * @brief Get the ROI Offset X 
+     * 
+     * @return int 
+     */
+    int getRoiOffsetX();
+
+    /**
+     * @brief Get the ROI Offset Y 
+     * 
+     * @return int 
+     */
+    int getRoiOffsetY();
+    
+    /**
      * @brief convert unsigned char to unsigned long long
      * 
      * @param cval char array of size 5

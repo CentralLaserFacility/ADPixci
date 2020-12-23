@@ -1041,6 +1041,98 @@ Pixci::~Pixci(){
         return (asynStatus) status;
     }
 
+    asynStatus Pixci::setRoiSizeX(int RoisizeX){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoisizeX & 0x0F00) >> 8 );
+        cval[1] = (char)((RoisizeX & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB4, cval[0]);
+        return writeSerialRegister(UNIT, 0xB5, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiSizeY(int RoisizeY){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoisizeY & 0x0F00) >> 8 );
+        cval[1] = (char)((RoisizeY & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB8, cval[0]);
+        return writeSerialRegister(UNIT, 0xB9, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiOffsetX(int RoiOffsetX){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoiOffsetX & 0x0F00) >> 8 );
+        cval[1] = (char)((RoiOffsetX & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB6, cval[0]);
+        return writeSerialRegister(UNIT, 0xB7, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiOffsetY(int RoiOffsetY){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoiOffsetY & 0x0F00) >> 8 );
+        cval[1] = (char)((RoiOffsetY & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xBA, cval[0]);
+        return writeSerialRegister(UNIT, 0xBB, cval[1]);
+    }
+
+    int Pixci::getRoiSizeX()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB4, &cval[1]);
+        readSerialRegister(0XB5, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiSizeY()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB8, &cval[1]);
+        readSerialRegister(0XB9, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiOffsetX()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB6, &cval[1]);
+        readSerialRegister(0XB7, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiOffsetY()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XBA, &cval[1]);
+        readSerialRegister(0XBB, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
 /* Code for iocsh registration */
 
 /* pixciConfig parameters from st.cmd */
