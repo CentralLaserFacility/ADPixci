@@ -125,7 +125,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
         createParam(UpdateTemperatureString,  asynParamInt32, &PR_UpdateTemperature);
         createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
-        createParam(TecSwitchString,  asynParamInt32, &PR_TecSwitch);
+        createParam(ToggleTecString,  asynParamInt32, &PR_ToggleTec);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -172,7 +172,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         paramMsgQue = new epicsMessageQueue(20,16);
 
         //Updating all the PVs related to the status of device
-        UpdateStatus(true); // Also update the manufacturers data
+        updateStatus(true); // Also update the manufacturers data
 
     }
 
@@ -441,7 +441,7 @@ Pixci::~Pixci(){
             }
             else if (function==PR_UpdateTemperature)
             {
-                UpdateStatus();
+                updateStatus();
             }
             else if(function == ADAcquirePeriod){
                 if(val != 0){
@@ -464,12 +464,12 @@ Pixci::~Pixci(){
                     setDoubleParam(ADTemperature,tecTemperature);
                 }
             }
-            else if (function == PR_TecSwitch)
+            else if (function == PR_ToggleTec)
             {
-                status = SwitchTec(val);
+                status = toggleTec(val);
                 if(status == asynSuccess)
                 {
-                    setIntegerParam(PR_TecSwitch, IsTecEnabled());
+                    setIntegerParam(PR_ToggleTec, isTecEnabled());
                 }
             }
             callParamCallbacks();
@@ -858,7 +858,7 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
-    double Pixci::ConvertAdcCountToCentigrade(INT16 adcCount)
+    double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
     {
         //TODO: Refactor it
         float M = 40.0f/(834.0f-1048.0f);
@@ -867,7 +867,7 @@ Pixci::~Pixci(){
         return temperature;
     }
 
-    INT16 Pixci::ConvertCentigradeToDacCount(double temperature)
+    INT16 Pixci::convertCentigradeToDacCount(double temperature)
     {
         //TODO: Refactor it
         float M = 40.0f/(2650.0f-2088.0f);
@@ -875,7 +875,7 @@ Pixci::~Pixci(){
         return (temperature-C)/M;
     }
 
-    double Pixci::ConvertDacCountToCentigrade(INT16 dacCount)
+    double Pixci::convertDacCountToCentigrade(INT16 dacCount)
     {
         //TODO: Refactor it
         float M = 40.0f/(2650.0f-2088.0f);
@@ -894,7 +894,7 @@ Pixci::~Pixci(){
         adcCount += (INT16 )(unsigned char)cval[1];
         adcCount += ((INT16 )(unsigned char)cval[0])<<8;
 
-        return ConvertAdcCountToCentigrade(adcCount);    
+        return convertAdcCountToCentigrade(adcCount);    
     }
 
     double Pixci::getTemperaturePcb()
@@ -923,12 +923,12 @@ Pixci::~Pixci(){
         lval += (INT16)(unsigned char)cval[0];
         lval += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
 
-        return ConvertDacCountToCentigrade(lval);
+        return convertDacCountToCentigrade(lval);
     }
 
     asynStatus Pixci::setTecTemperature(double temperature)
     {
-        INT16 dacCount = ConvertCentigradeToDacCount(temperature);
+        INT16 dacCount = convertCentigradeToDacCount(temperature);
         
         char cval[2] ={0,0};
         cval[0] = (char)((dacCount & 0x0F00) >> 8 );
@@ -945,13 +945,13 @@ Pixci::~Pixci(){
         return (unsigned char)cval;
     }
 
-    asynStatus Pixci::SwitchTec(bool enableTec)
+    asynStatus Pixci::toggleTec(bool enableTec)
     {
         unsigned char fpgaStatus = getFpgaStatus();
         return writeSerialRegister(UNIT, 0x00, fpgaStatus|0x01);
     }
 
-    bool Pixci::IsTecEnabled()
+    bool Pixci::isTecEnabled()
     {
         unsigned char fpgaStatus = getFpgaStatus();
         return fpgaStatus & 0x01;
@@ -1031,7 +1031,7 @@ Pixci::~Pixci(){
         {
             addToParamQue(function,value);
         }
-        else if (function == PR_TecSwitch)
+        else if (function == PR_ToggleTec)
         {
             addToParamQue(function,value);
         }
@@ -1184,26 +1184,26 @@ Pixci::~Pixci(){
     }
 
     //PV Updating Functions
-    void Pixci::UpdateADTemperatureActual(bool callBackFlag)
+    void Pixci::updateADTemperatureActual(bool callBackFlag)
     {
         setDoubleParam(ADTemperatureActual, getTemperatureActual()); // setting the Actual Temperature PV       
         if(callBackFlag)
             callParamCallbacks();
     }
 
-    void Pixci::UpdateTemperaturePcb(bool callBackFlag)
+    void Pixci::updateTemperaturePcb(bool callBackFlag)
     {
         setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()); // setting the PCB Temperature PV       
         if(callBackFlag)
             callParamCallbacks();
     }
 
-    void Pixci::UpdateStatus(bool UpdateManufacturersDataFlag)
+    void Pixci::updateStatus(bool updateManufacturersDataFlag)
     {
         //TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
         
-        UpdateADTemperatureActual();
-        UpdateTemperaturePcb(true);
+        updateADTemperatureActual();
+        updateTemperaturePcb(true);
     }
 
 

@@ -68,18 +68,18 @@ record(ai, "$(P)$(R)TemperaturePCB")
    field(SCAN, "I/O Intr")
 }
 
-record(bo, "$(P)$(R)SwitchTEC")
+record(bo, "$(P)$(R)ToggleTEC")
 {
    field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEC_SWITCH")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_TEC")
    field(ZNAM, "Disabled")
    field(ONAM, "Enabled")
 }
 
-record(bi, "$(P)$(R)SwitchTEC_RBV")
+record(bi, "$(P)$(R)ToggleTEC_RBV")
 {
    field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEC_SWITCH")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_TEC")
    field(ZNAM, "Disabled")
    field(ONAM, "Enabled")
 }
