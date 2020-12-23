@@ -13,7 +13,8 @@ static const char *driverName = "Pixci";
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 #define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
 #define TemperaturePCBString "PR_TEMPERATURE_PCB"
-#define ToggleTecString "PR_TOGGLE_TEC" 
+#define ToggleTecString "PR_TOGGLE_TEC"
+#define ToggleGainString "PR_TOGGLE_Gain"  
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -90,6 +91,7 @@ protected:
   int PR_UpdateTemperature;
   int PR_TemperaturePcb;
   int PR_ToggleTec;
+  int PR_ToggleGain;
   int PR_TriggerPolarity;  
 
 private:
@@ -236,6 +238,14 @@ private:
     asynStatus toggleTec(bool enableTec);
 
     /**
+     * @brief Enable/Disable Pre-Amp Gain
+     * 
+     * @param enableGain 
+     * @return asynStatus 
+     */
+    asynStatus toggleGain(bool enableGain);
+
+    /**
      * @brief Get the Frame Rate from the camera
      * 
      * @return double framerate 
@@ -281,6 +291,14 @@ private:
      * @return false - TEC Disabled 
      */
     bool isTecEnabled();
+
+    /**
+     * @brief Get the Pre-Amp Gain enable status
+     * 
+     * @return true = Pre Amp Gain Enabled 
+     * @return false = Pre Amp Gain Disabled
+     */
+    bool isGainEnabled();
 
     /**
      * @brief convert unsigned char to unsigned long long

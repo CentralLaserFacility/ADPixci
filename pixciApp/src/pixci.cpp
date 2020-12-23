@@ -126,6 +126,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         createParam(UpdateTemperatureString,  asynParamInt32, &PR_UpdateTemperature);
         createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
         createParam(ToggleTecString,  asynParamInt32, &PR_ToggleTec);
+        createParam(ToggleGainString,  asynParamInt32, &PR_ToggleGain);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -470,6 +471,14 @@ Pixci::~Pixci(){
                 if(status == asynSuccess)
                 {
                     setIntegerParam(PR_ToggleTec, isTecEnabled());
+                }
+            }
+            else if (function == PR_ToggleGain)
+            {
+                status = toggleGain(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleGain, isGainEnabled());
                 }
             }
             callParamCallbacks();
@@ -941,7 +950,7 @@ Pixci::~Pixci(){
     unsigned char Pixci::getFpgaStatus()
     {
         char cval = 0;
-        readSerialRegister(0X00, &cval);
+        readSerialRegister(0x00, &cval);
         return (unsigned char)cval;
     }
 
@@ -955,6 +964,23 @@ Pixci::~Pixci(){
     {
         unsigned char fpgaStatus = getFpgaStatus();
         return fpgaStatus & 0x01;
+    }
+
+    asynStatus Pixci::toggleGain(bool enableGain)
+    {
+        unsigned char fpgaStatus = getFpgaStatus();       
+
+        if(enableGain)
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus | (1 << 7)); // setting last bit = 1
+         else
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(1 << 7)); //setting last bit = 0
+            
+    }
+
+    bool Pixci::isGainEnabled()
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+       return (fpgaStatus & (1 << 7)) != 0; // check the last bit is not 0
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
@@ -1032,6 +1058,10 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if (function == PR_ToggleTec)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleGain)
         {
             addToParamQue(function,value);
         }
