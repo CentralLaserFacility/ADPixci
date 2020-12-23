@@ -154,19 +154,25 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
         int status = asynSuccess;
         /* Create the thread that does data acquisition */
-        status = (epicsThreadCreate("acquireTask",
+        status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        status = (epicsThreadCreate("paramTask",
+        status |= (epicsThreadCreate("paramTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
 
         paramMsgQue = new epicsMessageQueue(20,16);
+
+        status |= updateIntialPVs();
+        if(status == asynError){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
+            return;
+        }
 
     }
 
@@ -210,9 +216,6 @@ Pixci::~Pixci(){
 
         setIntegerParam(ADSizeX, sizeX);
         setIntegerParam(ADSizeY, sizeY);
-
-        setIntegerParam(ADMaxSizeX, sizeX);
-        setIntegerParam(ADMaxSizeY, sizeY);
 
         setIntegerParam(NDArraySizeX, sizeX);
         setIntegerParam(NDArraySizeY, sizeY);
@@ -1023,6 +1026,19 @@ Pixci::~Pixci(){
                 break;
         }
         return Pixci::writeSerialRegister(UNIT, reg, hexval);
+    }
+
+    asynStatus Pixci::updateIntialPVs(){
+        epicsInt32 sizeX = pxd_imageXdim();
+        epicsInt32 sizeY = pxd_imageYdim();
+        int status = asynSuccess;
+        status |=  setIntegerParam(ADMaxSizeX, sizeX);
+        status |=  setIntegerParam(ADMaxSizeY, sizeY);
+        status |=  setIntegerParam(ADSizeX, sizeX);
+        status |=  setIntegerParam(ADSizeY, sizeY);
+
+        status |= callParamCallbacks();
+        return (asynStatus) status;
     }
 
 /* Code for iocsh registration */

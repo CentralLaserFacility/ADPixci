@@ -225,4 +225,5 @@ private:
      */
     void longTouchar(long lval, char* cval);
 
+    asynStatus updateIntialPVs();
 };
