@@ -102,3 +102,20 @@ record(bi, "$(P)$(R)ToggleGain_RBV")
    field(ONAM, "Enabled")
    field(SCAN, "I/O Intr")
 }
+
+record(bo, "$(P)$(R)ToggleFPGAComms")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_FPGA_COMMS")
+   field(ZNAM, "Disabled")
+   field(ONAM, "Enabled")
+}
+
+record(bi, "$(P)$(R)ToggleFPGAComms_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_FPGA_COMMS")
+   field(ZNAM, "Disabled")
+   field(ONAM, "Enabled")
+   field(SCAN, "I/O Intr")
+}
