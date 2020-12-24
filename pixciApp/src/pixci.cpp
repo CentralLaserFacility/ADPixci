@@ -199,7 +199,7 @@ Pixci::~Pixci(){
 }
 
     asynStatus Pixci::setupAquisition(){
-        int binX, binY, sizeX, sizeY;
+        int binX, binY, sizeX, sizeY, RoiSizeX, RoiSizeY;
         sizeX = pxd_imageXdim();
         sizeY = pxd_imageYdim();
 
@@ -214,11 +214,13 @@ Pixci::~Pixci(){
             setIntegerParam(ADBinY, binY);
         }
 
-        setIntegerParam(ADSizeX, sizeX);
-        setIntegerParam(ADSizeY, sizeY);
+        getIntegerParam(ADSizeX, &RoiSizeX);
+        getIntegerParam(ADSizeY, &RoiSizeY);
+        // setIntegerParam(ADSizeX, sizeX);
+        // setIntegerParam(ADSizeY, sizeY);
 
-        setIntegerParam(NDArraySizeX, sizeX);
-        setIntegerParam(NDArraySizeY, sizeY);
+        setIntegerParam(NDArraySizeX, RoiSizeX/binX);
+        setIntegerParam(NDArraySizeY, RoiSizeY/binY);
 
         callParamCallbacks();
 
@@ -364,7 +366,7 @@ Pixci::~Pixci(){
                 if (status==asynSuccess)
                 {   
                     setIntegerParam(ADBinX, val); //Updating the binX value.
-                    callParamCallbacks();
+                    // callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire); //Getting the ADAcquire value. 
                     reloadVideoSettings(); //Video settings have to be loaded respective of binning value.
                     acquireStop(); //Acquire have to be stopped before calling setupAcquisition.
@@ -446,6 +448,34 @@ Pixci::~Pixci(){
                             setDoubleParam(ADAcquirePeriod, (1/readBackFrameRate));
                         }
                     }
+                }
+            }
+            else if(function == ADMinX){
+                status = setRoiOffsetX(val);
+                if(status = asynSuccess){
+                    setIntegerParam(ADMinX,getRoiOffsetX());
+                }
+            }
+            else if(function == ADMinY){
+                status = setRoiOffsetY(val);
+                if(status = asynSuccess){
+                    setIntegerParam(ADMinY,getRoiOffsetY());
+                }
+            }
+            else if(function == ADSizeX){
+                status == setRoiSizeX(val);
+                if(status == asynSuccess){
+                    setIntegerParam(ADSizeX,getRoiSizeX());
+                    setupAquisition();
+                    reloadVideoSettings();
+                }
+            }
+            else if(function == ADSizeY){
+                status == setRoiSizeX(val);
+                if(status == asynSuccess){
+                    setIntegerParam(ADSizeY,getRoiSizeY());
+                    setupAquisition();
+                    reloadVideoSettings();
                 }
             }
             callParamCallbacks();
@@ -902,6 +932,18 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == PR_SoftTrigger){
+            addToParamQue(function,value);
+        }
+        else if(function == ADMinX){
+            addToParamQue(function,value);
+        }
+        else if(function == ADMinY){
+            addToParamQue(function,value);
+        }
+        else if(function == ADSizeX){
+            addToParamQue(function,value);
+        }
+        else if(function == ADSizeY){
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
