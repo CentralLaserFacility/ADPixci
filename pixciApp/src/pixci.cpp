@@ -957,19 +957,21 @@ Pixci::~Pixci(){
     asynStatus Pixci::toggleTec(bool enableTec)
     {
         unsigned char fpgaStatus = getFpgaStatus();
-        return writeSerialRegister(UNIT, 0x00, fpgaStatus|0x01);
+        if(enableTec)
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus | 0x01); // setting first bit = 1
+         else
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(0x01)); //setting first bit = 0
     }
 
     bool Pixci::isTecEnabled()
     {
         unsigned char fpgaStatus = getFpgaStatus();
-        return fpgaStatus & 0x01;
+        return (fpgaStatus & 0x01) != 0; // check the first bit is not 0
     }
 
     asynStatus Pixci::toggleGain(bool enableGain)
     {
         unsigned char fpgaStatus = getFpgaStatus();       
-
         if(enableGain)
             return writeSerialRegister(UNIT, 0x00, fpgaStatus | (1 << 7)); // setting last bit = 1
          else
