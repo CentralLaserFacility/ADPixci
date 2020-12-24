@@ -455,6 +455,9 @@ Pixci::~Pixci(){
                 if(status = asynSuccess){
                     setIntegerParam(ADMinX,getRoiOffsetX());
                 }
+                else{
+                    printf("failed minx\n");
+                }
             }
             else if(function == ADMinY){
                 status = setRoiOffsetY(val);
@@ -1023,13 +1026,15 @@ Pixci::~Pixci(){
         inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
 
         if(inSize<NOERROR){
+            printf("less size\n");
             return asynError;
         }
 
         if(inputMsg[0]==success){
+            printf("success \n");
             return asynSuccess;
         }
-
+        printf("input is %x\n",inputMsg[0]);
         return asynError;
     }
 
