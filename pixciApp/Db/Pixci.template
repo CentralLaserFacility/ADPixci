@@ -49,6 +49,7 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
    field(ZNAM, "Rising Edge")
    field(ONAM, "Falling Edge")
+   field(SCAN, "I/O Intr")
 }
 
 record(bo, "$(P)$(R)UpdateTemperature")
@@ -82,6 +83,7 @@ record(bi, "$(P)$(R)ToggleTEC_RBV")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_TEC")
    field(ZNAM, "Disabled")
    field(ONAM, "Enabled")
+   field(SCAN, "I/O Intr")
 }
 
 record(bo, "$(P)$(R)ToggleGain")
@@ -98,4 +100,5 @@ record(bi, "$(P)$(R)ToggleGain_RBV")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_GAIN")
    field(ZNAM, "Disabled")
    field(ONAM, "Enabled")
+   field(SCAN, "I/O Intr")
 }
