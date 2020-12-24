@@ -14,7 +14,8 @@ static const char *driverName = "Pixci";
 #define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
 #define TemperaturePCBString "PR_TEMPERATURE_PCB"
 #define ToggleTecString "PR_TOGGLE_TEC"
-#define ToggleGainString "PR_TOGGLE_Gain"  
+#define ToggleGainString "PR_TOGGLE_Gain" 
+#define ToggleFPGACommsString "PR_TOGGLE_FPGA_COMMS" 
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -92,6 +93,7 @@ protected:
   int PR_TemperaturePcb;
   int PR_ToggleTec;
   int PR_ToggleGain;
+  int PR_ToggleFpgaComms;
   int PR_TriggerPolarity;  
 
 private:
@@ -246,6 +248,14 @@ private:
     asynStatus toggleGain(bool enableGain);
 
     /**
+     * @brief Enable/Disable comms to FPGA EPROM
+     * 
+     * @param enableFpgaComms 
+     * @return asynStatus 
+     */
+    asynStatus toggleFpgaComms(bool enableFpgaComms);
+
+    /**
      * @brief Get the Frame Rate from the camera
      * 
      * @return double framerate 
@@ -285,6 +295,19 @@ private:
     unsigned char getFpgaStatus();
 
     /**
+     * @brief Get the System Status from camera
+     * 
+     * @return unsigned char 1 byte returned from camera
+     * Bit 7,5,3 = Reserved
+     * Bit 6 = 1 check sum mode enabled
+     * Bit 4 = 1 to enable command ACK
+     * Bit 2 = 1 if FPGA booted ok
+     * Bit 1 = 0 to Hold FPGA in RESET
+     * Bit 0 = 1 to enable comms to FPGA EPROM
+     */
+    unsigned char getSystemStatus();
+
+    /**
      * @brief Get the TEC enable status
      * 
      * @return true - TEC Enabled 
@@ -299,6 +322,14 @@ private:
      * @return false = Pre Amp Gain Disabled
      */
     bool isGainEnabled();
+
+    /**
+     * @brief Get the comms to FPGA EPROM enable status
+     * 
+     * @return true  = comms to FPGA EPROM Enabled
+     * @return false = comms to FPGA EPROM Disabled
+     */
+    bool isFpgaCommsEnabled();
 
     /**
      * @brief convert unsigned char to unsigned long long

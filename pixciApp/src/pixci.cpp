@@ -127,6 +127,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
         createParam(ToggleTecString,  asynParamInt32, &PR_ToggleTec);
         createParam(ToggleGainString,  asynParamInt32, &PR_ToggleGain);
+        createParam(ToggleFPGACommsString,  asynParamInt32, &PR_ToggleFpgaComms);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -479,6 +480,14 @@ Pixci::~Pixci(){
                 if(status == asynSuccess)
                 {
                     setIntegerParam(PR_ToggleGain, isGainEnabled());
+                }
+            }
+            else if (function == PR_ToggleFpgaComms)
+            {
+                status = toggleFpgaComms(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
                 }
             }
             callParamCallbacks();
@@ -985,6 +994,51 @@ Pixci::~Pixci(){
        return (fpgaStatus & (1 << 7)) != 0; // check the last bit is not 0
     }
 
+    unsigned char Pixci::getSystemStatus()
+    {
+        char cval = 0;
+        char inputMsg[2];
+        int inSize;
+        char first_bufout[] = {0x49, 0x50};
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
+
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            cval=inputMsg[0];
+            //TODO: Remove after proper implementation
+            printf("System status: %u\n",cval);           
+        }
+        
+        //TODO: Need proper error handling, same is for reading serial register as else where
+        return (unsigned char)cval; //cval will be 0x00 if there is no success
+       
+    }
+
+    asynStatus Pixci::toggleFpgaComms(bool enableFpgaComms)
+    {
+        unsigned char systemStatus = getSystemStatus();
+        if(enableFpgaComms)
+        {
+            //TODO: Implement serial writing for system status, can not use the regular "writeSerialRegister"
+            return asynSuccess;
+        }
+        else
+        {
+            //TODO: Implement serial writing for system status, can not use the regular "writeSerialRegister"
+            return asynSuccess;
+
+        }
+
+    }
+
+    bool Pixci::isFpgaCommsEnabled()
+    {
+        unsigned char systemStatus = getSystemStatus();
+        return (systemStatus & 0x01) != 0; // check the first bit is not 0
+    }
+    
+
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
         asynStatus status = asynSuccess;
@@ -1064,6 +1118,10 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if (function == PR_ToggleGain)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleFpgaComms)
         {
             addToParamQue(function,value);
         }
