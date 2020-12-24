@@ -466,16 +466,29 @@ Pixci::~Pixci(){
                 status == setRoiSizeX(val);
                 if(status == asynSuccess){
                     setIntegerParam(ADSizeX,getRoiSizeX());
-                    setupAquisition();
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
                     reloadVideoSettings();
+                    acquireStop();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
                 }
             }
             else if(function == ADSizeY){
-                status == setRoiSizeX(val);
+                status == setRoiSizeY(val);
                 if(status == asynSuccess){
+                    int test = getRoiSizeY();
                     setIntegerParam(ADSizeY,getRoiSizeY());
-                    setupAquisition();
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
                     reloadVideoSettings();
+                    acquireStop();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
                 }
             }
             callParamCallbacks();
