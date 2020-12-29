@@ -556,6 +556,21 @@ Pixci::~Pixci(){
                     }       
                 }
             }
+            else if(function == PR_TriggerPolarity){
+                int triggerMode;
+                if(value == PR_EXT_RISING_EDGE){
+                    setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+                }
+                else if(value == PR_EXT_FALLING_EDGE){
+                    setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+                }
+                callParamCallbacks();
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_EXTERNAL){
+                    setTriggerMode(PR_EXTERNAL);
+                }
+
+            }
             callParamCallbacks();
         }
     }
@@ -1025,19 +1040,7 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
-            int triggerMode;
-            if(value == PR_EXT_RISING_EDGE){
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
-            }
-            else if(value == PR_EXT_FALLING_EDGE){
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
-            }
-            callParamCallbacks();
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if(triggerMode == PR_EXTERNAL){
-                setTriggerMode(PR_EXTERNAL);
-            }
-
+            addToParamQue(function,value);
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
