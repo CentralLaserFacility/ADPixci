@@ -451,22 +451,72 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADMinX){
-                status = setRoiOffsetX(val);
-                if(status = asynSuccess){
-                    setIntegerParam(ADMinX,getRoiOffsetX());
+                epicsInt32 MaxSizeX, MinX, SizeX;
+                getIntegerParam(ADMaxSizeX, &MaxSizeX);
+                getIntegerParam(ADSizeX, &SizeX);
+
+                MinX = (val > MaxSizeX) ? MaxSizeX : val;
+                if((SizeX + MinX) > MaxSizeX){
+                    SizeX = MaxSizeX - MinX;
+                    status = setRoiSizeX(SizeX);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADSizeX,getRoiSizeX());
+                        getIntegerParam(ADAcquire, &acquire);
+                        reloadVideoSettings();
+                        acquireStop();
+                        setupAquisition();
+                        if(acquire == 1){
+                            acquireImage();
+                        }       
+                    }
                 }
-                else{
-                    printf("failed minx\n");
+                
+                status = setRoiOffsetX(MinX);
+                if(status == asynSuccess){
+                    setIntegerParam(ADMinX,getRoiOffsetX());
                 }
             }
             else if(function == ADMinY){
-                status = setRoiOffsetY(val);
+                epicsInt32 MaxSizeY, MinY, SizeY;
+                getIntegerParam(ADMaxSizeY, &MaxSizeY);
+                getIntegerParam(ADSizeY, &SizeY);
+
+                MinY = (val > MaxSizeY) ? MaxSizeY : val;
+                if((SizeY + MinY) > MaxSizeY){
+                    SizeY = MaxSizeY - MinY;
+                    status = setRoiSizeY(SizeY);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADSizeY,getRoiSizeY());
+                        getIntegerParam(ADAcquire, &acquire);
+                        reloadVideoSettings();
+                        acquireStop();
+                        setupAquisition();
+                        if(acquire == 1){
+                            acquireImage();
+                        }       
+                    }
+                }
+
+                status == setRoiOffsetY(val);
                 if(status = asynSuccess){
                     setIntegerParam(ADMinY,getRoiOffsetY());
                 }
             }
             else if(function == ADSizeX){
-                status == setRoiSizeX(val);
+                epicsInt32 MaxSizeX, MinX, SizeX;
+                getIntegerParam(ADMaxSizeX, &MaxSizeX);
+                getIntegerParam(ADMinX, &MinX);
+                SizeX = (val > MaxSizeX) ? MaxSizeX : val;
+
+                if((SizeX + MinX) > MaxSizeX){
+                    MinX = MaxSizeX - SizeX;
+                    status = setRoiOffsetX(MinX);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADMinX,getRoiOffsetX()); 
+                    }
+                }
+                status == setRoiSizeX(SizeX);
+                
                 if(status == asynSuccess){
                     setIntegerParam(ADSizeX,getRoiSizeX());
                     callParamCallbacks();
@@ -480,9 +530,21 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADSizeY){
-                status == setRoiSizeY(val);
+                epicsInt32 MaxSizeY, MinY, SizeY;
+                getIntegerParam(ADMaxSizeY, &MaxSizeY);
+                getIntegerParam(ADMinY, &MinY);
+                SizeY = (val > MaxSizeY) ? MaxSizeY : val;
+
+                if((SizeY + MinY) > MaxSizeY){
+                    MinY = MaxSizeY - SizeY;
+                    status = setRoiOffsetY(MinY);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADMinY,getRoiOffsetY());
+                    }
+                }
+                status == setRoiSizeY(SizeY);
+                
                 if(status == asynSuccess){
-                    int test = getRoiSizeY();
                     setIntegerParam(ADSizeY,getRoiSizeY());
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
@@ -1026,15 +1088,12 @@ Pixci::~Pixci(){
         inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
 
         if(inSize<NOERROR){
-            printf("less size\n");
             return asynError;
         }
 
         if(inputMsg[0]==success){
-            printf("success \n");
             return asynSuccess;
         }
-        printf("input is %x\n",inputMsg[0]);
         return asynError;
     }
 
