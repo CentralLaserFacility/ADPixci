@@ -387,8 +387,7 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                printf("Reading Exposure from the camera \n");
-
+                printf("Reading Exposure from the camera \n");    
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -446,6 +445,20 @@ Pixci::~Pixci(){
                     }
                 }
             }
+            else if(function == ADAcquireTime){
+                if(val!=0){
+                    status = setAcquireTime(val);
+                    if(status == asynSuccess){
+                        double readBackAcquireTime;
+                        readBackAcquireTime = getAcquireTime();
+                        if(readBackAcquireTime > 0){
+                            setDoubleParam(ADAcquireTime, readBackAcquireTime);
+                        }
+                    }
+                }
+
+            }
+
             callParamCallbacks();
         }
     }
@@ -832,6 +845,38 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
+    asynStatus Pixci::setAcquireTime(double AcquireTime){
+        unsigned long AcquireTimeCount;
+        unsigned long long lval;
+        char AcquireTimeHexVal[5] = {0,0,0,0,0};
+        AcquireTimeCount = (unsigned long)(AcquireTime*40e6/10e2); 
+        longTouchar(AcquireTimeCount, AcquireTimeHexVal);
+
+        writeSerialRegister(UNIT, 0xED, AcquireTimeHexVal[0]);
+        writeSerialRegister(UNIT, 0xEE, AcquireTimeHexVal[1]);
+        writeSerialRegister(UNIT, 0xEF, AcquireTimeHexVal[2]);
+        writeSerialRegister(UNIT, 0xF0, AcquireTimeHexVal[3]);
+        return writeSerialRegister(UNIT, 0xF1, AcquireTimeHexVal[4]);
+    }
+
+    double Pixci::getAcquireTime(){
+        char cval[5] ={0,0,0,0,0};
+        double AcquireTime = 0.0;
+        asynStatus status;
+        unsigned long long AcquireTimeCount = 0;
+        readSerialRegister(0XED, &cval[0]);
+        readSerialRegister(0xEE, &cval[1]);
+        readSerialRegister(0xEF, &cval[2]);
+        readSerialRegister(0XF0, &cval[3]);
+        readSerialRegister(0XF1, &cval[4]);
+
+        AcquireTimeCount = UcharToLong(cval);
+        if (AcquireTimeCount > 0){
+            AcquireTime = (double(AcquireTimeCount)/40e6)*10e2;
+        }
+        return AcquireTime;
+    }
+
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
         asynStatus status = asynSuccess;
@@ -929,7 +974,7 @@ Pixci::~Pixci(){
         asynStatus status = asynSuccess;
         static const char *functionName = "writeFloat64";
 
-        if(function == ADAcquirePeriod){
+        if(function == ADAcquirePeriod || function == ADAcquireTime){
             addToParamQue(function,value);
         }
         return asynSuccess;
