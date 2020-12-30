@@ -225,11 +225,20 @@ private:
      */
     void longTouchar(long lval, char* cval);
     
+    
     /**
-     * @brief Get the Exposure data from the camera
+     * @brief Set the Acquire Time (exposure)
      * 
-     * @return double exposure time in seconds/milliseconds
+     * @param acquireTime 
+     * @return asynStatus 
      */
-    double getExposure();
-    //change to check
+    asynStatus setAcquireTime(double acquireTime);
+
+    /**
+     * @brief Get the Aquire Time from the camera
+     * 
+     * @return double 
+     */
+    double getAcquireTime();
+
 };
