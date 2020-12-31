@@ -558,10 +558,10 @@ Pixci::~Pixci(){
             }
             else if(function == PR_TriggerPolarity){
                 int triggerMode;
-                if(value == PR_EXT_RISING_EDGE){
+                if(val == PR_EXT_RISING_EDGE){
                     setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
                 }
-                else if(value == PR_EXT_FALLING_EDGE){
+                else if(val == PR_EXT_FALLING_EDGE){
                     setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
                 }
                 callParamCallbacks();
