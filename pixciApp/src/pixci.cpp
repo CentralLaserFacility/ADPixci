@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include<string>
 
 
 /* For windows */
@@ -1006,9 +1007,7 @@ Pixci::~Pixci(){
         inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
 
         if(inputMsg[1] == SUCCESS_MESSAGE){
-            cval=inputMsg[0];
-            //TODO: Remove after proper implementation
-            printf("System status: %u\n",cval);           
+            cval=inputMsg[0];       
         }
         
         //TODO: Need proper error handling, same is for reading serial register as else where
@@ -1304,10 +1303,50 @@ Pixci::~Pixci(){
             callParamCallbacks();
     }
 
+    asynStatus Pixci::updateManufacturersData(bool callBackFlag)
+    {
+        
+        char inputMsg[20];
+        int inSize;
+        char first_bufout[] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00, 0x50};
+        char last_bufout[] = {0x53, 0xAF, 0x12, 0x50};
+
+        INT16 serialNumber = 0;
+
+        toggleFpgaComms(true);
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+        
+        toggleFpgaComms(false);
+
+
+        if(inputMsg[18] == SUCCESS_MESSAGE){
+            
+            
+            serialNumber += (INT16)(unsigned char)inputMsg[0];
+            serialNumber += (INT16)(unsigned char)(inputMsg[1])<<8;
+            setStringParam(ADSerialNumber, std::to_string(serialNumber));
+            
+            
+            if(callBackFlag)
+                callParamCallbacks();
+            return asynSuccess;
+        }
+
+
+        return asynError;
+
+
+    }
+
     void Pixci::updateStatus(bool updateManufacturersDataFlag)
     {
         //TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
-        
+        if(updateManufacturersDataFlag)
+            updateManufacturersData(); // TODO: Implement Error Message
+
         updateADTemperatureActual();
         updateTemperaturePcb(true);
     }
