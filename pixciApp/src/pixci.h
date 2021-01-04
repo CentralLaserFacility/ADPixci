@@ -402,6 +402,13 @@ private:
     void updateTemperaturePcb(bool callBackFlag = false);
 
     /**
+     * @brief update the PVs related to manufacturers data
+     * 
+     * @param callBackFlag Flag for calling the callParamCallbacks function
+     */
+    asynStatus updateManufacturersData(bool callBackFlag = false);
+
+    /**
      * @brief update the status related to device
      * 
      */
