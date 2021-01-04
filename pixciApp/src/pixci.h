@@ -232,6 +232,20 @@ private:
     asynStatus setTecTemperature(double temperature);
 
     /**
+     * @brief Set the system status of the camera
+     * 
+     * @param val
+     * Bit 7,5,3 = Reserved
+     * Bit 6 = 1 check sum mode enabled
+     * Bit 4 = 1 to enable command ACK
+     * Bit 2 = 1 if FPGA booted ok
+     * Bit 1 = 0 to Hold FPGA in RESET
+     * Bit 0 = 1 to enable comms to FPGA EPROM 
+     * @return asynStatus 
+     */
+    asynStatus setSystemStatus(char val);
+
+    /**
      * @brief Enable/ Disable TEC controller
      * 
      * @param enableTec 
