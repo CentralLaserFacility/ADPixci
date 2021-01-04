@@ -960,6 +960,7 @@ Pixci::~Pixci(){
     {
         char cval = 0;
         readSerialRegister(0x00, &cval);
+        //TODO: implement proper error handling
         return (unsigned char)cval;
     }
 
@@ -1015,20 +1016,35 @@ Pixci::~Pixci(){
        
     }
 
+    asynStatus Pixci::setSystemStatus(char val){
+        int inSize;
+        char inputMsg[1];
+        
+        /* template of message to write value to registers */
+        char bufout[]  = {0x4F, 0x00, 0x50};
+		bufout[1] = val ;
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
+
+        if(inSize<NOERROR){
+            return asynError;
+        }
+
+        if(inputMsg[0]==SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+
+        return asynError;
+    }
+
     asynStatus Pixci::toggleFpgaComms(bool enableFpgaComms)
     {
         unsigned char systemStatus = getSystemStatus();
         if(enableFpgaComms)
-        {
-            //TODO: Implement serial writing for system status, can not use the regular "writeSerialRegister"
-            return asynSuccess;
-        }
-        else
-        {
-            //TODO: Implement serial writing for system status, can not use the regular "writeSerialRegister"
-            return asynSuccess;
-
-        }
+           return setSystemStatus(systemStatus | 0x01); // setting first bit = 1
+         else
+            return setSystemStatus(systemStatus & ~(0x01)); //setting first bit = 0
 
     }
 
