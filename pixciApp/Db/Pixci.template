@@ -61,6 +61,14 @@ record(bo, "$(P)$(R)UpdateTemperature")
    field(SCAN, "5 second")
 }
 
+record(bo, "$(P)$(R)UpdateStatus")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
+   field(ZNAM, "Updated")
+   field(ONAM, "Updated")
+}
+
 record(ai, "$(P)$(R)TemperaturePCB")
 {
    field(DTYP, "asynFloat64")
@@ -117,5 +125,40 @@ record(bi, "$(P)$(R)ToggleFPGAComms_RBV")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_FPGA_COMMS")
    field(ZNAM, "Disabled")
    field(ONAM, "Enabled")
+   field(SCAN, "I/O Intr")
+}
+
+record(stringin, "$(P)$(R)BuildDate_RBV")
+{
+   field(DTYP, "asynOctetRead")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_BUILD_DATE")
+   field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)ADCCalibrationZeroDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_ZERO_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)ADCCalibrationFortyDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_FORTY_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)DACCalibrationZeroDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_ZERO_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_FORTY_DEGREE")
    field(SCAN, "I/O Intr")
 }
