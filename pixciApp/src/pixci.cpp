@@ -35,6 +35,8 @@ extern "C"{
 #include <epicsExport.h>
 #include <epicsMessageQueue.h>
 
+using namespace std;
+
 #define FORMAT "" // Video format configuration name.
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
 #define UNIT 1 // Unit to be selected for streaming, eb1 model only have 1 unit.
@@ -129,6 +131,13 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         createParam(ToggleTecString,  asynParamInt32, &PR_ToggleTec);
         createParam(ToggleGainString,  asynParamInt32, &PR_ToggleGain);
         createParam(ToggleFPGACommsString,  asynParamInt32, &PR_ToggleFpgaComms);
+
+        createParam(UpdateStatusString,  asynParamInt32, &PR_UpdateStatus);
+        createParam(BuildDateString,  asynParamOctet, &PR_BuildDate);
+        createParam(ADCCalibrationZeroDegreeString ,  asynParamInt32, &PR_ADCCalibrationZeroDegree);
+        createParam(ADCCalibrationFortyDegreeString,  asynParamInt32, &PR_ADCCalibrationFortyDegree);
+        createParam(DACCalibrationZeroDegreeString ,  asynParamInt32, &PR_DACCalibrationZeroDegree);
+        createParam(DACCalibrationFortyDegreeString,  asynParamInt32, &PR_DACCalibrationFortyDegree);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -441,6 +450,10 @@ Pixci::~Pixci(){
                 else{
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
+            }
+            else if (function==PR_UpdateStatus)
+            {
+                updateStatus(true);
             }
             else if (function==PR_UpdateTemperature)
             {
@@ -878,28 +891,18 @@ Pixci::~Pixci(){
     }
 
     double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
-    {
-        //TODO: Refactor it
-        float M = 40.0f/(834.0f-1048.0f);
-        float C = 40.0f-(M*834.0f);
-        double temperature = (M*adcCount)+C; // temperature in Centigrade
-        return temperature;
+    {       
+        return (ADC_M*adcCount)+ADC_C; //temperature in centigrade
     }
 
     INT16 Pixci::convertCentigradeToDacCount(double temperature)
     {
-        //TODO: Refactor it
-        float M = 40.0f/(2650.0f-2088.0f);
-        float C = 40.0f-(M*2650.0f);
-        return (temperature-C)/M;
+        return (temperature-DAC_C)/DAC_M;
     }
 
     double Pixci::convertDacCountToCentigrade(INT16 dacCount)
     {
-        //TODO: Refactor it
-        float M = 40.0f/(2650.0f-2088.0f);
-        float C = 40.0f-(M*2650.0f);
-        return (M*dacCount)+C; //temperature in centigrade
+        return (DAC_M*dacCount)+DAC_C; //temperature in centigrade
     }
 
     double Pixci::getTemperatureActual()
@@ -1124,6 +1127,10 @@ Pixci::~Pixci(){
         else if(function == PR_SoftTrigger){
             addToParamQue(function,value);
         }
+        else if (function == PR_UpdateStatus)
+        {
+            addToParamQue(function,value);
+        }
         else if (function == PR_UpdateTemperature)
         {
             addToParamQue(function,value);
@@ -1312,6 +1319,13 @@ Pixci::~Pixci(){
         char last_bufout[] = {0x53, 0xAF, 0x12, 0x50};
 
         INT16 serialNumber = 0;
+        string buildDate = "";
+        char buildCode[5];
+        INT16 adcCountZeroDegree=0;
+        INT16 adcCountFortyDegree=0;
+        INT16 dacCountZeroDegree=0;
+        INT16 dacCountFortyDegree=0;
+
 
         toggleFpgaComms(true);
 
@@ -1327,9 +1341,39 @@ Pixci::~Pixci(){
             
             serialNumber += (INT16)(unsigned char)inputMsg[0];
             serialNumber += (INT16)(unsigned char)(inputMsg[1])<<8;
-            setStringParam(ADSerialNumber, std::to_string(serialNumber));
+            setStringParam(ADSerialNumber, to_string(serialNumber));
             
-            
+            buildDate = to_string((INT16)(unsigned char)inputMsg[2])+"/"+to_string((INT16)(unsigned char)inputMsg[3])+"/"+to_string((INT16)(unsigned char)inputMsg[4]);
+            setStringParam(PR_BuildDate, buildDate);
+
+            buildCode[0]=inputMsg[5];
+            buildCode[1]=inputMsg[6];
+            buildCode[2]=inputMsg[7];
+            buildCode[3]=inputMsg[8];
+            buildCode[4]=inputMsg[9];
+
+            adcCountZeroDegree += (INT16)(unsigned char)inputMsg[10];
+            adcCountZeroDegree += (INT16)(unsigned char)(inputMsg[11])<<8;
+            setIntegerParam(PR_ADCCalibrationZeroDegree, adcCountZeroDegree);
+
+            adcCountFortyDegree += (INT16)(unsigned char)inputMsg[12];
+            adcCountFortyDegree += (INT16)(unsigned char)(inputMsg[13])<<8;
+            setIntegerParam(PR_ADCCalibrationFortyDegree, adcCountFortyDegree);
+
+            dacCountZeroDegree += (INT16)(unsigned char)inputMsg[14];
+            dacCountZeroDegree += (INT16)(unsigned char)(inputMsg[15])<<8;
+             setIntegerParam(PR_DACCalibrationZeroDegree, dacCountZeroDegree);
+
+            dacCountFortyDegree += (INT16)(unsigned char)inputMsg[16];
+            dacCountFortyDegree += (INT16)(unsigned char)(inputMsg[17])<<8;
+            setIntegerParam(PR_DACCalibrationFortyDegree, dacCountFortyDegree);
+
+            ADC_M = 40.0f/(adcCountFortyDegree-adcCountZeroDegree);
+            ADC_C = 40.0f-(ADC_M*adcCountFortyDegree);
+
+            DAC_M = 40.0f/(dacCountFortyDegree-dacCountZeroDegree);
+            DAC_C = 40.0f-(DAC_M*dacCountZeroDegree);
+          
             if(callBackFlag)
                 callParamCallbacks();
             return asynSuccess;

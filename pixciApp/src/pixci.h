@@ -15,7 +15,13 @@ static const char *driverName = "Pixci";
 #define TemperaturePCBString "PR_TEMPERATURE_PCB"
 #define ToggleTecString "PR_TOGGLE_TEC"
 #define ToggleGainString "PR_TOGGLE_Gain" 
-#define ToggleFPGACommsString "PR_TOGGLE_FPGA_COMMS" 
+#define ToggleFPGACommsString "PR_TOGGLE_FPGA_COMMS"
+#define UpdateStatusString "PR_UPDATE_STATUS" 
+#define BuildDateString "PR_BUILD_DATE"
+#define ADCCalibrationZeroDegreeString "PR_ADC_CALIBRATION_ZERO_DEGREE"
+#define ADCCalibrationFortyDegreeString "PR_ADC_CALIBRATION_FORTY_DEGREE"
+#define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
+#define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -94,9 +100,21 @@ protected:
   int PR_ToggleTec;
   int PR_ToggleGain;
   int PR_ToggleFpgaComms;
+  int PR_UpdateStatus;
+  int PR_BuildDate;
+  int PR_ADCCalibrationZeroDegree;
+  int PR_ADCCalibrationFortyDegree;
+  int PR_DACCalibrationZeroDegree;
+  int PR_DACCalibrationFortyDegree;
   int PR_TriggerPolarity;  
 
 private:
+
+  float ADC_M; //ADC Slope
+  float ADC_C; //ADC Offset
+  float DAC_M; //DAC Slope
+  float DAC_C; //DAC Offset      
+
     /**
      * @brief starts live capture image to frame buffer.
      */
