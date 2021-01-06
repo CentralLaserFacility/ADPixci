@@ -13,6 +13,12 @@ static const char *driverName = "Pixci";
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 
 /* Trigger modes of Raptor Eagle-XV" */
+/*ITR mode will be used to capture a continuous sequence of images.
+ The camera will immediately trigger the start of a new integration period 
+ when the previous image readouthas completed.
+
+ In FFR mode, thecamera will generate an internal trigger signal at a user programmable frame rate. 
+*/
 typedef enum
 {
   PR_INTERNAL_ITR,
@@ -59,6 +65,8 @@ public:
      * @return asynStatus 
      */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
+
+    virtual asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value);
     
     /**
      * @brief thread that waits for signal from frame grabber during live capture
@@ -155,6 +163,7 @@ private:
      * @param value 
      */
     void addToParamQue(int function, int value);
+    void addToParamQue(int function, epicsFloat64 value);
 
     /**
      * @brief write value to the registers of the camera using serial command, might take longer
@@ -185,5 +194,35 @@ private:
      */
     asynStatus setTriggerMode(int mode);
 
+    /**
+     * @brief Set the Frame Rate for Internal FFR mode
+     * 
+     * @param frameRate 
+     * @return asynStatus 
+     */
+    asynStatus setFrameRate(double frameRate);
+
+    /**
+     * @brief Get the Frame Rate from the camera
+     * 
+     * @return double framerate 
+     */
+    double getFrameRate();
+
+    /**
+     * @brief convert unsigned char to unsigned long long
+     * 
+     * @param cval char array of size 5
+     * @return unsigned long long 
+     */
+    unsigned long long UcharToLong( char* cval);
+
+    /**
+     * @brief convert unsigned char value to unsigned long long
+     * 
+     * @param lval unsigned long long value 
+     * @param cval address of unsigned char array of size 5
+     */
+    void longTouchar(long lval, char* cval);
 
 };

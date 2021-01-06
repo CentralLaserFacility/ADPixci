@@ -166,7 +166,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
 
-        paramMsgQue = new epicsMessageQueue(20,8);
+        paramMsgQue = new epicsMessageQueue(20,16);
 
     }
 
@@ -346,16 +346,16 @@ Pixci::~Pixci(){
     }
 
     void Pixci::paramTask(){
-        epicsInt32 functionAndVal[2];
+        epicsFloat64 functionAndVal[2];
         epicsInt32 function;
-        epicsInt32 val;
+        epicsFloat64 val;
         asynStatus status;
         epicsInt32 acquire;
-        for(;;){
-            paramMsgQue->receive(functionAndVal,8);
-            function = functionAndVal[0];
-            val = functionAndVal[1];
 
+        for(;;){
+            paramMsgQue->receive(functionAndVal,16);
+            function = (int)functionAndVal[0];
+            val = functionAndVal[1];
             if(function==ADBinX){
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
@@ -387,10 +387,7 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                char input;
-                char reg = 0xD4;
-                asynStatus status;
-                status = readSerialRegister(reg, &input);
+                getFrameRate();
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -435,6 +432,18 @@ Pixci::~Pixci(){
                 else{
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
+            }
+            else if(function == ADAcquirePeriod){
+                if(val != 0){
+                    status = setFrameRate(1/val);
+                    if(status == asynSuccess){
+                        double readBackFrameRate;
+                        readBackFrameRate = getFrameRate();
+                        if(readBackFrameRate > 0){
+                            setDoubleParam(ADAcquirePeriod, (1/readBackFrameRate));
+                        }
+                    }
+                }
             }
             callParamCallbacks();
         }
@@ -682,6 +691,24 @@ Pixci::~Pixci(){
         }
     }
 
+    unsigned long long Pixci::UcharToLong( char* cval){
+        unsigned long long lval = 0;
+        lval += (unsigned long )(unsigned char)cval[4];
+        lval += ((unsigned long )(unsigned char)cval[3])<<8;
+        lval += ((unsigned long )(unsigned char)cval[2])<<16;
+        lval += ((unsigned long )(unsigned char)cval[1])<<24;
+        lval += ((unsigned long )(unsigned char)cval[0])<<32;
+        return lval;
+    }
+
+    void Pixci::longTouchar(long lval, char* cval){
+        cval[0] = (char)((lval & 0xFF00000000) >> 32 );
+        cval[1]  = (char)((lval & 0x00FF000000) >> 24 );
+        cval[2] = (char)((lval & 0x0000FF0000) >> 16 );
+        cval[3] = (char)((lval & 0x000000FF00) >> 8 );
+        cval[4] = (char)((lval & 0x00000000FF) );
+    }
+
     int Pixci::writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize){
         int count, i;
         char bufOut[50];
@@ -772,16 +799,47 @@ Pixci::~Pixci(){
 
     }
 
+    asynStatus Pixci::setFrameRate(double frameRate){
+        unsigned long frameRateCount;
+        unsigned long long lval;
+        char frameRateHexVal[5] = {0,0,0,0,0};
+        frameRateCount = (unsigned long)(40e6/frameRate);
+        longTouchar(frameRateCount, frameRateHexVal);
+
+        writeSerialRegister(UNIT, 0xDC, frameRateHexVal[0]);
+        writeSerialRegister(UNIT, 0xDD, frameRateHexVal[1]);
+        writeSerialRegister(UNIT, 0xDE, frameRateHexVal[2]);
+        writeSerialRegister(UNIT, 0xDF, frameRateHexVal[3]);
+        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4]);
+    }
+
+    double Pixci::getFrameRate(){
+        char cval[5] ={0,0,0,0,0};
+        double frameRate = 0.0;
+        asynStatus status;
+        unsigned long long frameRateCount = 0;
+        readSerialRegister(0XDC, &cval[0]);
+        readSerialRegister(0xDD, &cval[1]);
+        readSerialRegister(0xDE, &cval[2]);
+        readSerialRegister(0XDF, &cval[3]);
+        readSerialRegister(0XE0, &cval[4]);
+
+        frameRateCount = UcharToLong(cval);
+        if (frameRateCount > 0){
+            frameRate = 40e6/double(frameRateCount);
+        }
+        return frameRate;
+    }
+
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
         asynStatus status = asynSuccess;
         static const char *functionName = "writeInt32";
 
-        /* There are two way of implementing int32 parameter changes,parameters that doesn't 
-        need to use serial communication  to implement and Parameteters that uses serial communication
-        for implementation.
+        /* There are two types int32 parameters, parameters that uses serial communication and parameters that 
+        does not uses serial communication.
 
-        Parameters that dont use serial communication, can be implemented by calling respective function
+        Parameters that dont use serial communication, can be implemented by calling respective XCLIB function
         directly ex: ADAcquire.
 
         Parameters that uses serial communication cannot be implmented directly here because,
@@ -865,13 +923,31 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
+    asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value){
+        int function = pasynUser->reason;
+        asynStatus status = asynSuccess;
+        static const char *functionName = "writeFloat64";
+
+        if(function == ADAcquirePeriod){
+            addToParamQue(function,value);
+        }
+        return asynSuccess;
+    }
+
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
-        epicsInt32 functionAndVal[2];
+        epicsFloat64 functionAndVal[2];
         functionAndVal[0] = function;
         functionAndVal[1] = value;
         /*sending buffer data to the que */
-        paramMsgQue->send(functionAndVal,8);
+        paramMsgQue->send(functionAndVal,16);
+    }
 
+    void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value){
+        epicsFloat64 functionAndVal[2];
+        functionAndVal[0] = function;
+        functionAndVal[1] = value;
+        /*sending buffer data to the que */
+        paramMsgQue->send(functionAndVal,16);
     }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
