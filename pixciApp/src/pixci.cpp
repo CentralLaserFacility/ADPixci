@@ -169,13 +169,13 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
         int status = asynSuccess;
         /* Create the thread that does data acquisition */
-        status = (epicsThreadCreate("acquireTask",
+        status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        status = (epicsThreadCreate("paramTask",
+        status |= (epicsThreadCreate("paramTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)paramTaskC,
@@ -185,6 +185,11 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         //Updating all the PVs related to the status of device
         updateStatus(true); // Also update the manufacturers data
+        status |= updateIntialPVs();
+        if(status == asynError){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
+            return;
+        }
 
     }
 
@@ -211,7 +216,7 @@ Pixci::~Pixci(){
 }
 
     asynStatus Pixci::setupAquisition(){
-        int binX, binY, sizeX, sizeY;
+        int binX, binY, sizeX, sizeY, RoiSizeX, RoiSizeY;
         sizeX = pxd_imageXdim();
         sizeY = pxd_imageYdim();
 
@@ -226,14 +231,13 @@ Pixci::~Pixci(){
             setIntegerParam(ADBinY, binY);
         }
 
-        setIntegerParam(ADSizeX, sizeX);
-        setIntegerParam(ADSizeY, sizeY);
+        getIntegerParam(ADSizeX, &RoiSizeX);
+        getIntegerParam(ADSizeY, &RoiSizeY);
+        // setIntegerParam(ADSizeX, sizeX);
+        // setIntegerParam(ADSizeY, sizeY);
 
-        setIntegerParam(ADMaxSizeX, sizeX);
-        setIntegerParam(ADMaxSizeY, sizeY);
-
-        setIntegerParam(NDArraySizeX, sizeX);
-        setIntegerParam(NDArraySizeY, sizeY);
+        setIntegerParam(NDArraySizeX, RoiSizeX/binX);
+        setIntegerParam(NDArraySizeY, RoiSizeY/binY);
 
         callParamCallbacks();
 
@@ -379,7 +383,7 @@ Pixci::~Pixci(){
                 if (status==asynSuccess)
                 {   
                     setIntegerParam(ADBinX, val); //Updating the binX value.
-                    callParamCallbacks();
+                    // callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire); //Getting the ADAcquire value. 
                     reloadVideoSettings(); //Video settings have to be loaded respective of binning value.
                     acquireStop(); //Acquire have to be stopped before calling setupAcquisition.
@@ -518,6 +522,127 @@ Pixci::~Pixci(){
 
             }
 
+            else if(function == ADMinX){
+                epicsInt32 MaxSizeX, MinX, SizeX;
+                getIntegerParam(ADMaxSizeX, &MaxSizeX);
+                getIntegerParam(ADSizeX, &SizeX);
+
+                MinX = (val > MaxSizeX) ? MaxSizeX : val;
+                if((SizeX + MinX) > MaxSizeX){
+                    SizeX = MaxSizeX - MinX;
+                    status = setRoiSizeX(SizeX);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADSizeX,getRoiSizeX());
+                        getIntegerParam(ADAcquire, &acquire);
+                        reloadVideoSettings();
+                        acquireStop();
+                        setupAquisition();
+                        if(acquire == 1){
+                            acquireImage();
+                        }       
+                    }
+                }
+                
+                status = setRoiOffsetX(MinX);
+                if(status == asynSuccess){
+                    setIntegerParam(ADMinX,getRoiOffsetX());
+                }
+            }
+            else if(function == ADMinY){
+                epicsInt32 MaxSizeY, MinY, SizeY;
+                getIntegerParam(ADMaxSizeY, &MaxSizeY);
+                getIntegerParam(ADSizeY, &SizeY);
+
+                MinY = (val > MaxSizeY) ? MaxSizeY : val;
+                if((SizeY + MinY) > MaxSizeY){
+                    SizeY = MaxSizeY - MinY;
+                    status = setRoiSizeY(SizeY);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADSizeY,getRoiSizeY());
+                        getIntegerParam(ADAcquire, &acquire);
+                        reloadVideoSettings();
+                        acquireStop();
+                        setupAquisition();
+                        if(acquire == 1){
+                            acquireImage();
+                        }       
+                    }
+                }
+
+                status == setRoiOffsetY(val);
+                if(status = asynSuccess){
+                    setIntegerParam(ADMinY,getRoiOffsetY());
+                }
+            }
+            else if(function == ADSizeX){
+                epicsInt32 MaxSizeX, MinX, SizeX;
+                getIntegerParam(ADMaxSizeX, &MaxSizeX);
+                getIntegerParam(ADMinX, &MinX);
+                SizeX = (val > MaxSizeX) ? MaxSizeX : val;
+
+                if((SizeX + MinX) > MaxSizeX){
+                    MinX = MaxSizeX - SizeX;
+                    status = setRoiOffsetX(MinX);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADMinX,getRoiOffsetX()); 
+                    }
+                }
+                status == setRoiSizeX(SizeX);
+                
+                if(status == asynSuccess){
+                    setIntegerParam(ADSizeX,getRoiSizeX());
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
+                    reloadVideoSettings();
+                    acquireStop();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
+                }
+            }
+            else if(function == ADSizeY){
+                epicsInt32 MaxSizeY, MinY, SizeY;
+                getIntegerParam(ADMaxSizeY, &MaxSizeY);
+                getIntegerParam(ADMinY, &MinY);
+                SizeY = (val > MaxSizeY) ? MaxSizeY : val;
+
+                if((SizeY + MinY) > MaxSizeY){
+                    MinY = MaxSizeY - SizeY;
+                    status = setRoiOffsetY(MinY);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADMinY,getRoiOffsetY());
+                    }
+                }
+                status == setRoiSizeY(SizeY);
+                
+                if(status == asynSuccess){
+                    setIntegerParam(ADSizeY,getRoiSizeY());
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
+                    reloadVideoSettings();
+                    acquireStop();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
+                }
+            }
+            else if(function == PR_TriggerPolarity){
+                int triggerMode;
+                if(val == PR_EXT_RISING_EDGE){
+                    setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+                }
+                else if(val == PR_EXT_FALLING_EDGE){
+                    setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+                }
+                callParamCallbacks();
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_EXTERNAL){
+                    setTriggerMode(PR_EXTERNAL);
+                }
+
+            }
             callParamCallbacks();
         }
     }
@@ -1190,22 +1315,20 @@ Pixci::~Pixci(){
         }
         else if (function == PR_ToggleFpgaComms)
         {
+        else if(function == ADMinX){
+            addToParamQue(function,value);
+        }
+        else if(function == ADMinY){
+            addToParamQue(function,value);
+        }
+        else if(function == ADSizeX){
+            addToParamQue(function,value);
+        }
+        else if(function == ADSizeY){
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
-            int triggerMode;
-            if(value == PR_EXT_RISING_EDGE){
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
-            }
-            else if(value == PR_EXT_FALLING_EDGE){
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
-            }
-            callParamCallbacks();
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if(triggerMode == PR_EXTERNAL){
-                setTriggerMode(PR_EXTERNAL);
-            }
-
+            addToParamQue(function,value);
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
@@ -1266,7 +1389,6 @@ Pixci::~Pixci(){
         if(inputMsg[0]==success){
             return asynSuccess;
         }
-
         return asynError;
     }
 
@@ -1440,6 +1562,110 @@ Pixci::~Pixci(){
         updateTemperaturePcb(true);
     }
 
+    asynStatus Pixci::updateIntialPVs(){
+        epicsInt32 sizeX = pxd_imageXdim();
+        epicsInt32 sizeY = pxd_imageYdim();
+        int status = asynSuccess;
+        status |=  setIntegerParam(ADMaxSizeX, sizeX);
+        status |=  setIntegerParam(ADMaxSizeY, sizeY);
+        status |=  setIntegerParam(ADSizeX, sizeX);
+        status |=  setIntegerParam(ADSizeY, sizeY);
+
+        status |= callParamCallbacks();
+        return (asynStatus) status;
+    }
+
+    asynStatus Pixci::setRoiSizeX(int RoisizeX){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoisizeX & 0x0F00) >> 8 );
+        cval[1] = (char)((RoisizeX & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB4, cval[0]);
+        return writeSerialRegister(UNIT, 0xB5, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiSizeY(int RoisizeY){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoisizeY & 0x0F00) >> 8 );
+        cval[1] = (char)((RoisizeY & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB8, cval[0]);
+        return writeSerialRegister(UNIT, 0xB9, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiOffsetX(int RoiOffsetX){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoiOffsetX & 0x0F00) >> 8 );
+        cval[1] = (char)((RoiOffsetX & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB6, cval[0]);
+        return writeSerialRegister(UNIT, 0xB7, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiOffsetY(int RoiOffsetY){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoiOffsetY & 0x0F00) >> 8 );
+        cval[1] = (char)((RoiOffsetY & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xBA, cval[0]);
+        return writeSerialRegister(UNIT, 0xBB, cval[1]);
+    }
+
+    int Pixci::getRoiSizeX()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB4, &cval[1]);
+        readSerialRegister(0XB5, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiSizeY()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB8, &cval[1]);
+        readSerialRegister(0XB9, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiOffsetX()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB6, &cval[1]);
+        readSerialRegister(0XB7, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiOffsetY()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XBA, &cval[1]);
+        readSerialRegister(0XBB, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
 
 /* Code for iocsh registration */
 
