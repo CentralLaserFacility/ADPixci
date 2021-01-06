@@ -404,13 +404,8 @@ Pixci::~Pixci(){
                     }       
                 }
             }
-<<<<<<< HEAD
-            else if(function==ADReadStatus){  
-                
-=======
             else if(function==ADReadStatus){
                 printf("Reading Exposure from the camera \n");    
->>>>>>> 29-add-exposure-settings
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -476,7 +471,6 @@ Pixci::~Pixci(){
                     }
                 }
             }
-<<<<<<< HEAD
             else if (function == ADTemperature)
             {
                 status = setTecTemperature(val);
@@ -510,7 +504,6 @@ Pixci::~Pixci(){
                     setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
                 }
             }
-=======
             else if(function == ADAcquireTime){
                 if(val!=0){
                     status = setAcquireTime(val);
@@ -525,7 +518,6 @@ Pixci::~Pixci(){
 
             }
 
->>>>>>> 29-add-exposure-settings
             callParamCallbacks();
         }
     }
@@ -912,7 +904,6 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
-<<<<<<< HEAD
     double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
     {       
         return (ADC_M*adcCount)+ADC_C; //temperature in centigrade
@@ -1079,7 +1070,6 @@ Pixci::~Pixci(){
         return (systemStatus & 0x01) != 0; // check the first bit is not 0
     }
     
-=======
     asynStatus Pixci::setAcquireTime(double AcquireTime){
         unsigned long AcquireTimeCount;
         unsigned long long lval;
@@ -1111,7 +1101,6 @@ Pixci::~Pixci(){
         }
         return AcquireTime;
     }
->>>>>>> 29-add-exposure-settings
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
