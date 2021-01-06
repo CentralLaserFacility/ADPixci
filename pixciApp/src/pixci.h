@@ -13,7 +13,15 @@ static const char *driverName = "Pixci";
 #define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
 #define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
 #define TemperaturePCBString "PR_TEMPERATURE_PCB"
-#define ToggleTecString "PR_TOGGLE_TEC" 
+#define ToggleTecString "PR_TOGGLE_TEC"
+#define ToggleGainString "PR_TOGGLE_Gain" 
+#define ToggleFPGACommsString "PR_TOGGLE_FPGA_COMMS"
+#define UpdateStatusString "PR_UPDATE_STATUS" 
+#define BuildDateString "PR_BUILD_DATE"
+#define ADCCalibrationZeroDegreeString "PR_ADC_CALIBRATION_ZERO_DEGREE"
+#define ADCCalibrationFortyDegreeString "PR_ADC_CALIBRATION_FORTY_DEGREE"
+#define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
+#define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -90,9 +98,23 @@ protected:
   int PR_UpdateTemperature;
   int PR_TemperaturePcb;
   int PR_ToggleTec;
+  int PR_ToggleGain;
+  int PR_ToggleFpgaComms;
+  int PR_UpdateStatus;
+  int PR_BuildDate;
+  int PR_ADCCalibrationZeroDegree;
+  int PR_ADCCalibrationFortyDegree;
+  int PR_DACCalibrationZeroDegree;
+  int PR_DACCalibrationFortyDegree;
   int PR_TriggerPolarity;  
 
 private:
+
+  float ADC_M; //ADC Slope
+  float ADC_C; //ADC Offset
+  float DAC_M; //DAC Slope
+  float DAC_C; //DAC Offset      
+
     /**
      * @brief starts live capture image to frame buffer.
      */
@@ -228,12 +250,42 @@ private:
     asynStatus setTecTemperature(double temperature);
 
     /**
+     * @brief Set the system status of the camera
+     * 
+     * @param val
+     * Bit 7,5,3 = Reserved
+     * Bit 6 = 1 check sum mode enabled
+     * Bit 4 = 1 to enable command ACK
+     * Bit 2 = 1 if FPGA booted ok
+     * Bit 1 = 0 to Hold FPGA in RESET
+     * Bit 0 = 1 to enable comms to FPGA EPROM 
+     * @return asynStatus 
+     */
+    asynStatus setSystemStatus(char val);
+
+    /**
      * @brief Enable/ Disable TEC controller
      * 
      * @param enableTec 
      * @return asynStatus 
      */
     asynStatus toggleTec(bool enableTec);
+
+    /**
+     * @brief Enable/Disable Pre-Amp Gain
+     * 
+     * @param enableGain 
+     * @return asynStatus 
+     */
+    asynStatus toggleGain(bool enableGain);
+
+    /**
+     * @brief Enable/Disable comms to FPGA EPROM
+     * 
+     * @param enableFpgaComms 
+     * @return asynStatus 
+     */
+    asynStatus toggleFpgaComms(bool enableFpgaComms);
 
     /**
      * @brief Get the Frame Rate from the camera
@@ -275,12 +327,41 @@ private:
     unsigned char getFpgaStatus();
 
     /**
+     * @brief Get the System Status from camera
+     * 
+     * @return unsigned char 1 byte returned from camera
+     * Bit 7,5,3 = Reserved
+     * Bit 6 = 1 check sum mode enabled
+     * Bit 4 = 1 to enable command ACK
+     * Bit 2 = 1 if FPGA booted ok
+     * Bit 1 = 0 to Hold FPGA in RESET
+     * Bit 0 = 1 to enable comms to FPGA EPROM
+     */
+    unsigned char getSystemStatus();
+
+    /**
      * @brief Get the TEC enable status
      * 
      * @return true - TEC Enabled 
      * @return false - TEC Disabled 
      */
     bool isTecEnabled();
+
+    /**
+     * @brief Get the Pre-Amp Gain enable status
+     * 
+     * @return true = Pre Amp Gain Enabled 
+     * @return false = Pre Amp Gain Disabled
+     */
+    bool isGainEnabled();
+
+    /**
+     * @brief Get the comms to FPGA EPROM enable status
+     * 
+     * @return true  = comms to FPGA EPROM Enabled
+     * @return false = comms to FPGA EPROM Disabled
+     */
+    bool isFpgaCommsEnabled();
 
     /**
      * @brief convert unsigned char to unsigned long long
@@ -337,6 +418,13 @@ private:
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
     void updateTemperaturePcb(bool callBackFlag = false);
+
+    /**
+     * @brief update the PVs related to manufacturers data
+     * 
+     * @param callBackFlag Flag for calling the callParamCallbacks function
+     */
+    asynStatus updateManufacturersData(bool callBackFlag = false);
 
     /**
      * @brief update the status related to device
