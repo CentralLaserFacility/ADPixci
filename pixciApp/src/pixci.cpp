@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include<string>
 
 
 /* For windows */
@@ -33,6 +34,8 @@ extern "C"{
 #include <epicsExit.h>
 #include <epicsExport.h>
 #include <epicsMessageQueue.h>
+
+using namespace std;
 
 #define FORMAT "" // Video format configuration name.
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
@@ -126,6 +129,15 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         createParam(UpdateTemperatureString,  asynParamInt32, &PR_UpdateTemperature);
         createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
         createParam(ToggleTecString,  asynParamInt32, &PR_ToggleTec);
+        createParam(ToggleGainString,  asynParamInt32, &PR_ToggleGain);
+        createParam(ToggleFPGACommsString,  asynParamInt32, &PR_ToggleFpgaComms);
+
+        createParam(UpdateStatusString,  asynParamInt32, &PR_UpdateStatus);
+        createParam(BuildDateString,  asynParamOctet, &PR_BuildDate);
+        createParam(ADCCalibrationZeroDegreeString ,  asynParamInt32, &PR_ADCCalibrationZeroDegree);
+        createParam(ADCCalibrationFortyDegreeString,  asynParamInt32, &PR_ADCCalibrationFortyDegree);
+        createParam(DACCalibrationZeroDegreeString ,  asynParamInt32, &PR_DACCalibrationZeroDegree);
+        createParam(DACCalibrationFortyDegreeString,  asynParamInt32, &PR_DACCalibrationFortyDegree);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -439,6 +451,10 @@ Pixci::~Pixci(){
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
             }
+            else if (function==PR_UpdateStatus)
+            {
+                updateStatus(true);
+            }
             else if (function==PR_UpdateTemperature)
             {
                 updateStatus();
@@ -470,6 +486,22 @@ Pixci::~Pixci(){
                 if(status == asynSuccess)
                 {
                     setIntegerParam(PR_ToggleTec, isTecEnabled());
+                }
+            }
+            else if (function == PR_ToggleGain)
+            {
+                status = toggleGain(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleGain, isGainEnabled());
+                }
+            }
+            else if (function == PR_ToggleFpgaComms)
+            {
+                status = toggleFpgaComms(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
                 }
             }
             callParamCallbacks();
@@ -859,28 +891,18 @@ Pixci::~Pixci(){
     }
 
     double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
-    {
-        //TODO: Refactor it
-        float M = 40.0f/(834.0f-1048.0f);
-        float C = 40.0f-(M*834.0f);
-        double temperature = (M*adcCount)+C; // temperature in Centigrade
-        return temperature;
+    {       
+        return (ADC_M*adcCount)+ADC_C; //temperature in centigrade
     }
 
     INT16 Pixci::convertCentigradeToDacCount(double temperature)
     {
-        //TODO: Refactor it
-        float M = 40.0f/(2650.0f-2088.0f);
-        float C = 40.0f-(M*2650.0f);
-        return (temperature-C)/M;
+        return (temperature-DAC_C)/DAC_M;
     }
 
     double Pixci::convertDacCountToCentigrade(INT16 dacCount)
     {
-        //TODO: Refactor it
-        float M = 40.0f/(2650.0f-2088.0f);
-        float C = 40.0f-(M*2650.0f);
-        return (M*dacCount)+C; //temperature in centigrade
+        return (DAC_M*dacCount)+DAC_C; //temperature in centigrade
     }
 
     double Pixci::getTemperatureActual()
@@ -941,21 +963,99 @@ Pixci::~Pixci(){
     unsigned char Pixci::getFpgaStatus()
     {
         char cval = 0;
-        readSerialRegister(0X00, &cval);
+        readSerialRegister(0x00, &cval);
+        //TODO: implement proper error handling
         return (unsigned char)cval;
     }
 
     asynStatus Pixci::toggleTec(bool enableTec)
     {
         unsigned char fpgaStatus = getFpgaStatus();
-        return writeSerialRegister(UNIT, 0x00, fpgaStatus|0x01);
+        if(enableTec)
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus | 0x01); // setting first bit = 1
+         else
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(0x01)); //setting first bit = 0
     }
 
     bool Pixci::isTecEnabled()
     {
         unsigned char fpgaStatus = getFpgaStatus();
-        return fpgaStatus & 0x01;
+        return (fpgaStatus & 0x01) != 0; // check the first bit is not 0
     }
+
+    asynStatus Pixci::toggleGain(bool enableGain)
+    {
+        unsigned char fpgaStatus = getFpgaStatus();       
+        if(enableGain)
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus | (1 << 7)); // setting last bit = 1
+         else
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(1 << 7)); //setting last bit = 0
+            
+    }
+
+    bool Pixci::isGainEnabled()
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+       return (fpgaStatus & (1 << 7)) != 0; // check the last bit is not 0
+    }
+
+    unsigned char Pixci::getSystemStatus()
+    {
+        char cval = 0;
+        char inputMsg[2];
+        int inSize;
+        char first_bufout[] = {0x49, 0x50};
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
+
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            cval=inputMsg[0];       
+        }
+        
+        //TODO: Need proper error handling, same is for reading serial register as else where
+        return (unsigned char)cval; //cval will be 0x00 if there is no success
+       
+    }
+
+    asynStatus Pixci::setSystemStatus(char val){
+        int inSize;
+        char inputMsg[1];
+        
+        /* template of message to write value to registers */
+        char bufout[]  = {0x4F, 0x00, 0x50};
+		bufout[1] = val ;
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
+
+        if(inSize<NOERROR){
+            return asynError;
+        }
+
+        if(inputMsg[0]==SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+
+        return asynError;
+    }
+
+    asynStatus Pixci::toggleFpgaComms(bool enableFpgaComms)
+    {
+        unsigned char systemStatus = getSystemStatus();
+        if(enableFpgaComms)
+           return setSystemStatus(systemStatus | 0x01); // setting first bit = 1
+         else
+            return setSystemStatus(systemStatus & ~(0x01)); //setting first bit = 0
+
+    }
+
+    bool Pixci::isFpgaCommsEnabled()
+    {
+        unsigned char systemStatus = getSystemStatus();
+        return (systemStatus & 0x01) != 0; // check the first bit is not 0
+    }
+    
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
@@ -1027,11 +1127,23 @@ Pixci::~Pixci(){
         else if(function == PR_SoftTrigger){
             addToParamQue(function,value);
         }
+        else if (function == PR_UpdateStatus)
+        {
+            addToParamQue(function,value);
+        }
         else if (function == PR_UpdateTemperature)
         {
             addToParamQue(function,value);
         }
         else if (function == PR_ToggleTec)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleGain)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleFpgaComms)
         {
             addToParamQue(function,value);
         }
@@ -1198,10 +1310,87 @@ Pixci::~Pixci(){
             callParamCallbacks();
     }
 
+    asynStatus Pixci::updateManufacturersData(bool callBackFlag)
+    {
+        
+        char inputMsg[20];
+        int inSize;
+        char first_bufout[] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00, 0x50};
+        char last_bufout[] = {0x53, 0xAF, 0x12, 0x50};
+
+        INT16 serialNumber = 0;
+        string buildDate = "";
+        char buildCode[5];
+        INT16 adcCountZeroDegree=0;
+        INT16 adcCountFortyDegree=0;
+        INT16 dacCountZeroDegree=0;
+        INT16 dacCountFortyDegree=0;
+
+
+        toggleFpgaComms(true);
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+        
+        toggleFpgaComms(false);
+
+
+        if(inputMsg[18] == SUCCESS_MESSAGE){
+            
+            
+            serialNumber += (INT16)(unsigned char)inputMsg[0];
+            serialNumber += (INT16)(unsigned char)(inputMsg[1])<<8;
+            setStringParam(ADSerialNumber, to_string(serialNumber));
+            
+            buildDate = to_string((INT16)(unsigned char)inputMsg[2])+"/"+to_string((INT16)(unsigned char)inputMsg[3])+"/"+to_string((INT16)(unsigned char)inputMsg[4]);
+            setStringParam(PR_BuildDate, buildDate);
+
+            buildCode[0]=inputMsg[5];
+            buildCode[1]=inputMsg[6];
+            buildCode[2]=inputMsg[7];
+            buildCode[3]=inputMsg[8];
+            buildCode[4]=inputMsg[9];
+
+            adcCountZeroDegree += (INT16)(unsigned char)inputMsg[10];
+            adcCountZeroDegree += (INT16)(unsigned char)(inputMsg[11])<<8;
+            setIntegerParam(PR_ADCCalibrationZeroDegree, adcCountZeroDegree);
+
+            adcCountFortyDegree += (INT16)(unsigned char)inputMsg[12];
+            adcCountFortyDegree += (INT16)(unsigned char)(inputMsg[13])<<8;
+            setIntegerParam(PR_ADCCalibrationFortyDegree, adcCountFortyDegree);
+
+            dacCountZeroDegree += (INT16)(unsigned char)inputMsg[14];
+            dacCountZeroDegree += (INT16)(unsigned char)(inputMsg[15])<<8;
+             setIntegerParam(PR_DACCalibrationZeroDegree, dacCountZeroDegree);
+
+            dacCountFortyDegree += (INT16)(unsigned char)inputMsg[16];
+            dacCountFortyDegree += (INT16)(unsigned char)(inputMsg[17])<<8;
+            setIntegerParam(PR_DACCalibrationFortyDegree, dacCountFortyDegree);
+
+            ADC_M = 40.0f/(adcCountFortyDegree-adcCountZeroDegree);
+            ADC_C = 40.0f-(ADC_M*adcCountFortyDegree);
+
+            DAC_M = 40.0f/(dacCountFortyDegree-dacCountZeroDegree);
+            DAC_C = 40.0f-(DAC_M*dacCountZeroDegree);
+          
+            if(callBackFlag)
+                callParamCallbacks();
+            return asynSuccess;
+        }
+
+
+        return asynError;
+
+
+    }
+
     void Pixci::updateStatus(bool updateManufacturersDataFlag)
     {
         //TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
-        
+        if(updateManufacturersDataFlag)
+            updateManufacturersData(); // TODO: Implement Error Message
+
         updateADTemperatureActual();
         updateTemperaturePcb(true);
     }
