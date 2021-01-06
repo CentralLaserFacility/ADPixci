@@ -378,6 +378,22 @@ private:
      * @param cval address of unsigned char array of size 5
      */
     void longTouchar(long lval, char* cval);
+    
+    
+    /**
+     * @brief Set the Acquire Time (exposure)
+     * 
+     * @param acquireTime 
+     * @return asynStatus 
+     */
+    asynStatus setAcquireTime(double acquireTime);
+
+    /**
+     * @brief Get the Aquire Time from the camera
+     * 
+     * @return double 
+     */
+    double getAcquireTime();
 
     /**
      * @brief Convert the ADC Count to the temperature in centigrade
