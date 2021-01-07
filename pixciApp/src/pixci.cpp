@@ -87,6 +87,9 @@ extern "C"{
 #define BINNINGSETTINGS_32X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x16.fmt"
 #define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
 
+#define PARAM_MESSAGE_QUE_SIZE 20
+#define PARAM_MESSAGE_SIZE 16
+#define COUNT_PER_FRAME 40e6
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -166,7 +169,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
 
-        paramMsgQue = new epicsMessageQueue(20,16);
+        paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
 
     }
 
@@ -803,7 +806,7 @@ Pixci::~Pixci(){
         unsigned long frameRateCount;
         unsigned long long lval;
         char frameRateHexVal[5] = {0,0,0,0,0};
-        frameRateCount = (unsigned long)(40e6/frameRate);
+        frameRateCount = (unsigned long)(COUNT_PER_FRAME/frameRate);
         longTouchar(frameRateCount, frameRateHexVal);
 
         writeSerialRegister(UNIT, 0xDC, frameRateHexVal[0]);
@@ -939,7 +942,7 @@ Pixci::~Pixci(){
         functionAndVal[0] = function;
         functionAndVal[1] = value;
         /*sending buffer data to the que */
-        paramMsgQue->send(functionAndVal,16);
+        paramMsgQue->send(functionAndVal,PARAM_MESSAGE_SIZE);
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value){
@@ -947,7 +950,7 @@ Pixci::~Pixci(){
         functionAndVal[0] = function;
         functionAndVal[1] = value;
         /*sending buffer data to the que */
-        paramMsgQue->send(functionAndVal,16);
+        paramMsgQue->send(functionAndVal,PARAM_MESSAGE_SIZE);
     }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
