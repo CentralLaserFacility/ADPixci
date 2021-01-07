@@ -477,14 +477,14 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADMinY){
-                epicsInt32 MaxSizeY, MinY, SizeY;
-                getIntegerParam(ADMaxSizeY, &MaxSizeY);
-                getIntegerParam(ADSizeY, &SizeY);
+                epicsInt32 maxSizeY, minY, sizeY;
+                getIntegerParam(ADMaxSizeY, &maxSizeY);
+                getIntegerParam(ADSizeY, &sizeY);
 
-                MinY = (val > MaxSizeY) ? MaxSizeY : val;
-                if((SizeY + MinY) > MaxSizeY){
-                    SizeY = MaxSizeY - MinY;
-                    status = setRoiSizeY(SizeY);
+                minY = (val > maxSizeY) ? maxSizeY : val;
+                if((sizeY + minY) > maxSizeY){
+                    sizeY = maxSizeY - minY;
+                    status = setRoiSizeY(sizeY);
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeY,getRoiSizeY());
                         getIntegerParam(ADAcquire, &acquire);
@@ -503,19 +503,19 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADSizeX){
-                epicsInt32 MaxSizeX, MinX, SizeX;
-                getIntegerParam(ADMaxSizeX, &MaxSizeX);
-                getIntegerParam(ADMinX, &MinX);
-                SizeX = (val > MaxSizeX) ? MaxSizeX : val;
+                epicsInt32 maxSizeX, minX, sizeX;
+                getIntegerParam(ADMaxSizeX, &maxSizeX);
+                getIntegerParam(ADMinX, &minX);
+                sizeX = (val > maxSizeX) ? maxSizeX : val;
 
-                if((SizeX + MinX) > MaxSizeX){
-                    MinX = MaxSizeX - SizeX;
-                    status = setRoiOffsetX(MinX);
+                if((sizeX + minX) > maxSizeX){
+                    minX = maxSizeX - sizeX;
+                    status = setRoiOffsetX(minX);
                     if(status == asynSuccess){
                         setIntegerParam(ADMinX,getRoiOffsetX()); 
                     }
                 }
-                status == setRoiSizeX(SizeX);
+                status == setRoiSizeX(sizeX);
                 
                 if(status == asynSuccess){
                     setIntegerParam(ADSizeX,getRoiSizeX());
