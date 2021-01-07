@@ -1315,6 +1315,8 @@ Pixci::~Pixci(){
         }
         else if (function == PR_ToggleFpgaComms)
         {
+            addToParamQue(function,value);
+        }
         else if(function == ADMinX){
             addToParamQue(function,value);
         }
