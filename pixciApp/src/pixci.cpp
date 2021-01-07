@@ -451,14 +451,14 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADMinX){
-                epicsInt32 MaxSizeX, MinX, SizeX;
-                getIntegerParam(ADMaxSizeX, &MaxSizeX);
-                getIntegerParam(ADSizeX, &SizeX);
+                epicsInt32 maxSizeX, minX, sizeX;
+                getIntegerParam(ADMaxSizeX, &maxSizeX);
+                getIntegerParam(ADSizeX, &sizeX);
 
-                MinX = (val > MaxSizeX) ? MaxSizeX : val;
-                if((SizeX + MinX) > MaxSizeX){
-                    SizeX = MaxSizeX - MinX;
-                    status = setRoiSizeX(SizeX);
+                minX = (val > maxSizeX) ? maxSizeX : val;
+                if((sizeX + minX) > maxSizeX){
+                    sizeX = maxSizeX - minX;
+                    status = setRoiSizeX(sizeX);
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeX,getRoiSizeX());
                         getIntegerParam(ADAcquire, &acquire);
@@ -471,7 +471,7 @@ Pixci::~Pixci(){
                     }
                 }
                 
-                status = setRoiOffsetX(MinX);
+                status = setRoiOffsetX(minX);
                 if(status == asynSuccess){
                     setIntegerParam(ADMinX,getRoiOffsetX());
                 }
@@ -530,19 +530,19 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADSizeY){
-                epicsInt32 MaxSizeY, MinY, SizeY;
-                getIntegerParam(ADMaxSizeY, &MaxSizeY);
-                getIntegerParam(ADMinY, &MinY);
-                SizeY = (val > MaxSizeY) ? MaxSizeY : val;
+                epicsInt32 maxSizeY, minY, sizeY;
+                getIntegerParam(ADMaxSizeY, &maxSizeY);
+                getIntegerParam(ADMinY, &minY);
+                sizeY = (val > maxSizeY) ? maxSizeY : val;
 
-                if((SizeY + MinY) > MaxSizeY){
-                    MinY = MaxSizeY - SizeY;
-                    status = setRoiOffsetY(MinY);
+                if((sizeY + minY) > maxSizeY){
+                    minY = maxSizeY - sizeY;
+                    status = setRoiOffsetY(minY);
                     if(status == asynSuccess){
                         setIntegerParam(ADMinY,getRoiOffsetY());
                     }
                 }
-                status == setRoiSizeY(SizeY);
+                status == setRoiSizeY(sizeY);
                 
                 if(status == asynSuccess){
                     setIntegerParam(ADSizeY,getRoiSizeY());
