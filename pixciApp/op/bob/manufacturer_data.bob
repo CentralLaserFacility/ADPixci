@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <width>250</width>
+  <height>250</height>
+  <widget type="label" version="2.0.0">
+    <name>Label</name>
+    <text>Serial Number</text>
+    <x>20</x>
+    <y>40</y>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_1</name>
+    <text>Build Date</text>
+    <x>20</x>
+    <y>70</y>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_2</name>
+    <text>ADC Calibration</text>
+    <x>20</x>
+    <y>100</y>
+    <width>105</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_3</name>
+    <text>DAC Calibration</text>
+    <x>20</x>
+    <y>130</y>
+    <width>105</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_2</name>
+    <pv_name>$(CAM):cam1:SerialNumber_RBV</pv_name>
+    <x>130</x>
+    <y>40</y>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_3</name>
+    <pv_name>$(CAM):cam1:BuildDate_RBV</pv_name>
+    <x>130</x>
+    <y>70</y>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_4</name>
+    <pv_name>$(CAM):cam1:ADCCalibrationZeroDegree_RBV</pv_name>
+    <x>130</x>
+    <y>100</y>
+    <width>50</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_6</name>
+    <text>/</text>
+    <x>180</x>
+    <y>100</y>
+    <width>1</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_6</name>
+    <pv_name>$(CAM):cam1:ADCCalibrationFortyDegree_RBV</pv_name>
+    <x>183</x>
+    <y>100</y>
+    <width>50</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_7</name>
+    <pv_name>$(CAM):cam1:DACCalibrationZeroDegree_RBV</pv_name>
+    <x>130</x>
+    <y>130</y>
+    <width>50</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_7</name>
+    <text>/</text>
+    <x>180</x>
+    <y>130</y>
+    <width>1</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_8</name>
+    <pv_name>$(CAM):cam1:DACCalibrationFortyDegree_RBV</pv_name>
+    <x>183</x>
+    <y>130</y>
+    <width>50</width>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(CAM):cam1:UpdateStatus</pv_name>
+        <value>1</value>
+        <description>Update</description>
+      </action>
+    </actions>
+    <x>70</x>
+    <y>200</y>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+</display>
