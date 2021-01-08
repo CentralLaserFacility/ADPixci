@@ -4,12 +4,12 @@
   <macros>
     <CAM>13PS1</CAM>
   </macros>
-  <width>730</width>
-  <height>510</height>
+  <width>550</width>
+  <height>550</height>
   <widget type="image" version="2.0.0">
     <name>Image</name>
     <pv_name>$(CAM):image1:ArrayData</pv_name>
-    <y>30</y>
+    <y>60</y>
     <width>480</width>
     <height>480</height>
     <color_map>
@@ -56,8 +56,8 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
     </actions>
     <pv_name>$(CAM):cam1:Acquire</pv_name>
     <text>Acquire</text>
-    <x>540</x>
-    <y>10</y>
+    <x>210</x>
+    <y>30</y>
     <width>60</width>
     <height>20</height>
   </widget>
@@ -72,8 +72,8 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
     </actions>
     <pv_name>$(CAM):cam1:Acquire</pv_name>
     <text>Stop</text>
-    <x>600</x>
-    <y>10</y>
+    <x>270</x>
+    <y>30</y>
     <width>60</width>
     <height>20</height>
     <tooltip>$(actions)</tooltip>
@@ -81,8 +81,8 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
   <widget type="led" version="2.0.0">
     <name>LED</name>
     <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
-    <x>676</x>
-    <y>10</y>
+    <x>340</x>
+    <y>30</y>
     <square>true</square>
   </widget>
   <widget type="label" version="2.0.0">
@@ -96,534 +96,32 @@ widget.setPropertyValue("y_axis_maximum",sizey)]]></text>
       </font>
     </font>
   </widget>
-  <widget type="tabs" version="2.0.0">
-    <name>Tabs</name>
-    <tabs>
-      <tab>
-        <name>Image</name>
-        <children>
-          <widget type="group" version="2.0.0">
-            <name>Camera Properties</name>
-            <width>210</width>
-            <height>324</height>
-            <font>
-              <font family="Liberation Sans" style="REGULAR" size="12.0">
-              </font>
-            </font>
-            <widget type="label" version="2.0.0">
-              <name>Label_1</name>
-              <text>Image counter</text>
-              <x>2</x>
-              <y>10</y>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update</name>
-              <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
-              <x>102</x>
-              <y>10</y>
-              <width>40</width>
-              <format>1</format>
-            </widget>
-            <widget type="textentry" version="3.0.0">
-              <name>Text Entry</name>
-              <pv_name>$(CAM):cam1:AcquireTime</pv_name>
-              <x>10</x>
-              <y>118</y>
-              <width>55</width>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_5</name>
-              <text>Exposure</text>
-              <x>2</x>
-              <y>98</y>
-              <width>70</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="BOLD" size="14.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_4</name>
-              <pv_name>$(CAM):cam1:AcquireTime_RBV</pv_name>
-              <x>68</x>
-              <y>118</y>
-              <width>55</width>
-              <font>
-                <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textentry" version="3.0.0">
-              <name>Text Entry_1</name>
-              <pv_name>$(CAM):cam1:AcquirePeriod</pv_name>
-              <x>10</x>
-              <y>166</y>
-              <width>55</width>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_5</name>
-              <pv_name>$(CAM):cam1:AcquirePeriod_RBV</pv_name>
-              <x>72</x>
-              <y>166</y>
-              <width>55</width>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_2</name>
-              <text>Binning</text>
-              <x>2</x>
-              <y>38</y>
-              <width>60</width>
-              <font>
-                <font family="Liberation Sans" style="BOLD" size="14.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_3</name>
-              <text>X Axis</text>
-              <x>2</x>
-              <y>58</y>
-              <width>40</width>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="combo" version="2.0.0">
-              <name>Combo Box</name>
-              <pv_name>$(CAM):cam1:BinX</pv_name>
-              <x>62</x>
-              <y>58</y>
-              <width>55</width>
-              <height>10</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-              <items>
-                <item>1</item>
-                <item>2</item>
-                <item>4</item>
-                <item>8 </item>
-                <item>16</item>
-                <item>32</item>
-                <item>64</item>
-              </items>
-              <items_from_pv>false</items_from_pv>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_2</name>
-              <pv_name>$(CAM):cam1:BinX_RBV</pv_name>
-              <x>132</x>
-              <y>58</y>
-              <width>20</width>
-              <font>
-                <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_3</name>
-              <pv_name>$(CAM):cam1:BinY_RBV</pv_name>
-              <x>132</x>
-              <y>78</y>
-              <width>20</width>
-              <font>
-                <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="combo" version="2.0.0">
-              <name>Combo Box_2</name>
-              <pv_name>$(CAM):cam1:BinY</pv_name>
-              <x>62</x>
-              <y>78</y>
-              <width>55</width>
-              <height>10</height>
-              <font>
-                <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-              <items>
-                <item>1</item>
-                <item>2</item>
-                <item>4</item>
-                <item>8 </item>
-                <item>16</item>
-                <item>32</item>
-                <item>64</item>
-              </items>
-              <items_from_pv>false</items_from_pv>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_4</name>
-              <text>Y Axis</text>
-              <x>2</x>
-              <y>78</y>
-              <width>40</width>
-              <font>
-                <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_9</name>
-              <text>Acquire Period</text>
-              <x>2</x>
-              <y>146</y>
-              <width>117</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="BOLD" size="14.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textentry" version="3.0.0">
-              <name>Text Entry_2</name>
-              <pv_name>$(CAM):cam1:SizeX</pv_name>
-              <x>50</x>
-              <y>216</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_9</name>
-              <pv_name>$(CAM):cam1:SizeX_RBV</pv_name>
-              <x>110</x>
-              <y>216</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_11</name>
-              <text>X Size</text>
-              <x>10</x>
-              <y>216</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_12</name>
-              <text>Y Size</text>
-              <x>10</x>
-              <y>236</y>
-              <width>52</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textentry" version="3.0.0">
-              <name>Text Entry_3</name>
-              <pv_name>$(CAM):cam1:SizeY</pv_name>
-              <x>50</x>
-              <y>236</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_10</name>
-              <pv_name>$(CAM):cam1:SizeY_RBV</pv_name>
-              <x>110</x>
-              <y>236</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_13</name>
-              <text>X Pos</text>
-              <x>10</x>
-              <y>256</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textentry" version="3.0.0">
-              <name>Text Entry_4</name>
-              <pv_name>$(CAM):cam1:MinX</pv_name>
-              <x>50</x>
-              <y>256</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_11</name>
-              <pv_name>$(CAM):cam1:MinX_RBV</pv_name>
-              <x>110</x>
-              <y>256</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_14</name>
-              <text>Y Pos</text>
-              <x>10</x>
-              <y>276</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textentry" version="3.0.0">
-              <name>Text Entry_5</name>
-              <pv_name>$(CAM):cam1:MinY</pv_name>
-              <x>50</x>
-              <y>276</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_12</name>
-              <pv_name>$(CAM):cam1:MinY_RBV</pv_name>
-              <x>110</x>
-              <y>276</y>
-              <width>50</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="12.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_15</name>
-              <text>ROI</text>
-              <x>2</x>
-              <y>194</y>
-              <width>60</width>
-              <font>
-                <font family="Liberation Sans" style="BOLD" size="14.0">
-                </font>
-              </font>
-            </widget>
-          </widget>
-          <widget type="group" version="2.0.0">
-            <name>Global Properties</name>
-            <y>316</y>
-            <width>210</width>
-            <height>114</height>
-            <widget type="combo" version="2.0.0">
-              <name>Combo Box_3</name>
-              <pv_name>$(CAM):cam1:TriggerMode</pv_name>
-              <y>21</y>
-              <width>92</width>
-              <height>20</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="10.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_6</name>
-              <pv_name>$(CAM):cam1:TriggerMode_RBV</pv_name>
-              <x>84</x>
-              <y>21</y>
-              <width>94</width>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="10.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_6</name>
-              <text>Trigger Mode</text>
-              <y>1</y>
-              <width>117</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="BOLD" size="14.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="label" version="2.0.0">
-              <name>Label_8</name>
-              <text>Trigger Polarity</text>
-              <y>44</y>
-              <width>117</width>
-              <height>15</height>
-              <font>
-                <font family="Liberation Sans" style="BOLD" size="14.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="combo" version="2.0.0">
-              <name>Combo Box_5</name>
-              <pv_name>$(CAM):cam1:TriggerPolarity</pv_name>
-              <y>64</y>
-              <width>92</width>
-              <height>19</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="10.0">
-                </font>
-              </font>
-            </widget>
-            <widget type="textupdate" version="2.0.0">
-              <name>Text Update_8</name>
-              <pv_name>$(CAM):cam1:TriggerPolarity_RBV</pv_name>
-              <x>84</x>
-              <y>64</y>
-              <width>94</width>
-              <height>19</height>
-              <font>
-                <font family="Liberation Sans" style="REGULAR" size="10.0">
-                </font>
-              </font>
-            </widget>
-          </widget>
-        </children>
-      </tab>
-      <tab>
-        <name>Temperature</name>
-        <children>
-          <widget type="label" version="2.0.0">
-            <name>Label_7</name>
-            <text>PCB Temperature :</text>
-            <x>14</x>
-            <y>47</y>
-            <width>130</width>
-          </widget>
-          <widget type="textupdate" version="2.0.0">
-            <name>Text Update_1</name>
-            <pv_name>$(CAM):cam1:TemperaturePCB</pv_name>
-            <x>134</x>
-            <y>47</y>
-            <width>56</width>
-          </widget>
-          <widget type="label" version="2.0.0">
-            <name>Label_10</name>
-            <text>CCD Temperature :</text>
-            <x>14</x>
-            <y>17</y>
-            <width>130</width>
-          </widget>
-          <widget type="textupdate" version="2.0.0">
-            <name>Text Update_7</name>
-            <pv_name>$(CAM):cam1:TemperatureActual</pv_name>
-            <x>134</x>
-            <y>17</y>
-            <width>56</width>
-          </widget>
-          <widget type="label" version="2.0.0">
-            <name>Label_16</name>
-            <text>TEC:</text>
-            <x>14</x>
-            <y>83</y>
-            <width>34</width>
-          </widget>
-          <widget type="combo" version="2.0.0">
-            <name>Combo Box_1</name>
-            <pv_name>$(CAM):cam1:ToggleTEC</pv_name>
-            <x>48</x>
-            <y>83</y>
-            <width>80</width>
-            <height>20</height>
-          </widget>
-          <widget type="textupdate" version="2.0.0">
-            <name>Text Update_13</name>
-            <pv_name>$(CAM):cam1:ToggleTEC_RBV</pv_name>
-            <x>128</x>
-            <y>83</y>
-            <width>80</width>
-          </widget>
-          <widget type="label" version="2.0.0">
-            <name>Label_17</name>
-            <text>TEC Setpoint:</text>
-            <x>8</x>
-            <y>133</y>
-            <width>90</width>
-          </widget>
-          <widget type="textupdate" version="2.0.0">
-            <name>Text Update_14</name>
-            <pv_name>$(CAM):cam1:Temperature</pv_name>
-            <x>98</x>
-            <y>133</y>
-            <width>40</width>
-          </widget>
-          <widget type="textupdate" version="2.0.0">
-            <name>Text Update_15</name>
-            <pv_name>$(CAM):cam1:Temperature_RBV</pv_name>
-            <x>148</x>
-            <y>133</y>
-            <width>40</width>
-          </widget>
-          <widget type="action_button" version="3.0.0">
-            <name>Action Button_2</name>
-            <actions>
-              <action type="write_pv">
-                <pv_name>$(CAM):cam1:UpdateTemperature</pv_name>
-                <value>1</value>
-                <description>Write PV</description>
-              </action>
-            </actions>
-            <text>Update Temperature</text>
-            <x>18</x>
-            <y>243</y>
-            <width>150</width>
-            <tooltip>$(actions)</tooltip>
-          </widget>
-        </children>
-      </tab>
-      <tab>
-        <name>Trigger</name>
-        <children>
-        </children>
-      </tab>
-    </tabs>
-    <x>485</x>
-    <y>40</y>
-    <width>235</width>
-    <height>470</height>
-    <active_tab>1</active_tab>
-    <direction>1</direction>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_3</name>
+    <actions>
+      <action type="open_display">
+        <file>camera_settings.bob</file>
+        <target>window</target>
+        <description>Settings</description>
+      </action>
+    </actions>
+    <x>380</x>
+    <y>30</y>
+    <height>20</height>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_18</name>
+    <text>Image counter</text>
+    <x>20</x>
+    <y>30</y>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_16</name>
+    <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
+    <x>120</x>
+    <y>30</y>
+    <width>40</width>
+    <format>1</format>
   </widget>
 </display>
