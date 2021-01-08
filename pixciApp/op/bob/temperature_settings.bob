@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <width>250</width>
+  <height>250</height>
+  <widget type="label" version="2.0.0">
+    <name>Label_17</name>
+    <text>TEC Setpoint:</text>
+    <x>10</x>
+    <y>126</y>
+    <width>90</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_15</name>
+    <pv_name>$(CAM):cam1:Temperature_RBV</pv_name>
+    <x>180</x>
+    <y>126</y>
+    <width>40</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_16</name>
+    <pv_name>$(CAM):cam1:ToggleTEC_RBV</pv_name>
+    <x>146</x>
+    <y>76</y>
+    <width>80</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_18</name>
+    <text>PCB Temperature :</text>
+    <x>16</x>
+    <y>40</y>
+    <width>130</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_17</name>
+    <pv_name>$(CAM):cam1:TemperatureActual</pv_name>
+    <x>160</x>
+    <y>10</y>
+    <width>56</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_19</name>
+    <text>CCD Temperature :</text>
+    <x>16</x>
+    <y>10</y>
+    <width>130</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_18</name>
+    <pv_name>$(CAM):cam1:TemperaturePCB</pv_name>
+    <x>160</x>
+    <y>40</y>
+    <width>56</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_20</name>
+    <text>TEC:</text>
+    <x>16</x>
+    <y>76</y>
+    <width>34</width>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>Combo Box_1</name>
+    <pv_name>$(CAM):cam1:ToggleTEC</pv_name>
+    <x>55</x>
+    <y>76</y>
+    <width>85</width>
+    <height>20</height>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_2</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(CAM):cam1:UpdateTemperature</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <text>Update Temperature</text>
+    <x>40</x>
+    <y>180</y>
+    <width>150</width>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>Text Entry</name>
+    <x>110</x>
+    <y>126</y>
+    <width>40</width>
+  </widget>
+</display>
