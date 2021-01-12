@@ -6,8 +6,9 @@
   <widget type="combo" version="2.0.0">
     <name>Combo Box_5</name>
     <pv_name>$(CAM):cam1:TriggerPolarity</pv_name>
-    <x>18</x>
-    <y>105</y>
+    <x>82</x>
+    <y>90</y>
+    <width>70</width>
     <height>19</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="10.0">
@@ -17,31 +18,21 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_8</name>
     <pv_name>$(CAM):cam1:TriggerPolarity_RBV</pv_name>
-    <x>138</x>
-    <y>105</y>
+    <x>164</x>
+    <y>90</y>
+    <width>70</width>
     <height>19</height>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="10.0">
-      </font>
-    </font>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>Label_8</name>
-    <text>Trigger Polarity</text>
-    <x>16</x>
-    <y>75</y>
-    <width>117</width>
-    <height>15</height>
-    <font>
-      <font family="Liberation Sans" style="BOLD" size="14.0">
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
   </widget>
   <widget type="combo" version="2.0.0">
     <name>Combo Box_3</name>
     <pv_name>$(CAM):cam1:TriggerMode</pv_name>
-    <x>18</x>
-    <y>40</y>
+    <x>82</x>
+    <y>60</y>
+    <width>70</width>
     <height>20</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="10.0">
@@ -51,22 +42,47 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_6</name>
     <pv_name>$(CAM):cam1:TriggerMode_RBV</pv_name>
-    <x>138</x>
-    <y>40</y>
+    <x>164</x>
+    <y>60</y>
+    <width>70</width>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="10.0">
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_6</name>
-    <text>Trigger Mode</text>
-    <x>16</x>
-    <y>10</y>
+    <text>Trigger</text>
+    <x>20</x>
+    <y>30</y>
     <width>117</width>
     <height>15</height>
     <font>
       <font family="Liberation Sans" style="BOLD" size="14.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_11</name>
+    <text>Mode</text>
+    <x>22</x>
+    <y>60</y>
+    <width>50</width>
+    <height>15</height>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_12</name>
+    <text>Polarity</text>
+    <x>22</x>
+    <y>90</y>
+    <width>50</width>
+    <height>15</height>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
   </widget>

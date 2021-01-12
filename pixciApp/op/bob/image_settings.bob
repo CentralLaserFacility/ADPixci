@@ -6,8 +6,8 @@
   <widget type="label" version="2.0.0">
     <name>Label_6</name>
     <text>Binning</text>
-    <x>10</x>
-    <y>24</y>
+    <x>20</x>
+    <y>20</y>
     <width>60</width>
     <font>
       <font family="Liberation Sans" style="BOLD" size="14.0">
@@ -17,9 +17,9 @@
   <widget type="label" version="2.0.0">
     <name>Label_7</name>
     <text>X Axis</text>
-    <x>18</x>
+    <x>28</x>
     <y>44</y>
-    <width>40</width>
+    <width>50</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -28,10 +28,10 @@
   <widget type="combo" version="2.0.0">
     <name>Combo Box</name>
     <pv_name>$(CAM):cam1:BinX</pv_name>
-    <x>68</x>
-    <y>48</y>
+    <x>88</x>
+    <y>44</y>
     <width>55</width>
-    <height>10</height>
+    <height>20</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -50,8 +50,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_6</name>
     <pv_name>$(CAM):cam1:BinX_RBV</pv_name>
-    <x>150</x>
-    <y>48</y>
+    <x>170</x>
+    <y>44</y>
     <width>20</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -61,8 +61,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_7</name>
     <pv_name>$(CAM):cam1:BinY_RBV</pv_name>
-    <x>150</x>
-    <y>68</y>
+    <x>170</x>
+    <y>70</y>
     <width>20</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -72,10 +72,10 @@
   <widget type="combo" version="2.0.0">
     <name>Combo Box_2</name>
     <pv_name>$(CAM):cam1:BinY</pv_name>
-    <x>68</x>
-    <y>68</y>
+    <x>88</x>
+    <y>70</y>
     <width>55</width>
-    <height>10</height>
+    <height>20</height>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -94,9 +94,9 @@
   <widget type="label" version="2.0.0">
     <name>Label_8</name>
     <text>Y Axis</text>
-    <x>18</x>
-    <y>64</y>
-    <width>40</width>
+    <x>28</x>
+    <y>70</y>
+    <width>50</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -105,10 +105,9 @@
   <widget type="textentry" version="3.0.0">
     <name>Text Entry_2</name>
     <pv_name>$(CAM):cam1:SizeX</pv_name>
-    <x>68</x>
-    <y>122</y>
+    <x>88</x>
+    <y>128</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -117,10 +116,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_9</name>
     <pv_name>$(CAM):cam1:SizeX_RBV</pv_name>
-    <x>150</x>
-    <y>122</y>
+    <x>170</x>
+    <y>128</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -129,10 +127,9 @@
   <widget type="label" version="2.0.0">
     <name>Label_11</name>
     <text>X Size</text>
-    <x>18</x>
-    <y>122</y>
+    <x>28</x>
+    <y>126</y>
     <width>50</width>
-    <height>15</height>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -141,10 +138,9 @@
   <widget type="label" version="2.0.0">
     <name>Label_12</name>
     <text>Y Size</text>
-    <x>18</x>
-    <y>142</y>
-    <width>52</width>
-    <height>15</height>
+    <x>28</x>
+    <y>153</y>
+    <width>50</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -153,10 +149,9 @@
   <widget type="textentry" version="3.0.0">
     <name>Text Entry_3</name>
     <pv_name>$(CAM):cam1:SizeY</pv_name>
-    <x>68</x>
-    <y>142</y>
+    <x>88</x>
+    <y>153</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -165,10 +160,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_10</name>
     <pv_name>$(CAM):cam1:SizeY_RBV</pv_name>
-    <x>150</x>
-    <y>142</y>
+    <x>170</x>
+    <y>153</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -177,10 +171,9 @@
   <widget type="label" version="2.0.0">
     <name>Label_13</name>
     <text>X Pos</text>
-    <x>18</x>
-    <y>162</y>
+    <x>28</x>
+    <y>183</y>
     <width>50</width>
-    <height>15</height>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -189,10 +182,9 @@
   <widget type="textentry" version="3.0.0">
     <name>Text Entry_4</name>
     <pv_name>$(CAM):cam1:MinX</pv_name>
-    <x>68</x>
-    <y>162</y>
+    <x>88</x>
+    <y>183</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -201,10 +193,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_11</name>
     <pv_name>$(CAM):cam1:MinX_RBV</pv_name>
-    <x>150</x>
-    <y>162</y>
+    <x>170</x>
+    <y>183</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -213,10 +204,9 @@
   <widget type="label" version="2.0.0">
     <name>Label_14</name>
     <text>Y Pos</text>
-    <x>18</x>
-    <y>182</y>
+    <x>28</x>
+    <y>213</y>
     <width>50</width>
-    <height>15</height>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -225,10 +215,9 @@
   <widget type="textentry" version="3.0.0">
     <name>Text Entry_5</name>
     <pv_name>$(CAM):cam1:MinY</pv_name>
-    <x>68</x>
-    <y>182</y>
+    <x>88</x>
+    <y>213</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -237,10 +226,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_12</name>
     <pv_name>$(CAM):cam1:MinY_RBV</pv_name>
-    <x>150</x>
-    <y>182</y>
+    <x>170</x>
+    <y>213</y>
     <width>70</width>
-    <height>15</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -249,7 +237,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_15</name>
     <text>ROI</text>
-    <x>10</x>
+    <x>20</x>
     <y>100</y>
     <width>60</width>
     <font>
