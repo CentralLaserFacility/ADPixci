@@ -5,10 +5,10 @@
   <height>250</height>
   <widget type="label" version="2.0.0">
     <name>Label_17</name>
-    <text>TEC Setpoint:</text>
-    <x>18</x>
-    <y>126</y>
-    <width>90</width>
+    <text>Setpoint</text>
+    <x>24</x>
+    <y>176</y>
+    <width>50</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -17,9 +17,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_15</name>
     <pv_name>$(CAM):cam1:Temperature_RBV</pv_name>
-    <x>158</x>
-    <y>126</y>
-    <width>40</width>
+    <x>166</x>
+    <y>176</y>
+    <width>70</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -28,20 +28,20 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_16</name>
     <pv_name>$(CAM):cam1:ToggleTEC_RBV</pv_name>
-    <x>158</x>
-    <y>86</y>
-    <width>80</width>
+    <x>162</x>
+    <y>146</y>
+    <width>70</width>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_18</name>
-    <text>PCB Temperature</text>
-    <x>18</x>
-    <y>40</y>
-    <width>130</width>
+    <text>PCB</text>
+    <x>22</x>
+    <y>90</y>
+    <width>50</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -50,8 +50,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_17</name>
     <pv_name>$(CAM):cam1:TemperatureActual</pv_name>
-    <x>160</x>
-    <y>10</y>
+    <x>82</x>
+    <y>60</y>
     <width>56</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -60,10 +60,10 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_19</name>
-    <text>CCD Temperature</text>
-    <x>18</x>
-    <y>10</y>
-    <width>130</width>
+    <text>CCD</text>
+    <x>22</x>
+    <y>60</y>
+    <width>50</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -72,8 +72,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_18</name>
     <pv_name>$(CAM):cam1:TemperaturePCB</pv_name>
-    <x>160</x>
-    <y>40</y>
+    <x>82</x>
+    <y>90</y>
     <width>56</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -82,12 +82,12 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_20</name>
-    <text>TEC:</text>
-    <x>18</x>
-    <y>86</y>
-    <width>34</width>
+    <text>Enable</text>
+    <x>22</x>
+    <y>146</y>
+    <width>50</width>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
   </widget>
@@ -101,25 +101,54 @@
       </action>
     </actions>
     <text>Update</text>
-    <x>140</x>
-    <y>180</y>
+    <x>138</x>
+    <y>210</y>
     <tooltip>$(actions)</tooltip>
   </widget>
   <widget type="textentry" version="3.0.0">
     <name>Text Entry</name>
-    <x>110</x>
-    <y>126</y>
-    <width>40</width>
+    <x>84</x>
+    <y>176</y>
+    <width>70</width>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
   </widget>
   <widget type="checkbox" version="2.0.0">
     <name>Check Box</name>
     <label></label>
-    <x>110</x>
-    <y>80</y>
+    <x>80</x>
+    <y>146</y>
     <width>30</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_6</name>
+    <text>Temperature Reading</text>
+    <x>20</x>
+    <y>30</y>
+    <width>160</width>
+    <font>
+      <font family="Liberation Sans" style="BOLD" size="14.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_7</name>
+    <text>TEC</text>
+    <x>22</x>
+    <y>120</y>
+    <width>160</width>
+    <font>
+      <font family="Liberation Sans" style="BOLD" size="14.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="text-symbol" version="2.0.0">
+    <name>Text Symbol</name>
+    <x>300</x>
+    <y>120</y>
+    <width>0</width>
+    <height>0</height>
   </widget>
 </display>
