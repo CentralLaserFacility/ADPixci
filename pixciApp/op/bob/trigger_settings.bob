@@ -6,8 +6,8 @@
   <widget type="combo" version="2.0.0">
     <name>Combo Box_5</name>
     <pv_name>$(CAM):cam1:TriggerPolarity</pv_name>
-    <x>10</x>
-    <y>95</y>
+    <x>18</x>
+    <y>105</y>
     <height>19</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="10.0">
@@ -17,8 +17,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_8</name>
     <pv_name>$(CAM):cam1:TriggerPolarity_RBV</pv_name>
-    <x>127</x>
-    <y>90</y>
+    <x>138</x>
+    <y>105</y>
     <height>19</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="10.0">
@@ -28,8 +28,8 @@
   <widget type="label" version="2.0.0">
     <name>Label_8</name>
     <text>Trigger Polarity</text>
-    <x>10</x>
-    <y>70</y>
+    <x>16</x>
+    <y>75</y>
     <width>117</width>
     <height>15</height>
     <font>
@@ -40,7 +40,7 @@
   <widget type="combo" version="2.0.0">
     <name>Combo Box_3</name>
     <pv_name>$(CAM):cam1:TriggerMode</pv_name>
-    <x>10</x>
+    <x>18</x>
     <y>40</y>
     <height>20</height>
     <font>
@@ -51,7 +51,7 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_6</name>
     <pv_name>$(CAM):cam1:TriggerMode_RBV</pv_name>
-    <x>127</x>
+    <x>138</x>
     <y>40</y>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="10.0">
@@ -61,7 +61,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_6</name>
     <text>Trigger Mode</text>
-    <x>10</x>
+    <x>16</x>
     <y>10</y>
     <width>117</width>
     <height>15</height>

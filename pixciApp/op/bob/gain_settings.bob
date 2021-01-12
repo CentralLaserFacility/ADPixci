@@ -6,21 +6,34 @@
   <widget type="label" version="2.0.0">
     <name>Label</name>
     <text>Pre Amp Gain</text>
-    <x>10</x>
+    <x>18</x>
     <y>100</y>
+    <width>82</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="checkbox" version="2.0.0">
     <name>Check Box</name>
     <pv_name>$(CAM):cam1:ToggleGain</pv_name>
     <label></label>
-    <x>115</x>
+    <x>112</x>
     <y>100</y>
     <width>30</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update</name>
     <pv_name>$(CAM):cam1:ToggleGain_RBV</pv_name>
     <x>135</x>
     <y>100</y>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
 </display>

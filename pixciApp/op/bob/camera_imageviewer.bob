@@ -3,7 +3,7 @@
   <name>Display</name>
   <widget type="image" version="2.0.0">
     <name>Image</name>
-    <pv_name>13PS1:image1:ArrayData</pv_name>
+    <pv_name>pva://13PS1:Pva1:Image</pv_name>
     <y>120</y>
     <show_toolbar>true</show_toolbar>
     <color_map>
@@ -37,5 +37,6 @@
         </font>
       </scale_font>
     </y_axis>
+    <autoscale>false</autoscale>
   </widget>
 </display>

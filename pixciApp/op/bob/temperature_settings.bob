@@ -6,30 +6,46 @@
   <widget type="label" version="2.0.0">
     <name>Label_17</name>
     <text>TEC Setpoint:</text>
-    <x>10</x>
+    <x>18</x>
     <y>126</y>
     <width>90</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_15</name>
     <pv_name>$(CAM):cam1:Temperature_RBV</pv_name>
-    <x>180</x>
+    <x>158</x>
     <y>126</y>
     <width>40</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_16</name>
     <pv_name>$(CAM):cam1:ToggleTEC_RBV</pv_name>
-    <x>146</x>
-    <y>76</y>
+    <x>158</x>
+    <y>86</y>
     <width>80</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_18</name>
-    <text>PCB Temperature :</text>
-    <x>16</x>
+    <text>PCB Temperature</text>
+    <x>18</x>
     <y>40</y>
     <width>130</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_17</name>
@@ -37,13 +53,21 @@
     <x>160</x>
     <y>10</y>
     <width>56</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_19</name>
-    <text>CCD Temperature :</text>
-    <x>16</x>
+    <text>CCD Temperature</text>
+    <x>18</x>
     <y>10</y>
     <width>130</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_18</name>
@@ -51,21 +75,21 @@
     <x>160</x>
     <y>40</y>
     <width>56</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_20</name>
     <text>TEC:</text>
-    <x>16</x>
-    <y>76</y>
+    <x>18</x>
+    <y>86</y>
     <width>34</width>
-  </widget>
-  <widget type="combo" version="2.0.0">
-    <name>Combo Box_1</name>
-    <pv_name>$(CAM):cam1:ToggleTEC</pv_name>
-    <x>55</x>
-    <y>76</y>
-    <width>85</width>
-    <height>20</height>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="action_button" version="3.0.0">
     <name>Action Button_2</name>
@@ -76,10 +100,9 @@
         <description>Write PV</description>
       </action>
     </actions>
-    <text>Update Temperature</text>
-    <x>40</x>
+    <text>Update</text>
+    <x>140</x>
     <y>180</y>
-    <width>150</width>
     <tooltip>$(actions)</tooltip>
   </widget>
   <widget type="textentry" version="3.0.0">
@@ -87,5 +110,16 @@
     <x>110</x>
     <y>126</y>
     <width>40</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="checkbox" version="2.0.0">
+    <name>Check Box</name>
+    <label></label>
+    <x>110</x>
+    <y>80</y>
+    <width>30</width>
   </widget>
 </display>
