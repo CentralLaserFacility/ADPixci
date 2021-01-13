@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <widget type="image" version="2.0.0">
+    <name>Image</name>
+    <pv_name>pva://13PS1:Pva1:Image</pv_name>
+    <y>120</y>
+    <show_toolbar>true</show_toolbar>
+    <color_map>
+      <name>GRAY</name>
+    </color_map>
+    <x_axis>
+      <visible>true</visible>
+      <title>X</title>
+      <minimum>0.0</minimum>
+      <maximum>1024.0</maximum>
+      <title_font>
+        <font name="Default Bold" family="Liberation Sans" style="BOLD" size="14.0">
+        </font>
+      </title_font>
+      <scale_font>
+        <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+        </font>
+      </scale_font>
+    </x_axis>
+    <y_axis>
+      <visible>true</visible>
+      <title>Y</title>
+      <minimum>0.0</minimum>
+      <maximum>1024.0</maximum>
+      <title_font>
+        <font name="Default Bold" family="Liberation Sans" style="BOLD" size="14.0">
+        </font>
+      </title_font>
+      <scale_font>
+        <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+        </font>
+      </scale_font>
+    </y_axis>
+    <autoscale>false</autoscale>
+  </widget>
+</display>
