@@ -131,12 +131,10 @@ else:
     <width>380</width>
     <height>460</height>
     <scripts>
-      <script file="EmbeddedPy">
+      <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script
 from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
-print 'Hello'
 # widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
-
 minimum_posX = 490
 autoScale = PVUtil.getLong(pvs[1])
 if(autoScale == 1):
