@@ -62,7 +62,7 @@
     <name>Text Update_7</name>
     <pv_name>$(CAM):cam1:BinY_RBV</pv_name>
     <x>170</x>
-    <y>70</y>
+    <y>74</y>
     <width>20</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -73,7 +73,7 @@
     <name>Combo Box_2</name>
     <pv_name>$(CAM):cam1:BinY</pv_name>
     <x>88</x>
-    <y>70</y>
+    <y>74</y>
     <width>55</width>
     <height>20</height>
     <font>
@@ -95,7 +95,7 @@
     <name>Label_8</name>
     <text>Y Axis</text>
     <x>28</x>
-    <y>70</y>
+    <y>74</y>
     <width>50</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -106,7 +106,7 @@
     <name>Text Entry_2</name>
     <pv_name>$(CAM):cam1:SizeX</pv_name>
     <x>88</x>
-    <y>128</y>
+    <y>123</y>
     <width>70</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -117,7 +117,7 @@
     <name>Text Update_9</name>
     <pv_name>$(CAM):cam1:SizeX_RBV</pv_name>
     <x>170</x>
-    <y>128</y>
+    <y>123</y>
     <width>70</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -128,7 +128,7 @@
     <name>Label_11</name>
     <text>X Size</text>
     <x>28</x>
-    <y>126</y>
+    <y>123</y>
     <width>50</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">

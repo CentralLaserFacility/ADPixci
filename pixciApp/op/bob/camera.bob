@@ -4,7 +4,7 @@
   <macros>
     <CAM>13PS1</CAM>
   </macros>
-  <width>550</width>
+  <width>870</width>
   <height>550</height>
   <widget type="image" version="2.0.0">
     <name>Image</name>
@@ -12,6 +12,7 @@
     <y>60</y>
     <width>480</width>
     <height>480</height>
+    <show_toolbar>true</show_toolbar>
     <color_map>
       <name>GRAY</name>
     </color_map>
@@ -30,17 +31,25 @@ from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
 
 # widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
 
+default_dimension = 480
 sizex = PVUtil.getLong(pvs[0])
 sizey = PVUtil.getLong(pvs[1])
+autoScale = PVUtil.getLong(pvs[2])
 
 widget.setPropertyValue("data_width",sizex)
 widget.setPropertyValue("data_height",sizey)
 widget.setPropertyValue("x_axis_maximum",sizex)
 widget.setPropertyValue("y_axis_maximum",sizey)
-widget.setPropertyValue("Width",sizex)
-widget.setPropertyValue("Height",sizey)]]></text>
+
+if autoScale == 1:
+	widget.setPropertyValue("width",sizex)
+	widget.setPropertyValue("height",sizey)
+else:
+	widget.setPropertyValue("width",default_dimension )
+	widget.setPropertyValue("height",default_dimension )]]></text>
         <pv_name>$(CAM):image1:ArraySize0_RBV</pv_name>
         <pv_name>$(CAM):image1:ArraySize1_RBV</pv_name>
+        <pv_name>loc://AutoScale</pv_name>
         <pv_name>=1</pv_name>
       </script>
     </scripts>
@@ -58,7 +67,7 @@ widget.setPropertyValue("Height",sizey)]]></text>
     </actions>
     <pv_name>$(CAM):cam1:Acquire</pv_name>
     <text>Acquire</text>
-    <x>310</x>
+    <x>650</x>
     <y>30</y>
     <width>60</width>
     <height>20</height>
@@ -74,7 +83,7 @@ widget.setPropertyValue("Height",sizey)]]></text>
     </actions>
     <pv_name>$(CAM):cam1:Acquire</pv_name>
     <text>Stop</text>
-    <x>380</x>
+    <x>720</x>
     <y>30</y>
     <width>60</width>
     <height>20</height>
@@ -83,7 +92,7 @@ widget.setPropertyValue("Height",sizey)]]></text>
   <widget type="led" version="2.0.0">
     <name>LED</name>
     <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
-    <x>450</x>
+    <x>790</x>
     <y>30</y>
     <square>true</square>
   </widget>
@@ -91,6 +100,7 @@ widget.setPropertyValue("Height",sizey)]]></text>
     <name>Label</name>
     <text>Raptor Eagle-XV</text>
     <x>20</x>
+    <y>20</y>
     <width>190</width>
     <height>30</height>
     <font>
@@ -101,14 +111,14 @@ widget.setPropertyValue("Height",sizey)]]></text>
   <widget type="label" version="2.0.0">
     <name>Label_18</name>
     <text>Image counter</text>
-    <x>150</x>
+    <x>490</x>
     <y>30</y>
     <width>90</width>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_16</name>
     <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
-    <x>250</x>
+    <x>590</x>
     <y>30</y>
     <width>40</width>
     <format>1</format>
@@ -116,7 +126,36 @@ widget.setPropertyValue("Height",sizey)]]></text>
   <widget type="embedded" version="2.0.0">
     <name>Embedded Display</name>
     <file>camera_settings.bob</file>
-    <x>560</x>
+    <x>490</x>
+    <y>60</y>
+    <width>380</width>
     <height>460</height>
+    <scripts>
+      <script file="EmbeddedPy">
+        <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+print 'Hello'
+# widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
+
+minimum_posX = 490
+autoScale = PVUtil.getLong(pvs[1])
+if(autoScale == 1):
+	posX = PVUtil.getLong(pvs[0])
+	if posX > (minimum_posX - 10):
+		widget.setPropertyValue("x",posX +10)
+else:
+	widget.setPropertyValue("x",minimum_posX )]]></text>
+        <pv_name>$(CAM):image1:ArraySize0_RBV</pv_name>
+        <pv_name>loc://AutoScale</pv_name>
+        <pv_name>=1</pv_name>
+      </script>
+    </scripts>
+  </widget>
+  <widget type="checkbox" version="2.0.0">
+    <name>Check Box</name>
+    <pv_name>loc://AutoScale&lt;Long&gt;(0)</pv_name>
+    <label>Auto Scale</label>
+    <x>350</x>
+    <y>70</y>
   </widget>
 </display>
