@@ -56,50 +56,10 @@ else:
     <color_mode>0</color_mode>
     <unsigned>true</unsigned>
   </widget>
-  <widget type="action_button" version="3.0.0">
-    <name>Action Button</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>$(pv_name)</pv_name>
-        <value>1</value>
-        <description>Write PV</description>
-      </action>
-    </actions>
-    <pv_name>$(CAM):cam1:Acquire</pv_name>
-    <text>Acquire</text>
-    <x>650</x>
-    <y>30</y>
-    <width>60</width>
-    <height>20</height>
-  </widget>
-  <widget type="action_button" version="3.0.0">
-    <name>Action Button_1</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>$(pv_name)</pv_name>
-        <value>0</value>
-        <description>Write PV</description>
-      </action>
-    </actions>
-    <pv_name>$(CAM):cam1:Acquire</pv_name>
-    <text>Stop</text>
-    <x>720</x>
-    <y>30</y>
-    <width>60</width>
-    <height>20</height>
-    <tooltip>$(actions)</tooltip>
-  </widget>
-  <widget type="led" version="2.0.0">
-    <name>LED</name>
-    <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
-    <x>790</x>
-    <y>30</y>
-    <square>true</square>
-  </widget>
   <widget type="label" version="2.0.0">
     <name>Label</name>
     <text>Raptor Eagle-XV</text>
-    <x>20</x>
+    <x>5</x>
     <y>20</y>
     <width>190</width>
     <height>30</height>
@@ -108,28 +68,13 @@ else:
       </font>
     </font>
   </widget>
-  <widget type="label" version="2.0.0">
-    <name>Label_18</name>
-    <text>Image counter</text>
-    <x>490</x>
-    <y>30</y>
-    <width>90</width>
-  </widget>
-  <widget type="textupdate" version="2.0.0">
-    <name>Text Update_16</name>
-    <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
-    <x>590</x>
-    <y>30</y>
-    <width>40</width>
-    <format>1</format>
-  </widget>
   <widget type="embedded" version="2.0.0">
     <name>Embedded Display</name>
     <file>camera_settings.bob</file>
     <x>490</x>
-    <y>60</y>
-    <width>380</width>
-    <height>460</height>
+    <y>70</y>
+    <width>390</width>
+    <height>440</height>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script
