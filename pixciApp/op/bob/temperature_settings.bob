@@ -6,7 +6,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_17</name>
     <text>Setpoint</text>
-    <x>24</x>
+    <x>22</x>
     <y>176</y>
     <width>50</width>
     <font>
@@ -17,7 +17,7 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_15</name>
     <pv_name>$(CAM):cam1:Temperature_RBV</pv_name>
-    <x>166</x>
+    <x>170</x>
     <y>176</y>
     <width>70</width>
     <font>
@@ -28,7 +28,7 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_16</name>
     <pv_name>$(CAM):cam1:ToggleTEC_RBV</pv_name>
-    <x>162</x>
+    <x>170</x>
     <y>146</y>
     <width>70</width>
     <font>
@@ -40,7 +40,7 @@
     <name>Label_18</name>
     <text>PCB</text>
     <x>22</x>
-    <y>90</y>
+    <y>80</y>
     <width>50</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -50,8 +50,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_17</name>
     <pv_name>$(CAM):cam1:TemperatureActual</pv_name>
-    <x>82</x>
-    <y>60</y>
+    <x>88</x>
+    <y>50</y>
     <width>56</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -62,7 +62,7 @@
     <name>Label_19</name>
     <text>CCD</text>
     <x>22</x>
-    <y>60</y>
+    <y>50</y>
     <width>50</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -72,8 +72,8 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_18</name>
     <pv_name>$(CAM):cam1:TemperaturePCB</pv_name>
-    <x>82</x>
-    <y>90</y>
+    <x>88</x>
+    <y>80</y>
     <width>56</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -107,7 +107,7 @@
   </widget>
   <widget type="textentry" version="3.0.0">
     <name>Text Entry</name>
-    <x>84</x>
+    <x>88</x>
     <y>176</y>
     <width>70</width>
     <font>
@@ -118,7 +118,7 @@
   <widget type="checkbox" version="2.0.0">
     <name>Check Box</name>
     <label></label>
-    <x>80</x>
+    <x>88</x>
     <y>146</y>
     <width>30</width>
   </widget>
@@ -126,7 +126,7 @@
     <name>Label_6</name>
     <text>Temperature Reading</text>
     <x>20</x>
-    <y>30</y>
+    <y>20</y>
     <width>160</width>
     <font>
       <font family="Liberation Sans" style="BOLD" size="14.0">
@@ -137,7 +137,7 @@
     <name>Label_7</name>
     <text>TEC</text>
     <x>22</x>
-    <y>120</y>
+    <y>110</y>
     <width>160</width>
     <font>
       <font family="Liberation Sans" style="BOLD" size="14.0">
@@ -148,6 +148,13 @@
     <name>Text Symbol</name>
     <x>300</x>
     <y>120</y>
+    <width>1</width>
+    <height>1</height>
+  </widget>
+  <widget type="byte_monitor" version="2.0.0">
+    <name>Byte Monitor</name>
+    <x>410</x>
+    <y>130</y>
     <width>0</width>
     <height>0</height>
   </widget>

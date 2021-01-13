@@ -7,11 +7,11 @@
   <width>360</width>
   <height>400</height>
   <widget type="group" version="2.0.0">
-    <name>Parameters</name>
+    <name>Acquire Parameters</name>
     <x>90</x>
-    <y>260</y>
+    <y>271</y>
     <width>280</width>
-    <height>110</height>
+    <height>130</height>
     <widget type="textentry" version="3.0.0">
       <name>Text Entry_6</name>
       <pv_name>$(CAM):cam1:AcquirePeriod</pv_name>
@@ -81,6 +81,28 @@
         </font>
       </font>
     </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_18</name>
+      <text>Image rate</text>
+      <x>22</x>
+      <y>77</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_15</name>
+      <pv_name>$(CAM):image1:ArrayRate_RBV</pv_name>
+      <x>164</x>
+      <y>77</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
   </widget>
   <widget type="navtabs" version="2.0.0">
     <name>Navigation Tabs</name>
@@ -122,7 +144,7 @@
       </tab>
     </tabs>
     <width>360</width>
-    <height>260</height>
+    <height>271</height>
   </widget>
   <widget type="byte_monitor" version="2.0.0">
     <name>Byte Monitor</name>
@@ -135,8 +157,8 @@
     <name>LED (Multi State)</name>
     <x>460</x>
     <y>250</y>
-    <width>0</width>
-    <height>0</height>
+    <width>1</width>
+    <height>1</height>
     <states>
       <state>
         <value>0</value>
