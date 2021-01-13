@@ -572,8 +572,8 @@ Pixci::~Pixci(){
                     }
                 }
 
-                status == setRoiOffsetY(val);
-                if(status = asynSuccess){
+                status = setRoiOffsetY(val);
+                if(status == asynSuccess){
                     setIntegerParam(ADMinY,getRoiOffsetY());
                 }
             }
