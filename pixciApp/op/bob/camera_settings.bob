@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <macros>
+    <CAM>13PS1</CAM>
+  </macros>
+  <width>360</width>
+  <height>450</height>
+  <widget type="group" version="2.0.0">
+    <name>Acquire Parameters</name>
+    <x>90</x>
+    <y>300</y>
+    <width>280</width>
+    <height>130</height>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_6</name>
+      <pv_name>$(CAM):cam1:AcquirePeriod</pv_name>
+      <x>82</x>
+      <y>42</y>
+      <width>70</width>
+      <font>
+        <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_13</name>
+      <pv_name>$(CAM):cam1:AcquirePeriod_RBV</pv_name>
+      <x>164</x>
+      <y>42</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_16</name>
+      <text>Acquire
+ Period</text>
+      <x>22</x>
+      <y>42</y>
+      <width>50</width>
+      <height>35</height>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_14</name>
+      <pv_name>$(CAM):cam1:AcquireTime_RBV</pv_name>
+      <x>164</x>
+      <y>12</y>
+      <width>70</width>
+      <font>
+        <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_7</name>
+      <pv_name>$(CAM):cam1:AcquireTime</pv_name>
+      <x>82</x>
+      <y>12</y>
+      <width>70</width>
+      <font>
+        <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_17</name>
+      <text>Exposure</text>
+      <x>22</x>
+      <y>12</y>
+      <width>51</width>
+      <height>15</height>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_18</name>
+      <text>Image rate</text>
+      <x>22</x>
+      <y>77</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_15</name>
+      <pv_name>$(CAM):image1:ArrayRate_RBV</pv_name>
+      <x>164</x>
+      <y>77</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+  </widget>
+  <widget type="navtabs" version="2.0.0">
+    <name>Navigation Tabs</name>
+    <tabs>
+      <tab>
+        <name>AOI</name>
+        <file>image_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Trigger</name>
+        <file>trigger_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Temperature</name>
+        <file>temperature_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Gain</name>
+        <file>gain_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Info</name>
+        <file>manufacturer_data.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+    </tabs>
+    <y>30</y>
+    <width>360</width>
+    <height>271</height>
+  </widget>
+  <widget type="byte_monitor" version="2.0.0">
+    <name>Byte Monitor</name>
+    <x>470</x>
+    <y>270</y>
+    <width>1</width>
+    <height>1</height>
+  </widget>
+  <widget type="multi_state_led" version="2.0.0">
+    <name>LED (Multi State)</name>
+    <x>460</x>
+    <y>250</y>
+    <width>1</width>
+    <height>1</height>
+    <states>
+      <state>
+        <value>0</value>
+        <label>State 1</label>
+        <color>
+          <color name="Off" red="60" green="100" blue="60">
+          </color>
+        </color>
+      </state>
+      <state>
+        <value>1</value>
+        <label>State 2</label>
+        <color>
+          <color name="On" red="0" green="255" blue="0">
+          </color>
+        </color>
+      </state>
+    </states>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_2</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Acquire</text>
+    <x>200</x>
+    <width>60</width>
+    <height>20</height>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_3</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>0</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Stop</text>
+    <x>270</x>
+    <width>60</width>
+    <height>20</height>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="led" version="2.0.0">
+    <name>LED_1</name>
+    <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
+    <x>340</x>
+    <square>true</square>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_20</name>
+    <text>Image counter</text>
+    <width>90</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_17</name>
+    <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
+    <x>100</x>
+    <width>40</width>
+    <format>1</format>
+  </widget>
+</display>

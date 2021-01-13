@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <width>250</width>
+  <height>250</height>
+  <widget type="label" version="2.0.0">
+    <name>Label_17</name>
+    <text>Setpoint</text>
+    <x>22</x>
+    <y>176</y>
+    <width>50</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_15</name>
+    <pv_name>$(CAM):cam1:Temperature_RBV</pv_name>
+    <x>170</x>
+    <y>176</y>
+    <width>70</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_16</name>
+    <pv_name>$(CAM):cam1:ToggleTEC_RBV</pv_name>
+    <x>170</x>
+    <y>146</y>
+    <width>70</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_18</name>
+    <text>PCB</text>
+    <x>22</x>
+    <y>80</y>
+    <width>50</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_17</name>
+    <pv_name>$(CAM):cam1:TemperatureActual</pv_name>
+    <x>88</x>
+    <y>50</y>
+    <width>56</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_19</name>
+    <text>CCD</text>
+    <x>22</x>
+    <y>50</y>
+    <width>50</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_18</name>
+    <pv_name>$(CAM):cam1:TemperaturePCB</pv_name>
+    <x>88</x>
+    <y>80</y>
+    <width>56</width>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_20</name>
+    <text>Enable</text>
+    <x>22</x>
+    <y>146</y>
+    <width>50</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_2</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(CAM):cam1:UpdateTemperature</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <text>Update</text>
+    <x>138</x>
+    <y>210</y>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>Text Entry</name>
+    <x>88</x>
+    <y>176</y>
+    <width>70</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="checkbox" version="2.0.0">
+    <name>Check Box</name>
+    <label></label>
+    <x>88</x>
+    <y>146</y>
+    <width>30</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_6</name>
+    <text>Temperature Reading</text>
+    <x>20</x>
+    <y>20</y>
+    <width>160</width>
+    <font>
+      <font family="Liberation Sans" style="BOLD" size="14.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_7</name>
+    <text>TEC</text>
+    <x>22</x>
+    <y>110</y>
+    <width>160</width>
+    <font>
+      <font family="Liberation Sans" style="BOLD" size="14.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="text-symbol" version="2.0.0">
+    <name>Text Symbol</name>
+    <x>300</x>
+    <y>120</y>
+    <width>1</width>
+    <height>1</height>
+  </widget>
+  <widget type="byte_monitor" version="2.0.0">
+    <name>Byte Monitor</name>
+    <x>410</x>
+    <y>130</y>
+    <width>0</width>
+    <height>0</height>
+  </widget>
+</display>
