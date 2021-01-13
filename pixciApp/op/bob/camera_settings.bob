@@ -5,11 +5,11 @@
     <CAM>13PS1</CAM>
   </macros>
   <width>360</width>
-  <height>400</height>
+  <height>450</height>
   <widget type="group" version="2.0.0">
     <name>Acquire Parameters</name>
     <x>90</x>
-    <y>271</y>
+    <y>300</y>
     <width>280</width>
     <height>130</height>
     <widget type="textentry" version="3.0.0">
@@ -143,6 +143,7 @@
         <group_name></group_name>
       </tab>
     </tabs>
+    <y>30</y>
     <width>360</width>
     <height>271</height>
   </widget>
@@ -177,5 +178,54 @@
         </color>
       </state>
     </states>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_2</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Acquire</text>
+    <x>200</x>
+    <width>60</width>
+    <height>20</height>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_3</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>0</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Stop</text>
+    <x>270</x>
+    <width>60</width>
+    <height>20</height>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="led" version="2.0.0">
+    <name>LED_1</name>
+    <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
+    <x>340</x>
+    <square>true</square>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_20</name>
+    <text>Image counter</text>
+    <width>90</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_17</name>
+    <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
+    <x>100</x>
+    <width>40</width>
+    <format>1</format>
   </widget>
 </display>

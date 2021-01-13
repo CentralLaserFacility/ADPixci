@@ -25,7 +25,7 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_2</name>
-    <text>ADC Calibration</text>
+    <text>ADC</text>
     <x>22</x>
     <y>150</y>
     <width>105</width>
@@ -36,7 +36,7 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_3</name>
-    <text>DAC Calibration</text>
+    <text>DAC</text>
     <x>22</x>
     <y>180</y>
     <width>105</width>
@@ -48,8 +48,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_2</name>
     <pv_name>$(CAM):cam1:SerialNumber_RBV</pv_name>
-    <x>130</x>
+    <x>164</x>
     <y>50</y>
+    <width>70</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -58,8 +59,9 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_3</name>
     <pv_name>$(CAM):cam1:BuildDate_RBV</pv_name>
-    <x>130</x>
+    <x>164</x>
     <y>80</y>
+    <width>70</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -90,7 +92,7 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_6</name>
     <pv_name>$(CAM):cam1:ADCCalibrationFortyDegree_RBV</pv_name>
-    <x>183</x>
+    <x>185</x>
     <y>150</y>
     <width>50</width>
     <font>
@@ -123,7 +125,7 @@
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_8</name>
     <pv_name>$(CAM):cam1:DACCalibrationFortyDegree_RBV</pv_name>
-    <x>183</x>
+    <x>185</x>
     <y>180</y>
     <width>50</width>
     <font>
@@ -140,7 +142,7 @@
         <description>Update</description>
       </action>
     </actions>
-    <x>130</x>
+    <x>135</x>
     <y>210</y>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
@@ -150,10 +152,10 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_4</name>
-    <text>0 degree / 40 degree</text>
-    <x>130</x>
+    <text>0 °C  /  40 °C</text>
+    <x>150</x>
     <y>130</y>
-    <width>115</width>
+    <width>80</width>
     <height>10</height>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="12.0">
