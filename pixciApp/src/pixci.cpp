@@ -1037,7 +1037,6 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
-<<<<<<< HEAD
     double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
     {       
         return (ADC_M*adcCount)+ADC_C; //temperature in centigrade
@@ -1204,40 +1203,36 @@ Pixci::~Pixci(){
         return (systemStatus & 0x01) != 0; // check the first bit is not 0
     }
     
-    asynStatus Pixci::setAcquireTime(double AcquireTime){
-        unsigned long AcquireTimeCount;
-=======
-    asynStatus Pixci::setExposure(double ExposureTime){
-        unsigned long ExposureTimeCount;
->>>>>>> 29-add-exposure-settings
+    asynStatus Pixci::setExposure(double exposureTime){
+        unsigned long exposureTimeCount;
         unsigned long long lval;
-        char AcquireTimeHexVal[5] = {0,0,0,0,0};
-        ExposureTimeCount = (unsigned long)(ExposureTime*EXPOSURE_COUNT_TO_TIME/SEC_TO_mS); 
-        longTouchar(ExposureTimeCount, AcquireTimeHexVal);
+        char exposureTimeHexVal[5] = {0,0,0,0,0};
+        exposureTimeCount = (unsigned long)(exposureTime*EXPOSURE_COUNT_TO_TIME/SEC_TO_mS); 
+        longTouchar(exposureTimeCount, exposureTimeHexVal);
 
-        writeSerialRegister(UNIT, 0xED, AcquireTimeHexVal[0]);
-        writeSerialRegister(UNIT, 0xEE, AcquireTimeHexVal[1]);
-        writeSerialRegister(UNIT, 0xEF, AcquireTimeHexVal[2]);
-        writeSerialRegister(UNIT, 0xF0, AcquireTimeHexVal[3]);
-        return writeSerialRegister(UNIT, 0xF1, AcquireTimeHexVal[4]);
+        writeSerialRegister(UNIT, 0xED, exposureTimeHexVal[0]);
+        writeSerialRegister(UNIT, 0xEE, exposureTimeHexVal[1]);
+        writeSerialRegister(UNIT, 0xEF, exposureTimeHexVal[2]);
+        writeSerialRegister(UNIT, 0xF0, exposureTimeHexVal[3]);
+        return writeSerialRegister(UNIT, 0xF1, exposureTimeHexVal[4]);
     }
 
     double Pixci::getExposure(){
         char cval[5] ={0,0,0,0,0};
-        double ExposureTime = 0.0;
+        double exposureTime = 0.0;
         asynStatus status;
-        unsigned long long ExposureTimeCount = 0;
+        unsigned long long exposureTimeCount = 0;
         readSerialRegister(0XED, &cval[0]);
         readSerialRegister(0xEE, &cval[1]);
         readSerialRegister(0xEF, &cval[2]);
         readSerialRegister(0XF0, &cval[3]);
         readSerialRegister(0XF1, &cval[4]);
 
-        ExposureTimeCount = UcharToLong(cval);
-        if (ExposureTimeCount > 0){
-            ExposureTime = (double(ExposureTimeCount)/EXPOSURE_COUNT_TO_TIME)*SEC_TO_mS;
+        exposureTimeCount = UcharToLong(cval);
+        if (exposureTimeCount > 0){
+            exposureTime = (double(exposureTimeCount)/EXPOSURE_COUNT_TO_TIME)*SEC_TO_mS;
         }
-        return ExposureTime;
+        return exposureTime;
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
