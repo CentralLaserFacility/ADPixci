@@ -89,7 +89,7 @@ extern "C"{
 
 
 
-#define EXPOSURE_FREQUENCY 40e6
+#define EXPOSURE_COUNT_TO_TIME 40e6
 #define SEC_TO_mS 10e2
 
 
@@ -854,7 +854,7 @@ Pixci::~Pixci(){
         unsigned long ExposureTimeCount;
         unsigned long long lval;
         char AcquireTimeHexVal[5] = {0,0,0,0,0};
-        ExposureTimeCount = (unsigned long)(ExposureTime*EXPOSURE_FREQUENCY/SEC_TO_mS); 
+        ExposureTimeCount = (unsigned long)(ExposureTime*EXPOSURE_COUNT_TO_TIME/SEC_TO_mS); 
         longTouchar(ExposureTimeCount, AcquireTimeHexVal);
 
         writeSerialRegister(UNIT, 0xED, AcquireTimeHexVal[0]);
@@ -877,7 +877,7 @@ Pixci::~Pixci(){
 
         ExposureTimeCount = UcharToLong(cval);
         if (ExposureTimeCount > 0){
-            ExposureTime = (double(ExposureTimeCount)/EXPOSURE_FREQUENCY)*SEC_TO_mS;
+            ExposureTime = (double(ExposureTimeCount)/EXPOSURE_COUNT_TO_TIME)*SEC_TO_mS;
         }
         return ExposureTime;
     }
