@@ -443,17 +443,17 @@ private:
     /**
      * @brief Set the Acquire Time (exposure)
      * 
-     * @param acquireTime 
+     * @param exposureTime 
      * @return asynStatus 
      */
-    asynStatus setAcquireTime(double acquireTime);
+    asynStatus setExposure(double exposureTime);
 
     /**
      * @brief Get the Aquire Time from the camera
      * 
      * @return double 
      */
-    double getAcquireTime();
+    double getExposure();
 
     /**
      * @brief Convert the ADC Count to the temperature in centigrade
