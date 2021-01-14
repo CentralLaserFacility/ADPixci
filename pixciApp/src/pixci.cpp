@@ -88,6 +88,11 @@ extern "C"{
 #define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
 
 
+
+#define EXPOSURE_FREQUENCY 40e6
+#define SEC_TO_mS 10e2
+
+
 /*
  * @brief C Function prototypes to tie in with EPICS
  * run acquire task
@@ -447,10 +452,10 @@ Pixci::~Pixci(){
             }
             else if(function == ADAcquireTime){
                 if(val!=0){
-                    status = setAcquireTime(val);
+                    status = setExposure(val);
                     if(status == asynSuccess){
                         double readBackAcquireTime;
-                        readBackAcquireTime = getAcquireTime();
+                        readBackAcquireTime = getExposure();
                         if(readBackAcquireTime > 0){
                             setDoubleParam(ADAcquireTime, readBackAcquireTime);
                         }
@@ -845,12 +850,12 @@ Pixci::~Pixci(){
         return frameRate;
     }
 
-    asynStatus Pixci::setAcquireTime(double AcquireTime){
-        unsigned long AcquireTimeCount;
+    asynStatus Pixci::setExposure(double ExposureTime){
+        unsigned long ExposureTimeCount;
         unsigned long long lval;
         char AcquireTimeHexVal[5] = {0,0,0,0,0};
-        AcquireTimeCount = (unsigned long)(AcquireTime*40e6/10e2); 
-        longTouchar(AcquireTimeCount, AcquireTimeHexVal);
+        ExposureTimeCount = (unsigned long)(ExposureTime*EXPOSURE_FREQUENCY/SEC_TO_mS); 
+        longTouchar(ExposureTimeCount, AcquireTimeHexVal);
 
         writeSerialRegister(UNIT, 0xED, AcquireTimeHexVal[0]);
         writeSerialRegister(UNIT, 0xEE, AcquireTimeHexVal[1]);
@@ -859,22 +864,22 @@ Pixci::~Pixci(){
         return writeSerialRegister(UNIT, 0xF1, AcquireTimeHexVal[4]);
     }
 
-    double Pixci::getAcquireTime(){
+    double Pixci::getExposure(){
         char cval[5] ={0,0,0,0,0};
-        double AcquireTime = 0.0;
+        double ExposureTime = 0.0;
         asynStatus status;
-        unsigned long long AcquireTimeCount = 0;
+        unsigned long long ExposureTimeCount = 0;
         readSerialRegister(0XED, &cval[0]);
         readSerialRegister(0xEE, &cval[1]);
         readSerialRegister(0xEF, &cval[2]);
         readSerialRegister(0XF0, &cval[3]);
         readSerialRegister(0XF1, &cval[4]);
 
-        AcquireTimeCount = UcharToLong(cval);
-        if (AcquireTimeCount > 0){
-            AcquireTime = (double(AcquireTimeCount)/40e6)*10e2;
+        ExposureTimeCount = UcharToLong(cval);
+        if (ExposureTimeCount > 0){
+            ExposureTime = (double(ExposureTimeCount)/EXPOSURE_FREQUENCY)*SEC_TO_mS;
         }
-        return AcquireTime;
+        return ExposureTime;
     }
 
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
