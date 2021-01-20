@@ -1575,11 +1575,18 @@ Pixci::~Pixci(){
     asynStatus Pixci::updateIntialPVs(){
         epicsInt32 sizeX = pxd_imageXdim();
         epicsInt32 sizeY = pxd_imageYdim();
+        epicsFloat64 acquireFrameRate;
+        acquireFrameRate = getFrameRate();
         int status = asynSuccess;
+        
         status |=  setIntegerParam(ADMaxSizeX, sizeX);
         status |=  setIntegerParam(ADMaxSizeY, sizeY);
         status |=  setIntegerParam(ADSizeX, sizeX);
         status |=  setIntegerParam(ADSizeY, sizeY);
+        status |=  setDoubleParam(ADAcquireTime, getExposure());
+        if(acquireFrameRate > 0){
+        status |=  setDoubleParam(ADAcquirePeriod, (1/acquireFrameRate));
+        }
 
         status |= callParamCallbacks();
         return (asynStatus) status;
