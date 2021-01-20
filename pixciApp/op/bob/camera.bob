@@ -6,22 +6,20 @@
   </macros>
   <width>870</width>
   <height>550</height>
-  <widget type="action_button" version="3.0.0">
-    <name>Action Button</name>
-    <text></text>
-    <x>5</x>
-    <y>62</y>
-    <width>480</width>
-    <height>31</height>
-    <foreground_color>
+  <widget type="rectangle" version="2.0.0">
+    <name>Rectangle</name>
+    <x>20</x>
+    <y>65</y>
+    <width>465</width>
+    <height>28</height>
+    <line_color>
       <color name="Read_Background" red="240" green="240" blue="240">
       </color>
-    </foreground_color>
+    </line_color>
     <background_color>
       <color name="Read_Background" red="240" green="240" blue="240">
       </color>
     </background_color>
-    <tooltip>$(actions)</tooltip>
   </widget>
   <widget type="image" version="2.0.0">
     <name>Image</name>
