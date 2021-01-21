@@ -160,6 +160,13 @@ private:
     void reloadVideoSettings();
 
     /**
+     * @brief reset video settings file to the default. minX , sizeX parameter changes require reset 
+     * video settings in order to reflect in image.
+     * 
+     */
+    void resetVideoSettings();
+
+    /**
      * @brief read camera registers over serial communication.
      * 
      * @param reg register address to be read
