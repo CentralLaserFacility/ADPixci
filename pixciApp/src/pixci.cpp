@@ -542,6 +542,7 @@ Pixci::~Pixci(){
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeX,getRoiSizeX());
                         getIntegerParam(ADAcquire, &acquire);
+                        resetVideoSettings();
                         reloadVideoSettings();
                         acquireStop();
                         setupAquisition();
@@ -601,6 +602,7 @@ Pixci::~Pixci(){
                     setIntegerParam(ADSizeX,getRoiSizeX());
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
+                    resetVideoSettings();
                     reloadVideoSettings();
                     acquireStop();
                     setupAquisition();
@@ -895,6 +897,12 @@ Pixci::~Pixci(){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
             break;
         }
+    }
+
+    void Pixci::resetVideoSettings(){
+        #include BINNINGSETTINGS_1X1
+        pxd_videoFormatAsIncludedInit(0);
+        pxd_videoFormatAsIncluded(0);
     }
 
     unsigned long long Pixci::UcharToLong( char* cval){
