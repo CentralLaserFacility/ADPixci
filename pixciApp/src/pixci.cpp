@@ -531,10 +531,11 @@ Pixci::~Pixci(){
             }
 
             else if(function == ADMinX){
-                epicsInt32 maxSizeX, minX, sizeX;
+                epicsInt32 maxSizeX, minX, sizeX, binY, binX;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADSizeX, &sizeX);
-
+                getIntegerParam(ADBinX, &binX);
+                getIntegerParam(ADBinY, &binY);
                 minX = (val > maxSizeX) ? maxSizeX : val;
                 if((sizeX + minX) > maxSizeX){
                     sizeX = maxSizeX - minX;
@@ -542,9 +543,11 @@ Pixci::~Pixci(){
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeX,getRoiSizeX());
                         getIntegerParam(ADAcquire, &acquire);
-                        resetVideoSettings();
-                        reloadVideoSettings();
                         acquireStop();
+                        resetVideoSettings();
+                        setBin(binX,0);
+                        setBin(binY,1);
+                        reloadVideoSettings();
                         setupAquisition();
                         if(acquire == 1){
                             acquireImage();
@@ -569,8 +572,8 @@ Pixci::~Pixci(){
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeY,getRoiSizeY());
                         getIntegerParam(ADAcquire, &acquire);
-                        reloadVideoSettings();
                         acquireStop();
+                        reloadVideoSettings();
                         setupAquisition();
                         if(acquire == 1){
                             acquireImage();
@@ -584,11 +587,13 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADSizeX){
-                epicsInt32 maxSizeX, minX, sizeX;
+                epicsInt32 maxSizeX, minX, sizeX, binX, binY;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADMinX, &minX);
+                getIntegerParam(ADBinX, &binX);
+                getIntegerParam(ADBinY, &binY);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
-
+    
                 if((sizeX + minX) > maxSizeX){
                     minX = maxSizeX - sizeX;
                     status = setRoiOffsetX(minX);
@@ -602,9 +607,11 @@ Pixci::~Pixci(){
                     setIntegerParam(ADSizeX,getRoiSizeX());
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
-                    resetVideoSettings();
-                    reloadVideoSettings();
                     acquireStop();
+                    resetVideoSettings();
+                    setBin(binX,0);
+                    setBin(binY,1);
+                    reloadVideoSettings();
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();
@@ -630,8 +637,8 @@ Pixci::~Pixci(){
                     setIntegerParam(ADSizeY,getRoiSizeY());
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
-                    reloadVideoSettings();
                     acquireStop();
+                    reloadVideoSettings();
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();
