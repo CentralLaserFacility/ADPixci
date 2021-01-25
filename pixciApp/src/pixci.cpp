@@ -534,7 +534,6 @@ Pixci::~Pixci(){
                 epicsInt32 maxSizeX, minX, sizeX;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADSizeX, &sizeX);
-
                 minX = (val > maxSizeX) ? maxSizeX : val;
                 if((sizeX + minX) > maxSizeX){
                     sizeX = maxSizeX - minX;
@@ -542,8 +541,8 @@ Pixci::~Pixci(){
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeX,getRoiSizeX());
                         getIntegerParam(ADAcquire, &acquire);
-                        reloadVideoSettings();
                         acquireStop();
+                        resetVideoSettings();
                         setupAquisition();
                         if(acquire == 1){
                             acquireImage();
@@ -568,8 +567,8 @@ Pixci::~Pixci(){
                     if(status == asynSuccess){
                         setIntegerParam(ADSizeY,getRoiSizeY());
                         getIntegerParam(ADAcquire, &acquire);
-                        reloadVideoSettings();
                         acquireStop();
+                        reloadVideoSettings();
                         setupAquisition();
                         if(acquire == 1){
                             acquireImage();
@@ -587,7 +586,7 @@ Pixci::~Pixci(){
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADMinX, &minX);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
-
+    
                 if((sizeX + minX) > maxSizeX){
                     minX = maxSizeX - sizeX;
                     status = setRoiOffsetX(minX);
@@ -601,8 +600,8 @@ Pixci::~Pixci(){
                     setIntegerParam(ADSizeX,getRoiSizeX());
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
-                    reloadVideoSettings();
                     acquireStop();
+                    resetVideoSettings();
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();
@@ -628,8 +627,8 @@ Pixci::~Pixci(){
                     setIntegerParam(ADSizeY,getRoiSizeY());
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
-                    reloadVideoSettings();
                     acquireStop();
+                    reloadVideoSettings();
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();
@@ -895,6 +894,18 @@ Pixci::~Pixci(){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
             break;
         }
+    }
+
+    void Pixci::resetVideoSettings(){
+        epicsInt32 binX, binY;
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
+        #include BINNINGSETTINGS_1X1
+        pxd_videoFormatAsIncludedInit(0);
+        pxd_videoFormatAsIncluded(0);
+        setBin(binX,0);
+        setBin(binY,1);
+        reloadVideoSettings();
     }
 
     unsigned long long Pixci::UcharToLong( char* cval){
