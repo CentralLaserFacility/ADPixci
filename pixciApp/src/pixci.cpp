@@ -531,11 +531,9 @@ Pixci::~Pixci(){
             }
 
             else if(function == ADMinX){
-                epicsInt32 maxSizeX, minX, sizeX, binY, binX;
+                epicsInt32 maxSizeX, minX, sizeX;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADSizeX, &sizeX);
-                getIntegerParam(ADBinX, &binX);
-                getIntegerParam(ADBinY, &binY);
                 minX = (val > maxSizeX) ? maxSizeX : val;
                 if((sizeX + minX) > maxSizeX){
                     sizeX = maxSizeX - minX;
@@ -545,9 +543,6 @@ Pixci::~Pixci(){
                         getIntegerParam(ADAcquire, &acquire);
                         acquireStop();
                         resetVideoSettings();
-                        setBin(binX,0);
-                        setBin(binY,1);
-                        reloadVideoSettings();
                         setupAquisition();
                         if(acquire == 1){
                             acquireImage();
@@ -587,11 +582,9 @@ Pixci::~Pixci(){
                 }
             }
             else if(function == ADSizeX){
-                epicsInt32 maxSizeX, minX, sizeX, binX, binY;
+                epicsInt32 maxSizeX, minX, sizeX;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADMinX, &minX);
-                getIntegerParam(ADBinX, &binX);
-                getIntegerParam(ADBinY, &binY);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
     
                 if((sizeX + minX) > maxSizeX){
@@ -609,9 +602,6 @@ Pixci::~Pixci(){
                     getIntegerParam(ADAcquire, &acquire);
                     acquireStop();
                     resetVideoSettings();
-                    setBin(binX,0);
-                    setBin(binY,1);
-                    reloadVideoSettings();
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();
@@ -907,9 +897,15 @@ Pixci::~Pixci(){
     }
 
     void Pixci::resetVideoSettings(){
+        epicsInt32 binX, binY;
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
         #include BINNINGSETTINGS_1X1
         pxd_videoFormatAsIncludedInit(0);
         pxd_videoFormatAsIncluded(0);
+        setBin(binX,0);
+        setBin(binY,1);
+        reloadVideoSettings();
     }
 
     unsigned long long Pixci::UcharToLong( char* cval){
