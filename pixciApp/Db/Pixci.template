@@ -74,6 +74,7 @@ record(ai, "$(P)$(R)TemperaturePCB")
    field(DTYP, "asynFloat64")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEMPERATURE_PCB")
    field(PREC, "3")
+   field(EGU, "C")
    field(SCAN, "I/O Intr")
 }
 
@@ -161,4 +162,24 @@ record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
    field(DTYP, "asynInt32")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_FORTY_DEGREE")
    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)AcquireTime_RBV")
+{
+   field(EGU, "ms")
+}
+
+record(ai, "$(P)$(R)AcquireTime")
+{
+   field(EGU, "ms")
+}
+
+record(ao, "$(P)$(R)AcquirePeriod")
+{
+   field(EGU, "s")
+}
+
+record(ai, "$(P)$(R)AcquirePeriod_RBV")
+{
+   field(EGU, "s")
 }
