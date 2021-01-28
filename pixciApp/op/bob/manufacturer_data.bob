@@ -133,23 +133,6 @@
       </font>
     </font>
   </widget>
-  <widget type="action_button" version="3.0.0">
-    <name>Action Button</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>$(CAM):cam1:UpdateStatus</pv_name>
-        <value>1</value>
-        <description>Update</description>
-      </action>
-    </actions>
-    <x>135</x>
-    <y>210</y>
-    <font>
-      <font family="Liberation Sans" style="REGULAR" size="12.0">
-      </font>
-    </font>
-    <tooltip>$(actions)</tooltip>
-  </widget>
   <widget type="label" version="2.0.0">
     <name>Label_4</name>
     <text>0 °C  /  40 °C</text>

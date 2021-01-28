@@ -94,8 +94,10 @@ else:
         <pv_name>=1</pv_name>
       </script>
     </scripts>
+    <tooltip>$(x_pv)</tooltip>
     <color_mode>0</color_mode>
     <unsigned>true</unsigned>
+    <cursor_crosshair>true</cursor_crosshair>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label</name>
@@ -115,7 +117,7 @@ else:
     <x>490</x>
     <y>70</y>
     <width>390</width>
-    <height>440</height>
+    <height>450</height>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script

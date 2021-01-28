@@ -568,7 +568,7 @@ Pixci::~Pixci(){
                         setIntegerParam(ADSizeY,getRoiSizeY());
                         getIntegerParam(ADAcquire, &acquire);
                         acquireStop();
-                        reloadVideoSettings();
+                        resetVideoSettings();
                         setupAquisition();
                         if(acquire == 1){
                             acquireImage();
@@ -628,7 +628,7 @@ Pixci::~Pixci(){
                     callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire);
                     acquireStop();
-                    reloadVideoSettings();
+                    resetVideoSettings();
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();

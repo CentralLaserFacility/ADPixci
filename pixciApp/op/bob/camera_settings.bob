@@ -4,13 +4,12 @@
   <macros>
     <CAM>13PS1</CAM>
   </macros>
-  <width>360</width>
+  <width>320</width>
   <height>450</height>
   <widget type="group" version="2.0.0">
     <name>Acquire Parameters</name>
-    <x>90</x>
-    <y>300</y>
-    <width>280</width>
+    <y>320</y>
+    <width>320</width>
     <height>130</height>
     <widget type="textentry" version="3.0.0">
       <name>Text Entry_6</name>
@@ -122,7 +121,7 @@
         <group_name></group_name>
       </tab>
       <tab>
-        <name>Temperature</name>
+        <name>Temp</name>
         <file>temperature_settings.bob</file>
         <macros>
         </macros>
@@ -144,8 +143,10 @@
       </tab>
     </tabs>
     <y>30</y>
-    <width>360</width>
-    <height>271</height>
+    <width>310</width>
+    <height>290</height>
+    <direction>0</direction>
+    <tab_width>60</tab_width>
   </widget>
   <widget type="byte_monitor" version="2.0.0">
     <name>Byte Monitor</name>
@@ -190,7 +191,7 @@
     </actions>
     <pv_name>$(CAM):cam1:Acquire</pv_name>
     <text>Acquire</text>
-    <x>200</x>
+    <x>150</x>
     <width>60</width>
     <height>20</height>
   </widget>
@@ -205,7 +206,7 @@
     </actions>
     <pv_name>$(CAM):cam1:Acquire</pv_name>
     <text>Stop</text>
-    <x>270</x>
+    <x>220</x>
     <width>60</width>
     <height>20</height>
     <tooltip>$(actions)</tooltip>
@@ -213,7 +214,7 @@
   <widget type="led" version="2.0.0">
     <name>LED_1</name>
     <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
-    <x>340</x>
+    <x>290</x>
     <square>true</square>
   </widget>
   <widget type="label" version="2.0.0">
