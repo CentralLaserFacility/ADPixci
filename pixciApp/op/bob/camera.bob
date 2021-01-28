@@ -5,7 +5,7 @@
     <CAM>13PS1</CAM>
   </macros>
   <width>870</width>
-  <height>550</height>
+  <height>560</height>
   <widget type="rectangle" version="2.0.0">
     <name>Rectangle</name>
     <x>20</x>
@@ -40,6 +40,34 @@
         </font>
       </scale_font>
     </color_bar>
+    <x_axis>
+      <visible>true</visible>
+      <title></title>
+      <minimum>0.0</minimum>
+      <maximum>100.0</maximum>
+      <title_font>
+        <font name="Default Bold" family="Liberation Sans" style="BOLD" size="14.0">
+        </font>
+      </title_font>
+      <scale_font>
+        <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+        </font>
+      </scale_font>
+    </x_axis>
+    <y_axis>
+      <visible>true</visible>
+      <title></title>
+      <minimum>0.0</minimum>
+      <maximum>100.0</maximum>
+      <title_font>
+        <font name="Default Bold" family="Liberation Sans" style="BOLD" size="14.0">
+        </font>
+      </title_font>
+      <scale_font>
+        <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+        </font>
+      </scale_font>
+    </y_axis>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script
@@ -170,5 +198,79 @@ else:
         <pv_name>loc://AutoScale</pv_name>
       </rule>
     </rules>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button</name>
+    <actions>
+      <action type="execute">
+        <script file="EmbeddedPy">
+          <text><![CDATA[
+from org.csstudio.opibuilder.scriptUtil import PVUtil, ConsoleUtil, FileUtil
+from java.lang import Thread, Runnable
+from javax.swing import SwingWorker
+isInWorkspace = False
+filePath = FileUtil.saveFileDialog(isInWorkspace)
+]]></text>
+        </script>
+        <description>Execute Script</description>
+      </action>
+    </actions>
+    <text>Export</text>
+    <x>500</x>
+    <y>520</y>
+    <width>90</width>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_1</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://export</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>loc://export&lt;VLong&gt;(0)</pv_name>
+    <text>Export</text>
+    <x>610</x>
+    <y>520</y>
+    <width>90</width>
+    <scripts>
+      <script file="EmbeddedPy">
+        <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, FileUtil, ConsoleUtil
+#from org.csstudio.opibuilder.scriptUtil import PVUtil, ConsoleUtil
+from java.lang import Thread, Runnable
+from javax.swing import SwingWorker
+from org.csstudio.display.builder.model import Widget
+print 'Hello'
+
+##### get data
+data = PVUtil.getDoubleArray(pvs[1])
+data = map(int, data)
+
+sizex =  PVUtil.getDoubleArray(pvs[2])
+sizey =  PVUtil.getDoubleArray(pvs[3])
+
+# widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
+
+
+
+##### open saveas dialog box
+isInWorkspace = False
+filePath = FileUtil.saveFileDialog(isInWorkspace)]]></text>
+        <pv_name>loc://export</pv_name>
+        <pv_name trigger="false">$(CAM):image1:ArrayData</pv_name>
+        <pv_name trigger="false">$(CAM):image1:ArraySize0_RBV</pv_name>
+        <pv_name trigger="false">$(CAM):image1:ArraySize1_RBV</pv_name>
+      </script>
+    </scripts>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update</name>
+    <pv_name>loc://export</pv_name>
+    <x>710</x>
+    <y>520</y>
   </widget>
 </display>
