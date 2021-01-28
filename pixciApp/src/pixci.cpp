@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include<string>
 
 
 /* For windows */
@@ -33,6 +34,8 @@ extern "C"{
 #include <epicsExit.h>
 #include <epicsExport.h>
 #include <epicsMessageQueue.h>
+
+using namespace std;
 
 #define FORMAT "" // Video format configuration name.
 #define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
@@ -87,6 +90,14 @@ extern "C"{
 #define BINNINGSETTINGS_32X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x16.fmt"
 #define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
 
+#define PARAM_MESSAGE_QUE_SIZE 20
+#define PARAM_MESSAGE_SIZE 16
+#define COUNT_PER_FRAME 40e6
+
+
+#define EXPOSURE_COUNT_TO_TIME 40e6
+#define SEC_TO_mS 10e2
+
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -123,6 +134,18 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
 
         createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
+        createParam(UpdateTemperatureString,  asynParamInt32, &PR_UpdateTemperature);
+        createParam(TemperaturePCBString,  asynParamFloat64, &PR_TemperaturePcb);
+        createParam(ToggleTecString,  asynParamInt32, &PR_ToggleTec);
+        createParam(ToggleGainString,  asynParamInt32, &PR_ToggleGain);
+        createParam(ToggleFPGACommsString,  asynParamInt32, &PR_ToggleFpgaComms);
+
+        createParam(UpdateStatusString,  asynParamInt32, &PR_UpdateStatus);
+        createParam(BuildDateString,  asynParamOctet, &PR_BuildDate);
+        createParam(ADCCalibrationZeroDegreeString ,  asynParamInt32, &PR_ADCCalibrationZeroDegree);
+        createParam(ADCCalibrationFortyDegreeString,  asynParamInt32, &PR_ADCCalibrationFortyDegree);
+        createParam(DACCalibrationZeroDegreeString ,  asynParamInt32, &PR_DACCalibrationZeroDegree);
+        createParam(DACCalibrationFortyDegreeString,  asynParamInt32, &PR_DACCalibrationFortyDegree);
 
         /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
          * returns value <0 if any error occured
@@ -154,19 +177,27 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
         int status = asynSuccess;
         /* Create the thread that does data acquisition */
-        status = (epicsThreadCreate("acquireTask",
+        status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        status = (epicsThreadCreate("paramTask",
+        status |= (epicsThreadCreate("paramTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
 
-        paramMsgQue = new epicsMessageQueue(20,8);
+        paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
+
+        //Updating all the PVs related to the status of device
+        updateStatus(true); // Also update the manufacturers data
+        status |= updateIntialPVs();
+        if(status == asynError){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
+            return;
+        }
 
     }
 
@@ -193,7 +224,7 @@ Pixci::~Pixci(){
 }
 
     asynStatus Pixci::setupAquisition(){
-        int binX, binY, sizeX, sizeY;
+        int binX, binY, sizeX, sizeY, RoiSizeX, RoiSizeY;
         sizeX = pxd_imageXdim();
         sizeY = pxd_imageYdim();
 
@@ -208,14 +239,13 @@ Pixci::~Pixci(){
             setIntegerParam(ADBinY, binY);
         }
 
-        setIntegerParam(ADSizeX, sizeX);
-        setIntegerParam(ADSizeY, sizeY);
+        getIntegerParam(ADSizeX, &RoiSizeX);
+        getIntegerParam(ADSizeY, &RoiSizeY);
+        // setIntegerParam(ADSizeX, sizeX);
+        // setIntegerParam(ADSizeY, sizeY);
 
-        setIntegerParam(ADMaxSizeX, sizeX);
-        setIntegerParam(ADMaxSizeY, sizeY);
-
-        setIntegerParam(NDArraySizeX, sizeX);
-        setIntegerParam(NDArraySizeY, sizeY);
+        setIntegerParam(NDArraySizeX, RoiSizeX/binX);
+        setIntegerParam(NDArraySizeY, RoiSizeY/binY);
 
         callParamCallbacks();
 
@@ -346,22 +376,22 @@ Pixci::~Pixci(){
     }
 
     void Pixci::paramTask(){
-        epicsInt32 functionAndVal[2];
+        epicsFloat64 functionAndVal[2];
         epicsInt32 function;
-        epicsInt32 val;
+        epicsFloat64 val;
         asynStatus status;
         epicsInt32 acquire;
-        for(;;){
-            paramMsgQue->receive(functionAndVal,8);
-            function = functionAndVal[0];
-            val = functionAndVal[1];
 
+        for(;;){
+            paramMsgQue->receive(functionAndVal,16);
+            function = (int)functionAndVal[0];
+            val = functionAndVal[1];
             if(function==ADBinX){
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
                 {   
                     setIntegerParam(ADBinX, val); //Updating the binX value.
-                    callParamCallbacks();
+                    // callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire); //Getting the ADAcquire value. 
                     reloadVideoSettings(); //Video settings have to be loaded respective of binning value.
                     acquireStop(); //Acquire have to be stopped before calling setupAcquisition.
@@ -387,10 +417,7 @@ Pixci::~Pixci(){
                 }
             }
             else if(function==ADReadStatus){
-                char input;
-                char reg = 0xD4;
-                asynStatus status;
-                status = readSerialRegister(reg, &input);
+                printf("Reading Exposure from the camera \n");    
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -435,6 +462,193 @@ Pixci::~Pixci(){
                 else{
                     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
                 }         
+            }
+            else if (function==PR_UpdateStatus)
+            {
+                updateStatus(true);
+            }
+            else if (function==PR_UpdateTemperature)
+            {
+                updateStatus();
+            }
+            else if(function == ADAcquirePeriod){
+                if(val != 0){
+                    status = setFrameRate(1/val);
+                    if(status == asynSuccess){
+                        double readBackFrameRate;
+                        readBackFrameRate = getFrameRate();
+                        if(readBackFrameRate > 0){
+                            setDoubleParam(ADAcquirePeriod, (1/readBackFrameRate));
+                        }
+                    }
+                }
+            }
+            else if (function == ADTemperature)
+            {
+                status = setTecTemperature(val);
+                if(status == asynSuccess)
+                {
+                    double tecTemperature = getTecTemperature();
+                    setDoubleParam(ADTemperature,tecTemperature);
+                }
+            }
+            else if (function == PR_ToggleTec)
+            {
+                status = toggleTec(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleTec, isTecEnabled());
+                }
+            }
+            else if (function == PR_ToggleGain)
+            {
+                status = toggleGain(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleGain, isGainEnabled());
+                }
+            }
+            else if (function == PR_ToggleFpgaComms)
+            {
+                status = toggleFpgaComms(val);
+                if(status == asynSuccess)
+                {
+                    setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
+                }
+            }
+            else if(function == ADAcquireTime){
+                if(val!=0){
+                    status = setExposure(val);
+                    if(status == asynSuccess){
+                        double readBackAcquireTime;
+                        readBackAcquireTime = getExposure();
+                        if(readBackAcquireTime > 0){
+                            setDoubleParam(ADAcquireTime, readBackAcquireTime);
+                        }
+                    }
+                }
+
+            }
+
+            else if(function == ADMinX){
+                epicsInt32 maxSizeX, minX, sizeX;
+                getIntegerParam(ADMaxSizeX, &maxSizeX);
+                getIntegerParam(ADSizeX, &sizeX);
+                minX = (val > maxSizeX) ? maxSizeX : val;
+                if((sizeX + minX) > maxSizeX){
+                    sizeX = maxSizeX - minX;
+                    status = setRoiSizeX(sizeX);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADSizeX,getRoiSizeX());
+                        getIntegerParam(ADAcquire, &acquire);
+                        acquireStop();
+                        resetVideoSettings();
+                        setupAquisition();
+                        if(acquire == 1){
+                            acquireImage();
+                        }       
+                    }
+                }
+                
+                status = setRoiOffsetX(minX);
+                if(status == asynSuccess){
+                    setIntegerParam(ADMinX,getRoiOffsetX());
+                }
+            }
+            else if(function == ADMinY){
+                epicsInt32 maxSizeY, minY, sizeY;
+                getIntegerParam(ADMaxSizeY, &maxSizeY);
+                getIntegerParam(ADSizeY, &sizeY);
+
+                minY = (val > maxSizeY) ? maxSizeY : val;
+                if((sizeY + minY) > maxSizeY){
+                    sizeY = maxSizeY - minY;
+                    status = setRoiSizeY(sizeY);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADSizeY,getRoiSizeY());
+                        getIntegerParam(ADAcquire, &acquire);
+                        acquireStop();
+                        resetVideoSettings();
+                        setupAquisition();
+                        if(acquire == 1){
+                            acquireImage();
+                        }       
+                    }
+                }
+
+                status = setRoiOffsetY(val);
+                if(status == asynSuccess){
+                    setIntegerParam(ADMinY,getRoiOffsetY());
+                }
+            }
+            else if(function == ADSizeX){
+                epicsInt32 maxSizeX, minX, sizeX;
+                getIntegerParam(ADMaxSizeX, &maxSizeX);
+                getIntegerParam(ADMinX, &minX);
+                sizeX = (val > maxSizeX) ? maxSizeX : val;
+    
+                if((sizeX + minX) > maxSizeX){
+                    minX = maxSizeX - sizeX;
+                    status = setRoiOffsetX(minX);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADMinX,getRoiOffsetX()); 
+                    }
+                }
+                status == setRoiSizeX(sizeX);
+                
+                if(status == asynSuccess){
+                    setIntegerParam(ADSizeX,getRoiSizeX());
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
+                    acquireStop();
+                    resetVideoSettings();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
+                }
+            }
+            else if(function == ADSizeY){
+                epicsInt32 maxSizeY, minY, sizeY;
+                getIntegerParam(ADMaxSizeY, &maxSizeY);
+                getIntegerParam(ADMinY, &minY);
+                sizeY = (val > maxSizeY) ? maxSizeY : val;
+
+                if((sizeY + minY) > maxSizeY){
+                    minY = maxSizeY - sizeY;
+                    status = setRoiOffsetY(minY);
+                    if(status == asynSuccess){
+                        setIntegerParam(ADMinY,getRoiOffsetY());
+                    }
+                }
+                status == setRoiSizeY(sizeY);
+                
+                if(status == asynSuccess){
+                    setIntegerParam(ADSizeY,getRoiSizeY());
+                    callParamCallbacks();
+                    getIntegerParam(ADAcquire, &acquire);
+                    acquireStop();
+                    resetVideoSettings();
+                    setupAquisition();
+                    if(acquire == 1){
+                        acquireImage();
+                    }       
+                }
+            }
+            else if(function == PR_TriggerPolarity){
+                int triggerMode;
+                if(val == PR_EXT_RISING_EDGE){
+                    setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+                }
+                else if(val == PR_EXT_FALLING_EDGE){
+                    setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+                }
+                callParamCallbacks();
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                if(triggerMode == PR_EXTERNAL){
+                    setTriggerMode(PR_EXTERNAL);
+                }
+
             }
             callParamCallbacks();
         }
@@ -682,6 +896,36 @@ Pixci::~Pixci(){
         }
     }
 
+    void Pixci::resetVideoSettings(){
+        epicsInt32 binX, binY;
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
+        #include BINNINGSETTINGS_1X1
+        pxd_videoFormatAsIncludedInit(0);
+        pxd_videoFormatAsIncluded(0);
+        setBin(binX,0);
+        setBin(binY,1);
+        reloadVideoSettings();
+    }
+
+    unsigned long long Pixci::UcharToLong( char* cval){
+        unsigned long long lval = 0;
+        lval += (unsigned long )(unsigned char)cval[4];
+        lval += ((unsigned long )(unsigned char)cval[3])<<8;
+        lval += ((unsigned long )(unsigned char)cval[2])<<16;
+        lval += ((unsigned long )(unsigned char)cval[1])<<24;
+        lval += ((unsigned long )(unsigned char)cval[0])<<32;
+        return lval;
+    }
+
+    void Pixci::longTouchar(long lval, char* cval){
+        cval[0] = (char)((lval & 0xFF00000000) >> 32 );
+        cval[1]  = (char)((lval & 0x00FF000000) >> 24 );
+        cval[2] = (char)((lval & 0x0000FF0000) >> 16 );
+        cval[3] = (char)((lval & 0x000000FF00) >> 8 );
+        cval[4] = (char)((lval & 0x00000000FF) );
+    }
+
     int Pixci::writeReadSerial(int unit, char* serialOut, int msgOutSize, char* serialIn, int serialInBufferSize){
         int count, i;
         char bufOut[50];
@@ -772,16 +1016,245 @@ Pixci::~Pixci(){
 
     }
 
+    asynStatus Pixci::setFrameRate(double frameRate){
+        unsigned long frameRateCount;
+        unsigned long long lval;
+        char frameRateHexVal[5] = {0,0,0,0,0};
+        frameRateCount = (unsigned long)(COUNT_PER_FRAME/frameRate);
+        longTouchar(frameRateCount, frameRateHexVal);
+
+        writeSerialRegister(UNIT, 0xDC, frameRateHexVal[0]);
+        writeSerialRegister(UNIT, 0xDD, frameRateHexVal[1]);
+        writeSerialRegister(UNIT, 0xDE, frameRateHexVal[2]);
+        writeSerialRegister(UNIT, 0xDF, frameRateHexVal[3]);
+        return writeSerialRegister(UNIT, 0xE0, frameRateHexVal[4]);
+    }
+
+    double Pixci::getFrameRate(){
+        char cval[5] ={0,0,0,0,0};
+        double frameRate = 0.0;
+        asynStatus status;
+        unsigned long long frameRateCount = 0;
+        readSerialRegister(0XDC, &cval[0]);
+        readSerialRegister(0xDD, &cval[1]);
+        readSerialRegister(0xDE, &cval[2]);
+        readSerialRegister(0XDF, &cval[3]);
+        readSerialRegister(0XE0, &cval[4]);
+
+        frameRateCount = UcharToLong(cval);
+        if (frameRateCount > 0){
+            frameRate = 40e6/double(frameRateCount);
+        }
+        return frameRate;
+    }
+
+    double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
+    {       
+        return (ADC_M*adcCount)+ADC_C; //temperature in centigrade
+    }
+
+    INT16 Pixci::convertCentigradeToDacCount(double temperature)
+    {
+        return (temperature-DAC_C)/DAC_M;
+    }
+
+    double Pixci::convertDacCountToCentigrade(INT16 dacCount)
+    {
+        return (DAC_M*dacCount)+DAC_C; //temperature in centigrade
+    }
+
+    double Pixci::getTemperatureActual()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0X6E, 0x00, &cval[0]);
+        readSerialRegister(0X6F, 0x00, &cval[1]);
+
+        INT16 adcCount = 0;
+        adcCount += (INT16 )(unsigned char)cval[1];
+        adcCount += ((INT16 )(unsigned char)cval[0])<<8;
+
+        return convertAdcCountToCentigrade(adcCount);    
+    }
+
+    double Pixci::getTemperaturePcb()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0X70, 0x00, &cval[1]);
+        readSerialRegister(0X71, 0x00, &cval[0]);
+
+        INT16 lval = 0;
+        lval += (INT16 )(unsigned char)cval[0];
+        lval += (INT16 )(unsigned char)(cval[1] & 0x0F)<<8;
+        double temperature  = lval/16.0f;
+       
+        return temperature;  
+    }
+
+    double Pixci::getTecTemperature()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0X03, &cval[1]);
+        readSerialRegister(0X04, &cval[0]);
+
+        INT16 lval = 0;
+        lval += (INT16)(unsigned char)cval[0];
+        lval += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return convertDacCountToCentigrade(lval);
+    }
+
+    asynStatus Pixci::setTecTemperature(double temperature)
+    {
+        INT16 dacCount = convertCentigradeToDacCount(temperature);
+        
+        char cval[2] ={0,0};
+        cval[0] = (char)((dacCount & 0x0F00) >> 8 );
+        cval[1] = (char)((dacCount & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0x03, cval[0]);
+        return writeSerialRegister(UNIT, 0x04, cval[1]);
+    }
+
+    unsigned char Pixci::getFpgaStatus()
+    {
+        char cval = 0;
+        readSerialRegister(0x00, &cval);
+        //TODO: implement proper error handling
+        return (unsigned char)cval;
+    }
+
+    asynStatus Pixci::toggleTec(bool enableTec)
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+        if(enableTec)
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus | 0x01); // setting first bit = 1
+         else
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(0x01)); //setting first bit = 0
+    }
+
+    bool Pixci::isTecEnabled()
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+        return (fpgaStatus & 0x01) != 0; // check the first bit is not 0
+    }
+
+    asynStatus Pixci::toggleGain(bool enableGain)
+    {
+        unsigned char fpgaStatus = getFpgaStatus();       
+        if(enableGain)
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus | (1 << 7)); // setting last bit = 1
+         else
+            return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(1 << 7)); //setting last bit = 0
+            
+    }
+
+    bool Pixci::isGainEnabled()
+    {
+        unsigned char fpgaStatus = getFpgaStatus();
+       return (fpgaStatus & (1 << 7)) != 0; // check the last bit is not 0
+    }
+
+    unsigned char Pixci::getSystemStatus()
+    {
+        char cval = 0;
+        char inputMsg[2];
+        int inSize;
+        char first_bufout[] = {0x49, 0x50};
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
+
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            cval=inputMsg[0];       
+        }
+        
+        //TODO: Need proper error handling, same is for reading serial register as else where
+        return (unsigned char)cval; //cval will be 0x00 if there is no success
+       
+    }
+
+    asynStatus Pixci::setSystemStatus(char val){
+        int inSize;
+        char inputMsg[1];
+        
+        /* template of message to write value to registers */
+        char bufout[]  = {0x4F, 0x00, 0x50};
+		bufout[1] = val ;
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
+
+        if(inSize<NOERROR){
+            return asynError;
+        }
+
+        if(inputMsg[0]==SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+
+        return asynError;
+    }
+
+    asynStatus Pixci::toggleFpgaComms(bool enableFpgaComms)
+    {
+        unsigned char systemStatus = getSystemStatus();
+        if(enableFpgaComms)
+           return setSystemStatus(systemStatus | 0x01); // setting first bit = 1
+         else
+            return setSystemStatus(systemStatus & ~(0x01)); //setting first bit = 0
+
+    }
+
+    bool Pixci::isFpgaCommsEnabled()
+    {
+        unsigned char systemStatus = getSystemStatus();
+        return (systemStatus & 0x01) != 0; // check the first bit is not 0
+    }
+    
+    asynStatus Pixci::setExposure(double exposureTime){
+        unsigned long exposureTimeCount;
+        unsigned long long lval;
+        char exposureTimeHexVal[5] = {0,0,0,0,0};
+        exposureTimeCount = (unsigned long)(exposureTime*EXPOSURE_COUNT_TO_TIME/SEC_TO_mS); 
+        longTouchar(exposureTimeCount, exposureTimeHexVal);
+
+        writeSerialRegister(UNIT, 0xED, exposureTimeHexVal[0]);
+        writeSerialRegister(UNIT, 0xEE, exposureTimeHexVal[1]);
+        writeSerialRegister(UNIT, 0xEF, exposureTimeHexVal[2]);
+        writeSerialRegister(UNIT, 0xF0, exposureTimeHexVal[3]);
+        return writeSerialRegister(UNIT, 0xF1, exposureTimeHexVal[4]);
+    }
+
+    double Pixci::getExposure(){
+        char cval[5] ={0,0,0,0,0};
+        double exposureTime = 0.0;
+        asynStatus status;
+        unsigned long long exposureTimeCount = 0;
+        readSerialRegister(0XED, &cval[0]);
+        readSerialRegister(0xEE, &cval[1]);
+        readSerialRegister(0xEF, &cval[2]);
+        readSerialRegister(0XF0, &cval[3]);
+        readSerialRegister(0XF1, &cval[4]);
+
+        exposureTimeCount = UcharToLong(cval);
+        if (exposureTimeCount > 0){
+            exposureTime = (double(exposureTimeCount)/EXPOSURE_COUNT_TO_TIME)*SEC_TO_mS;
+        }
+        return exposureTime;
+    }
+
     asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value){
         int function = pasynUser->reason;
         asynStatus status = asynSuccess;
         static const char *functionName = "writeInt32";
 
-        /* There are two way of implementing int32 parameter changes,parameters that doesn't 
-        need to use serial communication  to implement and Parameteters that uses serial communication
-        for implementation.
+        /* There are two types int32 parameters, parameters that uses serial communication and parameters that 
+        does not uses serial communication.
 
-        Parameters that dont use serial communication, can be implemented by calling respective function
+        Parameters that dont use serial communication, can be implemented by calling respective XCLIB function
         directly ex: ADAcquire.
 
         Parameters that uses serial communication cannot be implmented directly here because,
@@ -843,20 +1316,40 @@ Pixci::~Pixci(){
         else if(function == PR_SoftTrigger){
             addToParamQue(function,value);
         }
+        else if (function == PR_UpdateStatus)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_UpdateTemperature)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleTec)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleGain)
+        {
+            addToParamQue(function,value);
+        }
+        else if (function == PR_ToggleFpgaComms)
+        {
+            addToParamQue(function,value);
+        }
+        else if(function == ADMinX){
+            addToParamQue(function,value);
+        }
+        else if(function == ADMinY){
+            addToParamQue(function,value);
+        }
+        else if(function == ADSizeX){
+            addToParamQue(function,value);
+        }
+        else if(function == ADSizeY){
+            addToParamQue(function,value);
+        }
         else if(function == PR_TriggerPolarity){
-            int triggerMode;
-            if(value == PR_EXT_RISING_EDGE){
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
-            }
-            else if(value == PR_EXT_FALLING_EDGE){
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
-            }
-            callParamCallbacks();
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if(triggerMode == PR_EXTERNAL){
-                setTriggerMode(PR_EXTERNAL);
-            }
-
+            addToParamQue(function,value);
         }
         else{
             status = ADDriver::writeInt32(pasynUser, value);
@@ -865,13 +1358,35 @@ Pixci::~Pixci(){
         return asynSuccess;
     }
 
+    asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value){
+        int function = pasynUser->reason;
+        asynStatus status = asynSuccess;
+        static const char *functionName = "writeFloat64";
+
+        if(function == ADAcquirePeriod || function == ADAcquireTime){
+            addToParamQue(function,value);
+        }
+        else if (function == ADTemperature)
+        {
+            addToParamQue(function,value);
+        }
+        return asynSuccess;
+    }
+
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
-        epicsInt32 functionAndVal[2];
+        epicsFloat64 functionAndVal[2];
         functionAndVal[0] = function;
         functionAndVal[1] = value;
         /*sending buffer data to the que */
-        paramMsgQue->send(functionAndVal,8);
+        paramMsgQue->send(functionAndVal,PARAM_MESSAGE_SIZE);
+    }
 
+    void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value){
+        epicsFloat64 functionAndVal[2];
+        functionAndVal[0] = function;
+        functionAndVal[1] = value;
+        /*sending buffer data to the que */
+        paramMsgQue->send(functionAndVal,PARAM_MESSAGE_SIZE);
     }
 
     asynStatus Pixci::writeSerialRegister(int unit, char Register, char val){
@@ -895,7 +1410,6 @@ Pixci::~Pixci(){
         if(inputMsg[0]==success){
             return asynSuccess;
         }
-
         return asynError;
     }
 
@@ -907,8 +1421,28 @@ Pixci::~Pixci(){
         first_bufout[3] = Register;
 
         /*writing to serial connection*/
-        inSize = writeReadSerial(UNIT, first_bufout, 5, inputMsg, 20);
-        inSize = writeReadSerial(UNIT, last_bufout, 5, inputMsg, 20);
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+
+        *val = inputMsg[0];
+        if(inputMsg[1] == SUCCESS_MESSAGE){
+            return asynSuccess;
+        }
+        return asynError;
+    }
+
+    asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
+    {
+        char inputMsg[20];
+        int inSize;
+        char first_bufout[] = {0x53, 0xE0, 0x02, 0xFF, 0xFF, 0x50};
+        char last_bufout[] = {0x53, 0xE1, 0x01, 0x50};
+        first_bufout[3] = Register1;
+        first_bufout[4] = Register2;
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
 
         *val = inputMsg[0];
         if(inputMsg[1] == SUCCESS_MESSAGE){
@@ -947,6 +1481,218 @@ Pixci::~Pixci(){
                 break;
         }
         return Pixci::writeSerialRegister(UNIT, reg, hexval);
+    }
+
+    //PV Updating Functions
+    void Pixci::updateADTemperatureActual(bool callBackFlag)
+    {
+        setDoubleParam(ADTemperatureActual, getTemperatureActual()); // setting the Actual Temperature PV       
+        if(callBackFlag)
+            callParamCallbacks();
+    }
+
+    void Pixci::updateTemperaturePcb(bool callBackFlag)
+    {
+        setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()); // setting the PCB Temperature PV       
+        if(callBackFlag)
+            callParamCallbacks();
+    }
+
+    asynStatus Pixci::updateManufacturersData(bool callBackFlag)
+    {
+        
+        char inputMsg[20];
+        int inSize;
+        char first_bufout[] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00, 0x50};
+        char last_bufout[] = {0x53, 0xAF, 0x12, 0x50};
+
+        INT16 serialNumber = 0;
+        string buildDate = "";
+        char buildCode[5];
+        INT16 adcCountZeroDegree=0;
+        INT16 adcCountFortyDegree=0;
+        INT16 dacCountZeroDegree=0;
+        INT16 dacCountFortyDegree=0;
+
+
+        toggleFpgaComms(true);
+
+        /*writing to serial connection*/
+        inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+        inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+        
+        toggleFpgaComms(false);
+
+
+        if(inputMsg[18] == SUCCESS_MESSAGE){
+            
+            
+            serialNumber += (INT16)(unsigned char)inputMsg[0];
+            serialNumber += (INT16)(unsigned char)(inputMsg[1])<<8;
+            setStringParam(ADSerialNumber, to_string(serialNumber));
+            
+            buildDate = to_string((INT16)(unsigned char)inputMsg[2])+"/"+to_string((INT16)(unsigned char)inputMsg[3])+"/"+to_string((INT16)(unsigned char)inputMsg[4]);
+            setStringParam(PR_BuildDate, buildDate);
+
+            buildCode[0]=inputMsg[5];
+            buildCode[1]=inputMsg[6];
+            buildCode[2]=inputMsg[7];
+            buildCode[3]=inputMsg[8];
+            buildCode[4]=inputMsg[9];
+
+            adcCountZeroDegree += (INT16)(unsigned char)inputMsg[10];
+            adcCountZeroDegree += (INT16)(unsigned char)(inputMsg[11])<<8;
+            setIntegerParam(PR_ADCCalibrationZeroDegree, adcCountZeroDegree);
+
+            adcCountFortyDegree += (INT16)(unsigned char)inputMsg[12];
+            adcCountFortyDegree += (INT16)(unsigned char)(inputMsg[13])<<8;
+            setIntegerParam(PR_ADCCalibrationFortyDegree, adcCountFortyDegree);
+
+            dacCountZeroDegree += (INT16)(unsigned char)inputMsg[14];
+            dacCountZeroDegree += (INT16)(unsigned char)(inputMsg[15])<<8;
+             setIntegerParam(PR_DACCalibrationZeroDegree, dacCountZeroDegree);
+
+            dacCountFortyDegree += (INT16)(unsigned char)inputMsg[16];
+            dacCountFortyDegree += (INT16)(unsigned char)(inputMsg[17])<<8;
+            setIntegerParam(PR_DACCalibrationFortyDegree, dacCountFortyDegree);
+
+            ADC_M = 40.0f/(adcCountFortyDegree-adcCountZeroDegree);
+            ADC_C = 40.0f-(ADC_M*adcCountFortyDegree);
+
+            DAC_M = 40.0f/(dacCountFortyDegree-dacCountZeroDegree);
+            DAC_C = 40.0f-(DAC_M*dacCountZeroDegree);
+          
+            if(callBackFlag)
+                callParamCallbacks();
+            return asynSuccess;
+        }
+
+
+        return asynError;
+
+
+    }
+
+    void Pixci::updateStatus(bool updateManufacturersDataFlag)
+    {
+        //TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
+        if(updateManufacturersDataFlag)
+            updateManufacturersData(); // TODO: Implement Error Message
+
+        updateADTemperatureActual();
+        updateTemperaturePcb(true);
+    }
+
+    asynStatus Pixci::updateIntialPVs(){
+        epicsInt32 sizeX = pxd_imageXdim();
+        epicsInt32 sizeY = pxd_imageYdim();
+        epicsFloat64 acquireFrameRate;
+        acquireFrameRate = getFrameRate();
+        int status = asynSuccess;
+        
+        status |=  setIntegerParam(ADMaxSizeX, sizeX);
+        status |=  setIntegerParam(ADMaxSizeY, sizeY);
+        status |=  setIntegerParam(ADSizeX, sizeX);
+        status |=  setIntegerParam(ADSizeY, sizeY);
+        status |=  setDoubleParam(ADAcquireTime, getExposure());
+        if(acquireFrameRate > 0){
+        status |=  setDoubleParam(ADAcquirePeriod, (1/acquireFrameRate));
+        }
+
+        status |= callParamCallbacks();
+        return (asynStatus) status;
+    }
+
+    asynStatus Pixci::setRoiSizeX(int RoisizeX){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoisizeX & 0x0F00) >> 8 );
+        cval[1] = (char)((RoisizeX & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB4, cval[0]);
+        return writeSerialRegister(UNIT, 0xB5, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiSizeY(int RoisizeY){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoisizeY & 0x0F00) >> 8 );
+        cval[1] = (char)((RoisizeY & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB8, cval[0]);
+        return writeSerialRegister(UNIT, 0xB9, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiOffsetX(int RoiOffsetX){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoiOffsetX & 0x0F00) >> 8 );
+        cval[1] = (char)((RoiOffsetX & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xB6, cval[0]);
+        return writeSerialRegister(UNIT, 0xB7, cval[1]);
+    }
+
+    asynStatus Pixci::setRoiOffsetY(int RoiOffsetY){
+        char cval[2] ={0,0};
+        cval[0] = (char)((RoiOffsetY & 0x0F00) >> 8 );
+        cval[1] = (char)((RoiOffsetY & 0x00FF) );
+
+        writeSerialRegister(UNIT, 0xBA, cval[0]);
+        return writeSerialRegister(UNIT, 0xBB, cval[1]);
+    }
+
+    int Pixci::getRoiSizeX()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB4, &cval[1]);
+        readSerialRegister(0XB5, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiSizeY()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB8, &cval[1]);
+        readSerialRegister(0XB9, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiOffsetX()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XB6, &cval[1]);
+        readSerialRegister(0XB7, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
+    }
+
+    int Pixci::getRoiOffsetY()
+    {
+        char cval[2] ={0,0};
+
+        readSerialRegister(0XBA, &cval[1]);
+        readSerialRegister(0XBB, &cval[0]);
+
+        INT16 ival = 0;
+        ival += (INT16)(unsigned char)cval[0];
+        ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
+
+        return ival;
     }
 
 /* Code for iocsh registration */
