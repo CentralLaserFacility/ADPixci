@@ -164,12 +164,13 @@ record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
    field(SCAN, "I/O Intr")
 }
 
+
 record(ai, "$(P)$(R)AcquireTime_RBV")
 {
    field(EGU, "ms")
 }
 
-record(ai, "$(P)$(R)AcquireTime")
+record(ao, "$(P)$(R)AcquireTime")
 {
    field(EGU, "ms")
 }
