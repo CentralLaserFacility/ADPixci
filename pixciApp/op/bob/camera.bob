@@ -87,8 +87,8 @@ ratio = 1.0
 
 widget.setPropertyValue("data_width",sizex)
 widget.setPropertyValue("data_height",sizey)
-widget.setPropertyValue("x_axis_maximum",sizex)
-widget.setPropertyValue("y_axis_maximum",sizey)
+widget.setPropertyValue("x_axis.maximum",sizex)
+widget.setPropertyValue("y_axis.maximum",sizey)
 
 if autoScale == 1:
 	widget.setPropertyValue("width",sizex)
@@ -123,8 +123,10 @@ else:
       </script>
     </scripts>
     <tooltip>$(x_pv)</tooltip>
+    <interpolation>0</interpolation>
     <color_mode>0</color_mode>
     <unsigned>true</unsigned>
+    <autoscale>false</autoscale>
     <cursor_crosshair>true</cursor_crosshair>
   </widget>
   <widget type="label" version="2.0.0">
@@ -205,11 +207,13 @@ else:
       <action type="execute">
         <script file="EmbeddedPy">
           <text><![CDATA[
-from org.csstudio.opibuilder.scriptUtil import PVUtil, ConsoleUtil, FileUtil
+from org.csstudio.opibuilder.scriptUtil import PVUtil, ConsoleUtil, FileUtil, ScriptUtil
 from java.lang import Thread, Runnable
 from javax.swing import SwingWorker
-isInWorkspace = False
-filePath = FileUtil.saveFileDialog(isInWorkspace)
+print("action widget ")
+data =  PVUtil.getDoubleArray(ScriptUtil.findWidgetByName(widget, "Image").getInitialTooltip())
+data = map(int, data)
+filePath = ScriptUtil.showSaveAsDialog(widget, "image")
 ]]></text>
         </script>
         <description>Execute Script</description>
@@ -243,22 +247,72 @@ from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, File
 from java.lang import Thread, Runnable
 from javax.swing import SwingWorker
 from org.csstudio.display.builder.model import Widget
-print 'Hello'
+#print("Hello")
 
 ##### get data
-data = PVUtil.getDoubleArray(pvs[1])
-data = map(int, data)
+rdata = PVUtil.getLongArray(pvs[1])
 
-sizex =  PVUtil.getDoubleArray(pvs[2])
-sizey =  PVUtil.getDoubleArray(pvs[3])
+data = map(int, rdata)
+print(data)
+
+local_trigger =  PVUtil.getDouble(pvs[0])
+sizex =  PVUtil.getLong(pvs[2])
+sizey =  PVUtil.getLong(pvs[3])
+print(sizex)
+print(sizey)
+
+
 
 # widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
 
-
-
+png_pixel_limit = 255
 ##### open saveas dialog box
-isInWorkspace = False
-filePath = FileUtil.saveFileDialog(isInWorkspace)]]></text>
+
+filePath = ScriptUtil.showSaveAsDialog(widget, "*.png")
+print(filePath)
+
+
+#### write data function
+def writeData():
+	print("write data started")
+	from java.awt.image import BufferedImage
+	from java.awt import Color
+	from java.io import File
+	from javax.imageio import ImageIO
+
+	f = File(filePath)
+	img = BufferedImage(sizex ,sizey ,BufferedImage.TYPE_BYTE_GRAY)
+
+	k=0
+	for i in range(sizey):
+		for j in range(sizex):
+			val = data[k]
+			# sanity check on values, overlays can cause values greater than
+			# 255 and sometimes cameras have values less than 0
+			if val < 0:
+				val = 0
+			if val > png_pixel_limit :
+				val = png_pixel_limit
+			ConsoleUtil.writeInfo('pixel value =' + str(val))
+			#ConsoleUtil.writeInfo(str(val))
+			colour = Color(val,val,val)
+			img.setRGB(j,i,colour.getRGB())
+			k=k+1
+	print("started image writing")
+	ImageIO.write(img, "png", f);
+	print("imgae writing is done")
+##### export in separate thread
+class export(SwingWorker):
+	def doInBackground(self):
+		writeData()
+	def done(self):
+		pass
+
+
+#### start thread
+export().execute()
+#writeData()
+print("export done")]]></text>
         <pv_name>loc://export</pv_name>
         <pv_name trigger="false">$(CAM):image1:ArrayData</pv_name>
         <pv_name trigger="false">$(CAM):image1:ArraySize0_RBV</pv_name>
