@@ -232,7 +232,7 @@ png_pixel_limit = 255
 if local_trigger == 1:
 	#### open save as dialog box
 	filePath = ScriptUtil.showSaveAsDialog(widget, "*.png")
-	print(filePath)
+	#print(filePath) #for debug purpose
 	#### write data function
 	def writeData():
 		from java.awt.image import BufferedImage
