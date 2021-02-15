@@ -1055,6 +1055,10 @@ Pixci::~Pixci(){
 
     INT16 Pixci::convertCentigradeToDacCount(double temperature)
     {
+        printf("temperature is %f \n", temperature);
+        printf("dac c is %f \n", DAC_C);
+        printf("dac m is %f \n", DAC_M);
+        printf("count is %d \n", (temperature-DAC_C)/DAC_M);
         return (temperature-DAC_C)/DAC_M;
     }
 
@@ -1115,6 +1119,8 @@ Pixci::~Pixci(){
         cval[1] = (char)((dacCount & 0x00FF) );
 
         writeSerialRegister(UNIT, 0x03, cval[0]);
+        printf("the cval_0 is %x \n",(unsigned char)cval[0]);
+        printf("the cval_1 is %x \n", (unsigned char)cval[1]);
         return writeSerialRegister(UNIT, 0x04, cval[1]);
     }
 
