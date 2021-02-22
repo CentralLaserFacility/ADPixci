@@ -25,7 +25,7 @@
     <name>Image</name>
     <pv_name>$(CAM):image1:ArrayData</pv_name>
     <x>5</x>
-    <y>60</y>
+    <y>65</y>
     <width>480</width>
     <height>480</height>
     <show_toolbar>true</show_toolbar>
@@ -68,6 +68,35 @@
         </font>
       </scale_font>
     </y_axis>
+    <rules>
+      <rule name="AutoScale" prop_id="autoscale" out_exp="false">
+        <exp bool_exp="pv0==0">
+          <value>false</value>
+        </exp>
+        <exp bool_exp="pv1==1">
+          <value>true</value>
+        </exp>
+        <pv_name>loc://AutoScale&lt;Long&gt;(1)</pv_name>
+      </rule>
+      <rule name="ColourMap" prop_id="color_map" out_exp="false">
+        <exp bool_exp="true">
+          <value>
+            <name>JET</name>
+          </value>
+        </exp>
+        <exp bool_exp="pvStr0 == &quot;JET&quot;">
+          <value>
+            <name>JET</name>
+          </value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;JET&quot;">
+          <value>
+            <name>GRAY</name>
+          </value>
+        </exp>
+        <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
+      </rule>
+    </rules>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script
@@ -90,7 +119,7 @@ widget.setPropertyValue("data_height",sizey)
 widget.setPropertyValue("x_axis.maximum",sizex)
 widget.setPropertyValue("y_axis.maximum",sizey)
 
-if autoScale == 1:
+if autoScale == 0:
 	widget.setPropertyValue("width",sizex)
 	widget.setPropertyValue("height",sizey)
 elif autoRatio == 1:
@@ -117,7 +146,7 @@ else:
 ]]></text>
         <pv_name>$(CAM):image1:ArraySize0_RBV</pv_name>
         <pv_name>$(CAM):image1:ArraySize1_RBV</pv_name>
-        <pv_name>loc://AutoScale</pv_name>
+        <pv_name>loc://FitToWindow</pv_name>
         <pv_name>loc://AutoRatio</pv_name>
         <pv_name>=1</pv_name>
       </script>
@@ -126,7 +155,6 @@ else:
     <interpolation>0</interpolation>
     <color_mode>0</color_mode>
     <unsigned>true</unsigned>
-    <autoscale>false</autoscale>
     <cursor_crosshair>true</cursor_crosshair>
   </widget>
   <widget type="label" version="2.0.0">
@@ -155,27 +183,27 @@ from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
 # widget.setPropertyValue('text', PVUtil.getString(pvs[0]))
 minimum_posX = 490
 autoScale = PVUtil.getLong(pvs[1])
-if(autoScale == 1):
+if(autoScale == 0):
 	posX = PVUtil.getLong(pvs[0])
 	if posX > (minimum_posX - 10):
 		widget.setPropertyValue("x",posX +10)
 else:
 	widget.setPropertyValue("x",minimum_posX )]]></text>
         <pv_name>$(CAM):image1:ArraySize0_RBV</pv_name>
-        <pv_name>loc://AutoScale</pv_name>
+        <pv_name>loc://FitToWindow</pv_name>
         <pv_name>=1</pv_name>
       </script>
     </scripts>
   </widget>
   <widget type="checkbox" version="2.0.0">
     <name>Check Box</name>
-    <pv_name>loc://AutoScale&lt;Long&gt;(0)</pv_name>
-    <label>Auto Scale</label>
+    <pv_name>loc://FitToWindow&lt;Long&gt;(1)</pv_name>
+    <label>Fit to window</label>
     <x>310</x>
     <y>70</y>
     <width>90</width>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      <font family="Liberation Sans" style="REGULAR" size="11.0">
       </font>
     </font>
   </widget>
@@ -183,22 +211,51 @@ else:
     <name>Check Box_1</name>
     <pv_name>loc://AutoRatio&lt;Long&gt;(0)</pv_name>
     <label>Auto Ratio</label>
-    <x>400</x>
+    <x>405</x>
     <y>70</y>
     <font>
-      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      <font family="Liberation Sans" style="REGULAR" size="11.0">
       </font>
     </font>
     <rules>
       <rule name="Enable" prop_id="enabled" out_exp="false">
         <exp bool_exp="pv0 == 0">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pv0 == 1">
           <value>false</value>
         </exp>
-        <pv_name>loc://AutoScale</pv_name>
+        <exp bool_exp="pv0 == 1">
+          <value>true</value>
+        </exp>
+        <pv_name>loc://FitToWindow</pv_name>
       </rule>
     </rules>
+  </widget>
+  <widget type="polygon" version="2.0.0">
+    <name>Polygon</name>
+    <x>450</x>
+    <y>80</y>
+    <width>0</width>
+    <height>0</height>
+    <points>
+      <point x="0.0" y="0.0">
+      </point>
+    </points>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update</name>
+    <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
+    <x>340</x>
+    <y>10</y>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>Combo Box</name>
+    <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
+    <x>540</x>
+    <y>20</y>
+    <width>90</width>
+    <height>20</height>
+    <items>
+      <item>GRAY</item>
+      <item>JET</item>
+    </items>
   </widget>
 </display>
