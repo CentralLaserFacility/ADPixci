@@ -113,15 +113,15 @@
         <group_name></group_name>
       </tab>
       <tab>
-        <name>Trigger</name>
-        <file>trigger_settings.bob</file>
+        <name>Image</name>
+        <file>image_widget_settings.bob</file>
         <macros>
         </macros>
         <group_name></group_name>
       </tab>
       <tab>
-        <name>Temp</name>
-        <file>temperature_settings.bob</file>
+        <name>Trigger</name>
+        <file>trigger_settings.bob</file>
         <macros>
         </macros>
         <group_name></group_name>
@@ -134,15 +134,15 @@
         <group_name></group_name>
       </tab>
       <tab>
-        <name>Info</name>
-        <file>manufacturer_data.bob</file>
+        <name>Temp</name>
+        <file>temperature_settings.bob</file>
         <macros>
         </macros>
         <group_name></group_name>
       </tab>
       <tab>
-        <name>Image</name>
-        <file>image_widget_settings.bob</file>
+        <name>Info</name>
+        <file>manufacturer_data.bob</file>
         <macros>
         </macros>
         <group_name></group_name>
