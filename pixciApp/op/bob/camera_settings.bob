@@ -140,13 +140,20 @@
         </macros>
         <group_name></group_name>
       </tab>
+      <tab>
+        <name>Image</name>
+        <file>image_widget_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
     </tabs>
     <x>8</x>
     <y>30</y>
     <width>310</width>
     <height>290</height>
     <direction>0</direction>
-    <tab_width>60</tab_width>
+    <tab_width>50</tab_width>
   </widget>
   <widget type="byte_monitor" version="2.0.0">
     <name>Byte Monitor</name>
