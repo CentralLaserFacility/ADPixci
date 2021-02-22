@@ -256,22 +256,4 @@ else:
       </point>
     </points>
   </widget>
-  <widget type="textupdate" version="2.0.0">
-    <name>Text Update</name>
-    <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
-    <x>340</x>
-    <y>10</y>
-  </widget>
-  <widget type="combo" version="2.0.0">
-    <name>Combo Box</name>
-    <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
-    <x>540</x>
-    <y>20</y>
-    <width>90</width>
-    <height>20</height>
-    <items>
-      <item>GRAY</item>
-      <item>JET</item>
-    </items>
-  </widget>
 </display>
