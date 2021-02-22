@@ -5,10 +5,10 @@
   <height>250</height>
   <widget type="label" version="2.0.0">
     <name>Label</name>
-    <text>Fit to Display</text>
+    <text>Fit to Window</text>
     <x>20</x>
-    <y>100</y>
-    <width>72</width>
+    <y>90</y>
+    <width>90</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
@@ -18,7 +18,7 @@
     <name>Label_1</name>
     <text>Auto Ratio</text>
     <x>20</x>
-    <y>130</y>
+    <y>120</y>
     <width>72</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -27,7 +27,7 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_8</name>
-    <text>Display Widget</text>
+    <text>Image Display</text>
     <x>20</x>
     <y>20</y>
     <width>130</width>
@@ -41,7 +41,7 @@
     <pv_name>loc://FitToWindow</pv_name>
     <label></label>
     <x>168</x>
-    <y>100</y>
+    <y>90</y>
     <width>72</width>
   </widget>
   <widget type="checkbox" version="2.0.0">
@@ -49,26 +49,25 @@
     <pv_name>loc://AutoRatio&lt;Long&gt;(0)</pv_name>
     <label></label>
     <x>168</x>
-    <y>130</y>
+    <y>120</y>
     <width>72</width>
-  </widget>
-  <widget type="combo" version="2.0.0">
-    <name>Combo Box</name>
-    <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
-    <x>138</x>
-    <y>170</y>
-    <width>82</width>
-    <height>20</height>
-    <items>
-      <item>GRAY</item>
-      <item>JET</item>
-    </items>
+    <rules>
+      <rule name="Enable" prop_id="enabled" out_exp="false">
+        <exp bool_exp="pv0 == 0">
+          <value>false</value>
+        </exp>
+        <exp bool_exp="pv0 == 1">
+          <value>true</value>
+        </exp>
+        <pv_name>loc://FitToWindow</pv_name>
+      </rule>
+    </rules>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_2</name>
     <text>Colour Map</text>
     <x>20</x>
-    <y>170</y>
+    <y>160</y>
     <width>72</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -91,5 +90,23 @@
     <label></label>
     <x>168</x>
     <y>60</y>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>Combo Box</name>
+    <pv_name>loc://ColourMap("GRAY")</pv_name>
+    <x>110</x>
+    <y>160</y>
+    <width>110</width>
+    <height>20</height>
+    <items>
+      <item>VIRIDIS</item>
+      <item>JET</item>
+      <item>GRAY</item>
+      <item>SPECTRUM</item>
+      <item>HOT</item>
+      <item>COOL</item>
+      <item>SHADED</item>
+    </items>
+    <items_from_pv>false</items_from_pv>
   </widget>
 </display>
