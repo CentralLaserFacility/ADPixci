@@ -91,6 +91,18 @@
         </exp>
         <pv_name>loc://ColourMap&lt;VString&gt;("GRAY")</pv_name>
       </rule>
+      <rule name="ShowColourbar" prop_id="color_bar.visible" out_exp="false">
+        <exp bool_exp="pv0 == 1">
+          <value>true</value>
+        </exp>
+        <pv_name>loc://ShowColourBar&lt;Long&gt;(0)</pv_name>
+      </rule>
+      <rule name="LogScale" prop_id="log_scale" out_exp="false">
+        <exp bool_exp="pv0 == 1">
+          <value>true</value>
+        </exp>
+        <pv_name>loc://LogScale&lt;Long&gt;(0)</pv_name>
+      </rule>
     </rules>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
