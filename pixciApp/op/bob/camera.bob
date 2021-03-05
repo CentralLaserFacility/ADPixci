@@ -176,7 +176,7 @@ if colormap is None:
     ScriptUtil.getLogger().warning("Unknown color map " + mapname)
 else:
     widget.setPropertyValue("color_map", colormap)]]></text>
-        <pv_name>loc://ColourMap</pv_name>
+        <pv_name>loc://ColourMap("GRAY")</pv_name>
       </script>
     </scripts>
     <tooltip>$(x_pv)</tooltip>
