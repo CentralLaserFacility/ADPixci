@@ -53,7 +53,7 @@
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_2</name>
-    <text>Colour Map</text>
+    <text>Mapping</text>
     <x>20</x>
     <y>40</y>
     <width>72</width>
