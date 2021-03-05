@@ -5,10 +5,10 @@
     <CAM>13PS1</CAM>
   </macros>
   <width>325</width>
-  <height>480</height>
+  <height>510</height>
   <widget type="group" version="2.0.0">
     <name>Exposure Settings</name>
-    <y>320</y>
+    <y>350</y>
     <width>326</width>
     <height>130</height>
     <widget type="textentry" version="3.0.0">
@@ -149,9 +149,9 @@
       </tab>
     </tabs>
     <x>8</x>
-    <y>30</y>
+    <y>40</y>
     <width>310</width>
-    <height>290</height>
+    <height>310</height>
     <direction>0</direction>
     <tab_width>50</tab_width>
   </widget>
@@ -248,7 +248,7 @@
     <pv_name>loc://export&lt;VLong&gt;(0)</pv_name>
     <text>Export</text>
     <x>8</x>
-    <y>445</y>
+    <y>475</y>
     <scripts>
       <script file="EmbeddedPy">
         <text><![CDATA[from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, FileUtil, ConsoleUtil
