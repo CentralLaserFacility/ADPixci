@@ -2,7 +2,7 @@
 <display version="2.0.0">
   <name>Display</name>
   <width>250</width>
-  <height>250</height>
+  <height>270</height>
   <widget type="label" version="2.0.0">
     <name>Label_8</name>
     <text>Image Display</text>
@@ -19,16 +19,26 @@
     <pv_name>loc://FitToWindow</pv_name>
     <label>Fit to Window</label>
     <x>88</x>
-    <y>90</y>
+    <y>220</y>
     <width>120</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="checkbox" version="2.0.0">
     <name>Check Box_1</name>
     <pv_name>loc://AutoRatio&lt;Long&gt;(0)</pv_name>
     <label>Auto ratio</label>
     <x>88</x>
-    <y>120</y>
-    <width>110</width>
+    <y>248</y>
+    <width>79</width>
+    <height>18</height>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+    <auto_size>true</auto_size>
     <rules>
       <rule name="Enable" prop_id="enabled" out_exp="false">
         <exp bool_exp="pv0 == 0">
@@ -45,7 +55,7 @@
     <name>Label_2</name>
     <text>Colour Map</text>
     <x>20</x>
-    <y>210</y>
+    <y>40</y>
     <width>72</width>
     <font>
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
@@ -57,13 +67,17 @@
     <pv_name>loc://AutoScale&lt;Long&gt;(1)</pv_name>
     <label>Auto Scale</label>
     <x>88</x>
-    <y>60</y>
+    <y>130</y>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="combo" version="2.0.0">
     <name>Combo Box</name>
     <pv_name>loc://ColourMap("GRAY")</pv_name>
     <x>88</x>
-    <y>210</y>
+    <y>40</y>
     <width>120</width>
     <height>20</height>
     <items>
@@ -82,15 +96,87 @@
     <pv_name>loc://ShowColourBar&lt;Long&gt;(0)</pv_name>
     <label>Show colour bar</label>
     <x>88</x>
-    <y>150</y>
-    <width>132</width>
+    <y>160</y>
+    <width>114</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
   </widget>
   <widget type="checkbox" version="2.0.0">
     <name>Check Box_4</name>
     <pv_name>loc://LogScale&lt;Long&gt;(0)</pv_name>
     <label>Log Scale</label>
     <x>88</x>
-    <y>180</y>
+    <y>190</y>
     <width>132</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_17</name>
+    <text>Minimum</text>
+    <x>20</x>
+    <y>70</y>
+    <width>51</width>
+    <height>15</height>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>Text Entry_7</name>
+    <pv_name>loc://minimumval&lt;VDouble&gt;(0)</pv_name>
+    <x>88</x>
+    <y>70</y>
+    <width>70</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+    <precision>1</precision>
+    <rules>
+      <rule name="Enable" prop_id="enabled" out_exp="false">
+        <exp bool_exp="pv0 == 1">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://AutoScale</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_18</name>
+    <text>Maximum</text>
+    <x>20</x>
+    <y>100</y>
+    <width>53</width>
+    <height>15</height>
+    <font>
+      <font family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>Text Entry_8</name>
+    <pv_name>loc://maximumval&lt;VDouble&gt;(255)</pv_name>
+    <x>88</x>
+    <y>100</y>
+    <width>70</width>
+    <font>
+      <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+      </font>
+    </font>
+    <precision>1</precision>
+    <rules>
+      <rule name="Enable" prop_id="enabled" out_exp="false">
+        <exp bool_exp="pv0 == 1">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://AutoScale</pv_name>
+      </rule>
+    </rules>
   </widget>
 </display>

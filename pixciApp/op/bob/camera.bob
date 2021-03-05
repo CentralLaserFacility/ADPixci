@@ -25,7 +25,7 @@
     <name>Image</name>
     <pv_name>$(CAM):image1:ArrayData</pv_name>
     <x>5</x>
-    <y>65</y>
+    <y>55</y>
     <width>480</width>
     <height>480</height>
     <show_toolbar>true</show_toolbar>
@@ -102,6 +102,18 @@
           <value>true</value>
         </exp>
         <pv_name>loc://LogScale&lt;Long&gt;(0)</pv_name>
+      </rule>
+      <rule name="Maximum" prop_id="maximum" out_exp="true">
+        <exp bool_exp="true">
+          <expression>pv0</expression>
+        </exp>
+        <pv_name>loc://maximumval&lt;VDouble&gt;(255)</pv_name>
+      </rule>
+      <rule name="Minimum" prop_id="minimum" out_exp="true">
+        <exp bool_exp="true">
+          <expression>pv0</expression>
+        </exp>
+        <pv_name>loc://minimumval&lt;VDouble&gt;(0)</pv_name>
       </rule>
     </rules>
     <scripts>
@@ -201,9 +213,9 @@ else:
     <name>Embedded Display</name>
     <file>camera_settings.bob</file>
     <x>490</x>
-    <y>70</y>
+    <y>60</y>
     <width>380</width>
-    <height>485</height>
+    <height>505</height>
     <scripts>
       <script file="EmbeddedPy" check_connections="false">
         <text><![CDATA[# Embedded python script
@@ -228,7 +240,7 @@ else:
     <pv_name>loc://FitToWindow&lt;Long&gt;(1)</pv_name>
     <label>Fit to window</label>
     <x>310</x>
-    <y>70</y>
+    <y>60</y>
     <width>90</width>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="11.0">
@@ -240,7 +252,7 @@ else:
     <pv_name>loc://AutoScale&lt;Long&gt;(1)</pv_name>
     <label>Auto Scale</label>
     <x>405</x>
-    <y>70</y>
+    <y>60</y>
     <font>
       <font family="Liberation Sans" style="REGULAR" size="11.0">
       </font>
