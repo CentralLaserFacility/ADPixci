@@ -1560,7 +1560,7 @@ Pixci::~Pixci(){
             ADC_C = 40.0f-(ADC_M*adcCountFortyDegree);
 
             DAC_M = 40.0f/(dacCountFortyDegree-dacCountZeroDegree);
-            DAC_C = 40.0f-(DAC_M*dacCountZeroDegree);
+            DAC_C = 40.0f-(DAC_M*dacCountFortyDegree);
           
             if(callBackFlag)
                 callParamCallbacks();

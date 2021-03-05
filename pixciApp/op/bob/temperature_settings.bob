@@ -107,6 +107,7 @@
   </widget>
   <widget type="textentry" version="3.0.0">
     <name>Text Entry</name>
+    <pv_name>$(CAM):cam1:Temperature</pv_name>
     <x>88</x>
     <y>176</y>
     <width>70</width>
@@ -117,6 +118,7 @@
   </widget>
   <widget type="checkbox" version="2.0.0">
     <name>Check Box</name>
+    <pv_name>$(CAM):cam1:ToggleTEC</pv_name>
     <label></label>
     <x>88</x>
     <y>146</y>
@@ -155,7 +157,7 @@
     <name>Byte Monitor</name>
     <x>410</x>
     <y>130</y>
-    <width>0</width>
-    <height>0</height>
+    <width>1</width>
+    <height>1</height>
   </widget>
 </display>
