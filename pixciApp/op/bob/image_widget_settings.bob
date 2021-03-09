@@ -50,6 +50,7 @@
         <pv_name>loc://FitToWindow</pv_name>
       </rule>
     </rules>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_2</name>
@@ -72,6 +73,7 @@
       <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
       </font>
     </font>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
   </widget>
   <widget type="combo" version="2.0.0">
     <name>Combo Box</name>
