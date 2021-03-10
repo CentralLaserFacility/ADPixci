@@ -176,6 +176,8 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
         g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
         int status = asynSuccess;
+        status =  setStringParam (ADManufacturer, "Raptor Photonics");
+
         /* Create the thread that does data acquisition */
         status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
