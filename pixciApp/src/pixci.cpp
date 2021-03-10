@@ -347,6 +347,8 @@ Pixci::~Pixci(){
                 pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
                 updateTimeStamp(&pImage->epicsTS);
                 unlock();
+                getAttributes(pImage->pAttributeList);
+
                 /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
                 Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
                 or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
@@ -1693,6 +1695,22 @@ Pixci::~Pixci(){
         ival += (INT16)(unsigned char)(cval[1] & 0x0F)<<8;
 
         return ival;
+    }
+
+    void Pixci::report(FILE *fp, int details)
+    {
+        fprintf(fp, "Simulation detector %s\n", this->portName);
+        if (details > 0) {
+            int nx, ny, dataType;
+            getIntegerParam(ADSizeX, &nx);
+            getIntegerParam(ADSizeY, &ny);
+            getIntegerParam(NDDataType, &dataType);
+            fprintf(fp, "  NX, NY:            %d  %d\n", nx, ny);
+            fprintf(fp, "  Data type:         %d\n", dataType);
+        }
+        /* Invoke the base class method */
+        ADDriver::report(fp, details);
+        
     }
 
 /* Code for iocsh registration */
