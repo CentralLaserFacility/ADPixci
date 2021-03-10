@@ -78,6 +78,12 @@ public:
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
 
     virtual asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value);
+
+    /** Reports on the properties of the attribute.
+    * @param[in] fp File pointer for the report output.
+    * @param[in] details Level of report details desired; currently does nothing
+    */
+    void report(FILE *fp, int details);
     
     /**
      * @brief thread that waits for signal from frame grabber during live capture
