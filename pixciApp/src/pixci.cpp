@@ -178,20 +178,22 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         int status = asynSuccess;
         status =  setStringParam (ADManufacturer, "Raptor Photonics");
 
+        paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
+
         /* Create the thread that does data acquisition */
-        status |= (epicsThreadCreate("acquireTask",
+        if(serialConnection > NOERROR){
+            status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        status |= (epicsThreadCreate("paramTask",
+            status |= (epicsThreadCreate("paramTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
-
-        paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
+        }
 
         //Updating all the PVs related to the status of device
         updateStatus(true); // Also update the manufacturers data
@@ -1378,6 +1380,7 @@ Pixci::~Pixci(){
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
+        if(connectionStatusCode)
         epicsFloat64 functionAndVal[2];
         functionAndVal[0] = function;
         functionAndVal[1] = value;
