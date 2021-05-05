@@ -181,7 +181,7 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
 
         /* Create the thread that does data acquisition */
-        if(serialConnection > NOERROR){
+        if(connectionStatusCode >= NOERROR && serialConnection >= NOERROR){
             status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
@@ -421,9 +421,6 @@ Pixci::~Pixci(){
                         acquireImage();
                     }       
                 }
-            }
-            else if(function==ADReadStatus){
-                printf("Reading Exposure from the camera \n");    
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -1380,7 +1377,6 @@ Pixci::~Pixci(){
     }
 
     void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value){
-        if(connectionStatusCode)
         epicsFloat64 functionAndVal[2];
         functionAndVal[0] = function;
         functionAndVal[1] = value;
@@ -1704,7 +1700,7 @@ Pixci::~Pixci(){
 
     void Pixci::report(FILE *fp, int details)
     {
-        fprintf(fp, "Simulation detector %s\n", this->portName);
+        fprintf(fp, "Raptor detector %s\n", this->portName);
         if (details > 0) {
             int nx, ny, dataType;
             getIntegerParam(ADSizeX, &nx);
