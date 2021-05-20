@@ -334,7 +334,7 @@ Pixci::~Pixci(){
 
             dims[0] = sizeX;
             dims[1] = sizeY;
-            dataType = NDUInt8;
+            dataType = NDUInt16;
 
             if (arrayCallbacks)
             {
@@ -343,7 +343,8 @@ Pixci::~Pixci(){
                 pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
                 /* Pixel values from an image frame buffer and area of interest are copied into buffer
                 pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-                pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8 *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
+                pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, (ushort *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
+                //pxd_readushort (unitmap, framebuf, ulx, uly, lrx, lry, membuf, cnt, colorspace);
 
                 /* uniqueId and timeStamp must be implemented for standard ADDriver. */
                 pImage->uniqueId = imageCounter;
@@ -367,7 +368,7 @@ Pixci::~Pixci(){
             imageCounter++;
             numImagesCounter++;
 
-            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt8));
+            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(NDUInt16));
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
             callParamCallbacks();
