@@ -1,0 +1,8 @@
+(P)$(R)TriggerMode
+$(P)$(R)SoftTrigger
+$(P)$(R)TriggerPolarity
+$(P)$(R)UpdateTemperature
+$(P)$(R)ToggleTEC
+$(P)$(R)ToggleGain
+file "ADBase_settings.req", P=$(P), R=$(R)
+file "NDFile_settings.req", P=$(P), R=$(R)
