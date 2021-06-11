@@ -178,20 +178,22 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
         int status = asynSuccess;
         status =  setStringParam (ADManufacturer, "Raptor Photonics");
 
+        paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
+
         /* Create the thread that does data acquisition */
-        status |= (epicsThreadCreate("acquireTask",
+        if(connectionStatusCode >= NOERROR && serialConnection >= NOERROR){
+            status |= (epicsThreadCreate("acquireTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)acquireTaskC,
                               this) == NULL);
 
-        status |= (epicsThreadCreate("paramTask",
+            status |= (epicsThreadCreate("paramTask",
                               epicsThreadPriorityMedium,
                               epicsThreadGetStackSize(epicsThreadStackMedium),
                               (EPICSTHREADFUNC)paramTaskC,
                               this) == NULL);
-
-        paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE,PARAM_MESSAGE_SIZE);
+        }
 
         //Updating all the PVs related to the status of device
         updateStatus(true); // Also update the manufacturers data
@@ -332,7 +334,7 @@ Pixci::~Pixci(){
 
             dims[0] = sizeX;
             dims[1] = sizeY;
-            dataType = NDUInt8;
+            dataType = NDUInt16;
 
             if (arrayCallbacks)
             {
@@ -341,7 +343,8 @@ Pixci::~Pixci(){
                 pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
                 /* Pixel values from an image frame buffer and area of interest are copied into buffer
                 pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-                pxd_readuchar(UNIT, buf, 0, 0, sizeX, sizeY, (epicsUInt8 *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt8), "GRAY");
+                pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, (ushort *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
+                //pxd_readushort (unitmap, framebuf, ulx, uly, lrx, lry, membuf, cnt, colorspace);
 
                 /* uniqueId and timeStamp must be implemented for standard ADDriver. */
                 pImage->uniqueId = imageCounter;
@@ -365,7 +368,7 @@ Pixci::~Pixci(){
             imageCounter++;
             numImagesCounter++;
 
-            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(epicsUInt8));
+            setIntegerParam(NDArraySize, dims[0] * dims[1] * sizeof(NDUInt16));
             setIntegerParam(NDArrayCounter, imageCounter);
             setIntegerParam(ADNumImagesCounter, numImagesCounter);
             callParamCallbacks();
@@ -419,9 +422,6 @@ Pixci::~Pixci(){
                         acquireImage();
                     }       
                 }
-            }
-            else if(function==ADReadStatus){
-                printf("Reading Exposure from the camera \n");    
             }
             else if(function==ADTriggerMode){
                 int acquisitionStatus;
@@ -1701,7 +1701,7 @@ Pixci::~Pixci(){
 
     void Pixci::report(FILE *fp, int details)
     {
-        fprintf(fp, "Simulation detector %s\n", this->portName);
+        fprintf(fp, "Raptor detector %s\n", this->portName);
         if (details > 0) {
             int nx, ny, dataType;
             getIntegerParam(ADSizeX, &nx);
