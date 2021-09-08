@@ -65,7 +65,7 @@ public:
      * @param stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile);
+    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *cameraModel);
 
     /* These are the methods that we override from ADDriver */
     /**
@@ -119,7 +119,8 @@ private:
   float ADC_M; //ADC Slope
   float ADC_C; //ADC Offset
   float DAC_M; //DAC Slope
-  float DAC_C; //DAC Offset      
+  float DAC_C; //DAC Offset
+  const char* cameraModel;      
 
     /**
      * @brief starts live capture image to frame buffer.

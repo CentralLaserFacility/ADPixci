@@ -90,10 +90,14 @@ using namespace std;
 #define BINNINGSETTINGS_32X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x16.fmt"
 #define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
 
+#define BINNINGSETTINGS_1X1_4240 "videoSettings\Raptor_Photonics_EagleXV_42-40.fmt"
+
 #define PARAM_MESSAGE_QUE_SIZE 20
 #define PARAM_MESSAGE_SIZE 16
 #define COUNT_PER_FRAME 40e6
 
+#define DETECTOR_1024 "4710"
+#define DETECTOR_2048 "4240"
 
 #define EXPOSURE_COUNT_TO_TIME 40e6
 #define SEC_TO_mS 10e2
@@ -117,20 +121,21 @@ unsigned char g_ucSerialBuf[256];
  * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
-                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
+                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *cameraModel)
 {
-    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, formatfile);
+    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel);
     return(asynSuccess);
 }
 
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
+Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *cameraModel)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         int connectionStatusCode = 0;
         int serialConnection = 0;
+        Pixci::cameraModel = cameraModel;
 
         createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
@@ -151,8 +156,12 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatfile);
-
+        if(cameraModel == DETECTOR_2048){
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, BINNINGSETTINGS_1X1_4240);
+        }
+        else{
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, BINNINGSETTINGS_1X1);   
+        }
         if(connectionStatusCode < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot OPEN camera: %s.",
@@ -669,9 +678,16 @@ Pixci::~Pixci(){
         case BINNING1:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_1X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_1X1_4240
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
@@ -904,9 +920,17 @@ Pixci::~Pixci(){
         epicsInt32 binX, binY;
         getIntegerParam(ADBinX, &binX);
         getIntegerParam(ADBinY, &binY);
-        #include BINNINGSETTINGS_1X1
-        pxd_videoFormatAsIncludedInit(0);
-        pxd_videoFormatAsIncluded(0);
+        if(cameraModel == DETECTOR_2048){
+            #include BINNINGSETTINGS_1X1_4240
+            pxd_videoFormatAsIncludedInit(0);
+            pxd_videoFormatAsIncluded(0);
+        }
+        else{
+            #include BINNINGSETTINGS_1X1
+            pxd_videoFormatAsIncludedInit(0);
+            pxd_videoFormatAsIncluded(0);
+        }
+        
         setBin(binX,0);
         setBin(binY,1);
         reloadVideoSettings();
@@ -1723,7 +1747,7 @@ static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
 static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
 static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
 static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"Format file", iocshArgString};
+static const iocshArg pixciConfigArg5 = {"camera model", iocshArgString};
 static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
                                                           &pixciConfigArg1,
                                                           &pixciConfigArg2,
