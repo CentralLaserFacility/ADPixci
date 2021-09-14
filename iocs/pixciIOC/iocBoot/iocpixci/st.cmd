@@ -26,7 +26,7 @@ epicsEnvSet("RAPTOR_SETTINGS_FILE","$(ADPIXCI)/formatFiles/Raptor_Photonics_Eagl
 
 
 #pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)
-pixciConfig("$(PORT)", 0,  0, 0, 0, "$(RAPTOR_SETTINGS_FILE)")
+pixciConfig("$(PORT)", 0,  0, 0, 0, 4710)
 dbLoadRecords("$(ADPIXCI)/db/Pixci.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 NDStdArraysConfigure("Image1", 20, 0, "$(PORT)", 0, 0, 0, 0, 0, 5)

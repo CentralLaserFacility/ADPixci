@@ -96,8 +96,8 @@ using namespace std;
 #define PARAM_MESSAGE_SIZE 16
 #define COUNT_PER_FRAME 40e6
 
-#define DETECTOR_1024 "4710"
-#define DETECTOR_2048 "4240"
+#define DETECTOR_1024 4710
+#define DETECTOR_2048 4240
 
 #define EXPOSURE_COUNT_TO_TIME 40e6
 #define SEC_TO_mS 10e2
@@ -121,7 +121,7 @@ unsigned char g_ucSerialBuf[256];
  * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
-                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *cameraModel)
+                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel)
 {
     new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel);
     return(asynSuccess);
@@ -130,7 +130,7 @@ extern "C" int pixciConfig(const char *portName,
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *cameraModel)
+Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         int connectionStatusCode = 0;
@@ -157,10 +157,10 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
         if(cameraModel == DETECTOR_2048){
-            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, BINNINGSETTINGS_1X1_4240);
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, "C:/epics/support/areaDetector/ADPixci/iocs/pixciIOC/../../formatFiles/Raptor_Photonics_EagleXV_42-40.fmt");
         }
         else{
-            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, BINNINGSETTINGS_1X1);   
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, "C:/epics/support/areaDetector/ADPixci/iocs/pixciIOC/../../formatFiles/Raptor_Photonics_EagleXV_47-10.fmt");   
         }
         if(connectionStatusCode < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -1747,7 +1747,7 @@ static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
 static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
 static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
 static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"camera model", iocshArgString};
+static const iocshArg pixciConfigArg5 = {"camera model", iocshArgInt};
 static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
                                                           &pixciConfigArg1,
                                                           &pixciConfigArg2,
@@ -1758,7 +1758,7 @@ static const iocshFuncDef configpixci = {"pixciConfig", 6, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
   pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
-                    args[4].ival, args[5].sval);
+                    args[4].ival, args[5].ival);
 }
 
 static void pixciRegister(void)
