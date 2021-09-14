@@ -90,7 +90,43 @@ using namespace std;
 #define BINNINGSETTINGS_32X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x16.fmt"
 #define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
 
-#define BINNINGSETTINGS_1X1_4240 "videoSettings\Raptor_Photonics_EagleXV_42-40.fmt"
+#define BINNINGSETTINGS_4240_1X1 "videoSettings\Raptor_Photonics_EagleXV_42-40.fmt"
+#define BINNINGSETTINGS_4240_1X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x2.fmt"
+#define BINNINGSETTINGS_4240_1X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x4.fmt"
+#define BINNINGSETTINGS_4240_1X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x8.fmt"
+#define BINNINGSETTINGS_4240_1X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x16.fmt"
+#define BINNINGSETTINGS_4240_1X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x32.fmt"
+#define BINNINGSETTINGS_4240_2X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x1.fmt"
+#define BINNINGSETTINGS_4240_2X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x2.fmt"
+#define BINNINGSETTINGS_4240_2X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x4.fmt"
+#define BINNINGSETTINGS_4240_2X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x8.fmt"
+#define BINNINGSETTINGS_4240_2X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x16.fmt"
+#define BINNINGSETTINGS_4240_2X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x32.fmt"
+#define BINNINGSETTINGS_4240_4X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x1.fmt"
+#define BINNINGSETTINGS_4240_4X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x2.fmt"
+#define BINNINGSETTINGS_4240_4X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x4.fmt"
+#define BINNINGSETTINGS_4240_4X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x8.fmt"
+#define BINNINGSETTINGS_4240_4X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x16.fmt"
+#define BINNINGSETTINGS_4240_4X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x32.fmt"
+#define BINNINGSETTINGS_4240_8X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x1.fmt"
+#define BINNINGSETTINGS_4240_8X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x2.fmt"
+#define BINNINGSETTINGS_4240_8X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x4.fmt"
+#define BINNINGSETTINGS_4240_8X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x8.fmt"
+#define BINNINGSETTINGS_4240_8X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x16.fmt"
+#define BINNINGSETTINGS_4240_8X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x32.fmt"
+#define BINNINGSETTINGS_4240_16X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x1.fmt"
+#define BINNINGSETTINGS_4240_16X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x2.fmt"
+#define BINNINGSETTINGS_4240_16X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x4.fmt"
+#define BINNINGSETTINGS_4240_16X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x8.fmt"
+#define BINNINGSETTINGS_4240_16X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x16.fmt"
+#define BINNINGSETTINGS_4240_16X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x32.fmt"
+#define BINNINGSETTINGS_4240_32X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x1.fmt"
+#define BINNINGSETTINGS_4240_32X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x2.fmt"
+#define BINNINGSETTINGS_4240_32X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x4.fmt"
+#define BINNINGSETTINGS_4240_32X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x8.fmt"
+#define BINNINGSETTINGS_4240_32X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x16.fmt"
+#define BINNINGSETTINGS_4240_32X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x32.fmt"
+
 
 #define PARAM_MESSAGE_QUE_SIZE 20
 #define PARAM_MESSAGE_SIZE 16
@@ -679,7 +715,7 @@ Pixci::~Pixci(){
             if (sizeY == BINNING1)
             {
                 if(cameraModel == DETECTOR_2048){
-                    #include BINNINGSETTINGS_1X1_4240
+                    #include BINNINGSETTINGS_4240_1X1
                     pxd_videoFormatAsIncludedInit(0);
                     pxd_videoFormatAsIncluded(0);
                 }
@@ -921,7 +957,7 @@ Pixci::~Pixci(){
         getIntegerParam(ADBinX, &binX);
         getIntegerParam(ADBinY, &binY);
         if(cameraModel == DETECTOR_2048){
-            #include BINNINGSETTINGS_1X1_4240
+            #include BINNINGSETTINGS_4240_1X1
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
