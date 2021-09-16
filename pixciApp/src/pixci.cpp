@@ -157,16 +157,16 @@ unsigned char g_ucSerialBuf[256];
  * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
-                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *cameraFormat)
+                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile)
 {
-    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, cameraFormat);
+    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     return(asynSuccess);
 }
 
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *cameraFormat)
+Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         int connectionStatusCode = 0;
@@ -193,10 +193,10 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
         if(cameraModel == DETECTOR_2048){
-            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, cameraFormat);
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
         }
         else{
-            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, cameraFormat);   
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);   
         }
         if(connectionStatusCode < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
