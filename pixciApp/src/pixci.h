@@ -63,9 +63,10 @@ public:
      * allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
      * @param priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynflags.
      * @param stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
+     * @param cameraModel Select camera model, supported values are 4240 and 4710. Default value is 4710
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile);
+    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile);
 
     /* These are the methods that we override from ADDriver */
     /**
@@ -119,7 +120,8 @@ private:
   float ADC_M; //ADC Slope
   float ADC_C; //ADC Offset
   float DAC_M; //DAC Slope
-  float DAC_C; //DAC Offset      
+  float DAC_C; //DAC Offset
+  int cameraModel;      
 
     /**
      * @brief starts live capture image to frame buffer.

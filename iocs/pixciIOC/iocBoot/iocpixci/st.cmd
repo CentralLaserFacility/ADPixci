@@ -22,11 +22,12 @@ epicsEnvSet("YSIZE",  "600")
 epicsEnvSet("NCHANS", "512")
 # The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
-epicsEnvSet("RAPTOR_SETTINGS_FILE","$(ADPIXCI)/formatFiles/Raptor_Photonics_EagleXV_47-10.fmt")
+epicsEnvSet("CAMERA_MODEL","4710")
+epicsEnvSet("RAPTOR_SETTINGS_FILE","$(ADPIXCI)/formatFiles/Raptor_Photonics_EagleXV_$(CAMERA_MODEL).fmt")
 
 
 #pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)
-pixciConfig("$(PORT)", 0,  0, 0, 0, "$(RAPTOR_SETTINGS_FILE)")
+pixciConfig("$(PORT)", 0,  0, 0, 0, $(CAMERA_MODEL))
 dbLoadRecords("$(ADPIXCI)/db/Pixci.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 NDStdArraysConfigure("Image1", 20, 0, "$(PORT)", 0, 0, 0, 0, 0, 5)
