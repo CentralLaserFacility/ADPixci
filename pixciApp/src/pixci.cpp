@@ -90,10 +90,50 @@ using namespace std;
 #define BINNINGSETTINGS_32X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x16.fmt"
 #define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
 
+#define BINNINGSETTINGS_4240_1X1 "videoSettings\Raptor_Photonics_EagleXV_42-40.fmt"
+#define BINNINGSETTINGS_4240_1X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x2.fmt"
+#define BINNINGSETTINGS_4240_1X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x4.fmt"
+#define BINNINGSETTINGS_4240_1X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x8.fmt"
+#define BINNINGSETTINGS_4240_1X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x16.fmt"
+#define BINNINGSETTINGS_4240_1X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x32.fmt"
+#define BINNINGSETTINGS_4240_2X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x1.fmt"
+#define BINNINGSETTINGS_4240_2X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x2.fmt"
+#define BINNINGSETTINGS_4240_2X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x4.fmt"
+#define BINNINGSETTINGS_4240_2X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x8.fmt"
+#define BINNINGSETTINGS_4240_2X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x16.fmt"
+#define BINNINGSETTINGS_4240_2X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x32.fmt"
+#define BINNINGSETTINGS_4240_4X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x1.fmt"
+#define BINNINGSETTINGS_4240_4X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x2.fmt"
+#define BINNINGSETTINGS_4240_4X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x4.fmt"
+#define BINNINGSETTINGS_4240_4X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x8.fmt"
+#define BINNINGSETTINGS_4240_4X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x16.fmt"
+#define BINNINGSETTINGS_4240_4X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x32.fmt"
+#define BINNINGSETTINGS_4240_8X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x1.fmt"
+#define BINNINGSETTINGS_4240_8X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x2.fmt"
+#define BINNINGSETTINGS_4240_8X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x4.fmt"
+#define BINNINGSETTINGS_4240_8X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x8.fmt"
+#define BINNINGSETTINGS_4240_8X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x16.fmt"
+#define BINNINGSETTINGS_4240_8X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x32.fmt"
+#define BINNINGSETTINGS_4240_16X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x1.fmt"
+#define BINNINGSETTINGS_4240_16X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x2.fmt"
+#define BINNINGSETTINGS_4240_16X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x4.fmt"
+#define BINNINGSETTINGS_4240_16X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x8.fmt"
+#define BINNINGSETTINGS_4240_16X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x16.fmt"
+#define BINNINGSETTINGS_4240_16X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x32.fmt"
+#define BINNINGSETTINGS_4240_32X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x1.fmt"
+#define BINNINGSETTINGS_4240_32X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x2.fmt"
+#define BINNINGSETTINGS_4240_32X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x4.fmt"
+#define BINNINGSETTINGS_4240_32X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x8.fmt"
+#define BINNINGSETTINGS_4240_32X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x16.fmt"
+#define BINNINGSETTINGS_4240_32X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x32.fmt"
+
+
 #define PARAM_MESSAGE_QUE_SIZE 20
 #define PARAM_MESSAGE_SIZE 16
 #define COUNT_PER_FRAME 40e6
 
+#define DETECTOR_1024 4710
+#define DETECTOR_2048 4240
 
 #define EXPOSURE_COUNT_TO_TIME 40e6
 #define SEC_TO_mS 10e2
@@ -117,20 +157,21 @@ unsigned char g_ucSerialBuf[256];
  * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
-                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
+                                 int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile)
 {
-    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, formatfile);
+    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     return(asynSuccess);
 }
 
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, const char *formatfile)
+Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile)
     : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
     {
         int connectionStatusCode = 0;
         int serialConnection = 0;
+        Pixci::cameraModel = cameraModel;
 
         createParam(SoftTriggerParamString,     asynParamInt32,     &PR_SoftTrigger);
         createParam(TriggerPolarityParamString,     asynParamInt32,     &PR_TriggerPolarity);
@@ -151,8 +192,12 @@ Pixci::Pixci(const char *portName,  int maxBuffers, size_t maxMemory, int priori
          * returns value <0 if any error occured
          * pxd_mesgErrorCode(int code) will return description of the error occured
          */
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatfile);
-
+        if(cameraModel == DETECTOR_2048){
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
+        }
+        else{
+            connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);   
+        }
         if(connectionStatusCode < NOERROR){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot OPEN camera: %s.",
@@ -669,229 +714,481 @@ Pixci::~Pixci(){
         case BINNING1:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_1X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_1X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
-                #include BINNINGSETTINGS_1X2
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_1X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING4)
             {
-                #include BINNINGSETTINGS_1X4
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_1X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING8)
             {
-                #include BINNINGSETTINGS_1X8
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_1X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING16)
             {
-                #include BINNINGSETTINGS_1X16
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_1X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING32)
             {
-                #include BINNINGSETTINGS_1X32
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_1X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_1X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             break;
         case BINNING2:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_2X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_2X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_2X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
-                #include BINNINGSETTINGS_2X2
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_2X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_2X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING4)
             {
-                #include BINNINGSETTINGS_2X4
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_2X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_2X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING8)
             {
-                #include BINNINGSETTINGS_2X8
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_2X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_2X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING16)
             {
-                #include BINNINGSETTINGS_2X16
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_2X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_2X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING32)
             {
-                #include BINNINGSETTINGS_2X32
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_2X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_2X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             break;
         case BINNING4:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_4X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_4X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_4X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
-                #include BINNINGSETTINGS_4X2
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_4X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_4X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING4)
             {
-                #include BINNINGSETTINGS_4X4
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_4X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_4X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING8)
             {
-                #include BINNINGSETTINGS_4X8
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_4X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_4X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING16)
             {
-                #include BINNINGSETTINGS_4X16
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_4X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_4X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING32)
             {
-                #include BINNINGSETTINGS_4X32
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_4X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_4X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             break;
         case BINNING8:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_8X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_8X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_8X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
-                #include BINNINGSETTINGS_8X2
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_8X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_8X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING4)
             {
-                #include BINNINGSETTINGS_8X4
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_8X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_8X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING8)
             {
-                #include BINNINGSETTINGS_8X8
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_8X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_8X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING16)
             {
-                #include BINNINGSETTINGS_8X16
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_8X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_8X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING32)
             {
-                #include BINNINGSETTINGS_8X32
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_8X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_8X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             break;
         case BINNING16:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_16X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_16X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_16X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
-                #include BINNINGSETTINGS_16X2
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                 if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_16X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_16X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING4)
             {
-                #include BINNINGSETTINGS_16X4
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                 if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_16X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_16X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING8)
             {
-                #include BINNINGSETTINGS_16X8
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_16X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_16X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING16)
             {
-                #include BINNINGSETTINGS_16X16
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                 if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_16X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_16X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING32)
             {
-                #include BINNINGSETTINGS_16X32
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                 if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_16X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_16X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             break;
         case BINNING32:
             if (sizeY == BINNING1)
             {
-                #include BINNINGSETTINGS_32X1
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_32X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_32X1
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING2)
             {
-                #include BINNINGSETTINGS_32X2
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_32X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_32X2
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING4)
             {
-                #include BINNINGSETTINGS_32X4
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_32X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_32X4
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING8)
             {
-                #include BINNINGSETTINGS_32X8
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+                if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_32X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_32X8
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING16)
             {
-                #include BINNINGSETTINGS_32X16
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_32X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_32X16
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             else if (sizeY == BINNING32)
             {
-                #include BINNINGSETTINGS_32X32
-                pxd_videoFormatAsIncludedInit(0);
-                pxd_videoFormatAsIncluded(0);
+               if(cameraModel == DETECTOR_2048){
+                    #include BINNINGSETTINGS_4240_32X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
+                else{
+                    #include BINNINGSETTINGS_32X32
+                    pxd_videoFormatAsIncludedInit(0);
+                    pxd_videoFormatAsIncluded(0);
+                }
             }
             break;
         default:
@@ -904,9 +1201,17 @@ Pixci::~Pixci(){
         epicsInt32 binX, binY;
         getIntegerParam(ADBinX, &binX);
         getIntegerParam(ADBinY, &binY);
-        #include BINNINGSETTINGS_1X1
-        pxd_videoFormatAsIncludedInit(0);
-        pxd_videoFormatAsIncluded(0);
+        if(cameraModel == DETECTOR_2048){
+            #include BINNINGSETTINGS_4240_1X1
+            pxd_videoFormatAsIncludedInit(0);
+            pxd_videoFormatAsIncluded(0);
+        }
+        else{
+            #include BINNINGSETTINGS_1X1
+            pxd_videoFormatAsIncludedInit(0);
+            pxd_videoFormatAsIncluded(0);
+        }
+        
         setBin(binX,0);
         setBin(binY,1);
         reloadVideoSettings();
@@ -1723,18 +2028,20 @@ static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
 static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
 static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
 static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"Format file", iocshArgString};
+static const iocshArg pixciConfigArg5 = {"camera model", iocshArgInt};
+static const iocshArg pixciConfigArg6 = {"camera Format", iocshArgString};
 static const iocshArg * const pixciConfigArgs[] =  {&pixciConfigArg0,
                                                           &pixciConfigArg1,
                                                           &pixciConfigArg2,
                                                           &pixciConfigArg3,
                                                           &pixciConfigArg4,
-                                                          &pixciConfigArg5};
-static const iocshFuncDef configpixci = {"pixciConfig", 6, pixciConfigArgs};
+                                                          &pixciConfigArg5,
+                                                          &pixciConfigArg6};
+static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
   pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
-                    args[4].ival, args[5].sval);
+                    args[4].ival, args[5].ival, args[6].sval);
 }
 
 static void pixciRegister(void)
