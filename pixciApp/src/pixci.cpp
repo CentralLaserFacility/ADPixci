@@ -138,6 +138,147 @@ using namespace std;
 #define EXPOSURE_COUNT_TO_TIME 40e6
 #define SEC_TO_mS 10e2
 
+// Set video resolution and video offset.
+// Set capture resolution to same.
+//
+// There are more video format fields than are set here.
+// We are assuming that the current format hasn't been purposely
+// butchered so as to make our job harder.
+//
+// If setting an AOI with camera commands, this function's
+// hoffset & voffset should be 0. In other words: of the
+// pixels output by the camera, do not skip any lines or columns.
+// In contrast, if the camera is outputting full resolution and
+// this function is used to capture less than the full resolution,
+// then hoffset & voffset would allow positioning the capture AOI
+// within the larger camera space.
+//
+//
+#if !defined(PIXCI_LITE)
+_cDcl(_dllpxlib,_cfunfcc,int)
+pxd_setVideoResolution(
+    int     unitmap,	    // usual
+    int     xdim,	    // pixels per line
+    int     ydim,	    // pixels per column (per field)
+    int     hoffset,	    // video hoffset
+    int     voffset	    // video voffset
+){
+    int     r = 0, r1;
+    int     u, umap, multiple = 0;
+    struct xclibs *xc;
+
+    #if USEINTERNALAPI
+	if (liblog_active)
+	    liblog_aasrbz("pxd_setVideoResolution", "", "D*",
+			     &unitmap,	  (size_t)sizeof(unitmap ),
+			     &xdim,	  (size_t)sizeof(xdim	 ),
+			     &ydim,	  (size_t)sizeof(ydim	 ),
+			     &hoffset,	  (size_t)sizeof(hoffset ),
+			     &voffset,	  (size_t)sizeof(voffset ),
+			     NULL);
+    #endif
+    if (!(xc = pxd_xclibEscape(0, 0, 0)))
+	return(PXERNOTOPEN);
+    #if 1
+    {
+	pxvidstate_s *vidstatep = NULL;
+	// We might have compiled for multiple formats, but it may not be active.
+	if (xc->pxlib.getAllocState(&xc->pxlib, 0, PXMODE_DIGI+1, &vidstatep) >= 0) {
+	    multiple = 1;
+	    xc->pxlib.freeStateCopy(&xc->pxlib, 0, PXMODE_DIGI+1, &vidstatep);
+	}
+	for (u = 0, umap = unitmap; u < PXMAX_UNITS && umap; umap>>=1, u++) {
+	    if (!(umap&1))
+		continue;
+	    if ((r1 = xc->pxlib.getAllocState(&xc->pxlib, 0, multiple? PXMODE_DIGI+u: PXMODE_DIGI, &vidstatep)) < 0) {
+		r = min(r, r1);
+		continue;
+	    }
+	    vidstatep->vidformat->xviddim[PXLHCM_MAX] = xdim;
+	    vidstatep->vidformat->xdatdim[PXLHCM_MAX] = xdim;
+	    vidstatep->vidformat->yviddim[PXLHCM_MAX] = ydim;
+	    vidstatep->vidformat->ydatdim[PXLHCM_MAX] = ydim;
+	    vidstatep->vidformat->xvidoffset[PXLHCM_MAX] = xdim;
+	    vidstatep->vidformat->yvidoffset[PXLHCM_MAX] = ydim;
+	    vidstatep->vidformat->xviddim[PXLHCM_MOD] = 0;
+	    vidstatep->vidformat->xdatdim[PXLHCM_MOD] = 0;
+	    vidstatep->vidformat->yviddim[PXLHCM_MOD] = 0;
+	    vidstatep->vidformat->ydatdim[PXLHCM_MOD] = 0;
+	    vidstatep->vidformat->is.hoffset = hoffset;
+	    vidstatep->vidformat->is.voffset = voffset;
+	    //
+	    vidstatep->vidres->x.setmaxdatsamples = 1;
+	    vidstatep->vidres->x.setmaxvidsamples = 1;
+	    vidstatep->vidres->y.setmaxdatsamples = 1;
+	    vidstatep->vidres->y.setmaxvidsamples = 1;
+	    vidstatep->vidres->setmaxdatfields	  = 1;
+	    vidstatep->vidres->setmaxdatphylds	  = 1;
+	    r1 = xc->pxlib.defineState(&xc->pxlib, 0, multiple? PXMODE_DIGI+u: PXMODE_DIGI, vidstatep);
+	    r = min(r, r1);
+	    xc->pxlib.freeStateCopy(&xc->pxlib, 0, multiple? PXMODE_DIGI+u: PXMODE_DIGI, &vidstatep);
+	    if (!multiple)
+		break;
+	}
+	r1 = pxd_xclibEscaped(unitmap, 0, 0);
+	r = min(r, r1);
+	return(r);
+    }
+    #else
+    {
+	#if USEINTERNALAPI   // using internal API
+	    xclib_DeclareVidStateStructs2(vidstate, pxdstatep->devinfo[0].s.model);
+	    xclib_InitVidStateStructs2(vidstate, pxdstatep->devinfo[0].s.model);
+	#else
+	    xclib_DeclareVidStateStructs2(vidstate, pxd_infoModel(unitmap));
+	    xclib_InitVidStateStructs2(vidstate, pxd_infoModel(unitmap));
+	#endif
+
+	#if 1|MULTIPLEFORMATS
+	    // We might have compiled for multiple formats, but it may not be active.
+	    if (xc->pxlib.getState(&xc->pxlib, 0, PXMODE_DIGI+1, &vidstate) >= 0)
+		multiple = 1;
+	    for (u = 0, umap = unitmap; u < PXMAX_UNITS && umap; umap>>=1, u++) {
+		if (!(umap&1))
+		    continue;
+		xc->pxlib.getState(&xc->pxlib, 0, multiple? PXMODE_DIGI+u: PXMODE_DIGI, &vidstate);
+		vidstate.vidformat->xviddim[PXLHCM_MAX] = xdim;
+		vidstate.vidformat->xdatdim[PXLHCM_MAX] = xdim;
+		vidstate.vidformat->yviddim[PXLHCM_MAX] = ydim;
+		vidstate.vidformat->ydatdim[PXLHCM_MAX] = ydim;
+		vidstate.vidformat->xvidoffset[PXLHCM_MAX] = xdim;
+		vidstate.vidformat->yvidoffset[PXLHCM_MAX] = ydim;
+		vidstate.vidformat->xviddim[PXLHCM_MOD] = 0;
+		vidstate.vidformat->xdatdim[PXLHCM_MOD] = 0;
+		vidstate.vidformat->yviddim[PXLHCM_MOD] = 0;
+		vidstate.vidformat->ydatdim[PXLHCM_MOD] = 0;
+		vidstate.vidformat->is.hoffset = hoffset;
+		vidstate.vidformat->is.voffset = voffset;
+		//
+		vidstate.vidres->x.setmaxdatsamples = 1;
+		vidstate.vidres->x.setmaxvidsamples = 1;
+		vidstate.vidres->y.setmaxdatsamples = 1;
+		vidstate.vidres->y.setmaxvidsamples = 1;
+		vidstate.vidres->setmaxdatfields    = 1;
+		vidstate.vidres->setmaxdatphylds    = 1;
+		r1 = xc->pxlib.defineState(&xc->pxlib, 0, multiple? PXMODE_DIGI+u: PXMODE_DIGI, &vidstate);
+		r = min(r, r1);
+		if (!multiple)
+		    break;
+	    }
+	    r1 = pxd_xclibEscaped(unitmap, 0, 0);
+	    r = min(r, r1);
+	    return(r);
+	#else
+	    ?
+	#endif
+    }
+    #endif
+}
+
+#endif	// !defined(PIXCI_LITE)
+
+
+
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -276,7 +417,7 @@ Pixci::~Pixci(){
         int binX, binY, sizeX, sizeY, RoiSizeX, RoiSizeY;
         sizeX = pxd_imageXdim();
         sizeY = pxd_imageYdim();
-
+        callParamCallbacks();
         getIntegerParam(ADBinX, &binX);
         if (binX <= 0) {
             binX = 1;
@@ -580,109 +721,106 @@ Pixci::~Pixci(){
             }
 
             else if(function == ADMinX){
-                epicsInt32 maxSizeX, minX, sizeX;
+                epicsInt32 maxSizeX, minX, sizeX, sizeY, minY;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADSizeX, &sizeX);
+                getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADMinY, &minY);
+                getIntegerParam(ADAcquire, &acquire);
                 minX = (val > maxSizeX) ? maxSizeX : val;
                 if((sizeX + minX) > maxSizeX){
                     sizeX = maxSizeX - minX;
-                    status = setRoiSizeX(sizeX);
-                    if(status == asynSuccess){
-                        setIntegerParam(ADSizeX,getRoiSizeX());
-                        getIntegerParam(ADAcquire, &acquire);
-                        acquireStop();
-                        resetVideoSettings();
-                        setupAquisition();
-                        if(acquire == 1){
-                            acquireImage();
-                        }       
-                    }
+                }
+                acquireStop();
+                status = setRoiSizeX(sizeX);
+                status = setRoiOffsetX(minX);
+                status = setRoiSizeY(sizeY);
+                status = setRoiOffsetY(minY);
+                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                setupAquisition();
+                if(acquire == 1){
+                    acquireImage();
                 }
                 
-                status = setRoiOffsetX(minX);
-                if(status == asynSuccess){
-                    setIntegerParam(ADMinX,getRoiOffsetX());
-                }
+                setIntegerParam(ADSizeX,getRoiSizeX());
+                setIntegerParam(ADMinX,getRoiOffsetX());
+                
             }
             else if(function == ADMinY){
-                epicsInt32 maxSizeY, minY, sizeY;
+                epicsInt32 maxSizeY, minY, sizeY, sizeX, minX;
                 getIntegerParam(ADMaxSizeY, &maxSizeY);
+                getIntegerParam(ADSizeX, &sizeX);
                 getIntegerParam(ADSizeY, &sizeY);
-
+                getIntegerParam(ADMinX, &minX);
+                getIntegerParam(ADAcquire, &acquire);
                 minY = (val > maxSizeY) ? maxSizeY : val;
                 if((sizeY + minY) > maxSizeY){
-                    sizeY = maxSizeY - minY;
-                    status = setRoiSizeY(sizeY);
-                    if(status == asynSuccess){
-                        setIntegerParam(ADSizeY,getRoiSizeY());
-                        getIntegerParam(ADAcquire, &acquire);
-                        acquireStop();
-                        resetVideoSettings();
-                        setupAquisition();
-                        if(acquire == 1){
-                            acquireImage();
-                        }       
-                    }
+                    sizeY = maxSizeY - minY;     
                 }
+                acquireStop();
+               
+                status = setRoiSizeX(sizeX);
+                status = setRoiOffsetX(minX);
+                status = setRoiSizeY(sizeY);
+                status = setRoiOffsetY(minY);
+                
+                pxd_setVideoResolution(UNIT, getRoiSizeX(), getRoiSizeY(), 0, 0);
+                setupAquisition();
+                if(acquire == 1){
+                    acquireImage();
+                }
+                setIntegerParam(ADSizeY,getRoiSizeY());
+                setIntegerParam(ADMinY,getRoiOffsetY());
 
-                status = setRoiOffsetY(val);
-                if(status == asynSuccess){
-                    setIntegerParam(ADMinY,getRoiOffsetY());
-                }
             }
             else if(function == ADSizeX){
-                epicsInt32 maxSizeX, minX, sizeX;
+                epicsInt32 maxSizeX, minX, sizeX, minY, sizeY;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADMinX, &minX);
+                getIntegerParam(ADMinY, &minY);
+                getIntegerParam(ADSizeY, &sizeY);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
     
                 if((sizeX + minX) > maxSizeX){
                     minX = maxSizeX - sizeX;
-                    status = setRoiOffsetX(minX);
-                    if(status == asynSuccess){
-                        setIntegerParam(ADMinX,getRoiOffsetX()); 
-                    }
                 }
-                status == setRoiSizeX(sizeX);
+                acquireStop();
                 
-                if(status == asynSuccess){
-                    setIntegerParam(ADSizeX,getRoiSizeX());
-                    callParamCallbacks();
-                    getIntegerParam(ADAcquire, &acquire);
-                    acquireStop();
-                    resetVideoSettings();
-                    setupAquisition();
-                    if(acquire == 1){
-                        acquireImage();
-                    }       
+                status == setRoiSizeX(sizeX);
+                status = setRoiOffsetX(minX);
+                status = setRoiSizeY(sizeY);
+                status = setRoiOffsetY(minY);
+                // pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                setupAquisition();
+                if(acquire == 1){
+                    acquireImage();
                 }
+                setIntegerParam(ADMinX,getRoiOffsetX());
+                setIntegerParam(ADSizeX,getRoiSizeX());
             }
             else if(function == ADSizeY){
-                epicsInt32 maxSizeY, minY, sizeY;
+                epicsInt32 maxSizeY, minY, sizeY, minX, sizeX;
                 getIntegerParam(ADMaxSizeY, &maxSizeY);
                 getIntegerParam(ADMinY, &minY);
+                getIntegerParam(ADMinX, &minX);
+                getIntegerParam(ADSizeX, &sizeX);
                 sizeY = (val > maxSizeY) ? maxSizeY : val;
 
                 if((sizeY + minY) > maxSizeY){
                     minY = maxSizeY - sizeY;
-                    status = setRoiOffsetY(minY);
-                    if(status == asynSuccess){
-                        setIntegerParam(ADMinY,getRoiOffsetY());
-                    }
                 }
-                status == setRoiSizeY(sizeY);
-                
-                if(status == asynSuccess){
-                    setIntegerParam(ADSizeY,getRoiSizeY());
-                    callParamCallbacks();
-                    getIntegerParam(ADAcquire, &acquire);
-                    acquireStop();
-                    resetVideoSettings();
-                    setupAquisition();
-                    if(acquire == 1){
-                        acquireImage();
-                    }       
+                acquireStop();
+                status == setRoiSizeX(sizeX);
+                status = setRoiOffsetX(minX);
+                status = setRoiSizeY(sizeY);
+                status = setRoiOffsetY(minY);
+                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                setupAquisition();
+                if(acquire == 1){
+                    acquireImage();
                 }
+                setIntegerParam(ADMinY,getRoiOffsetY());
+                setIntegerParam(ADSizeY,getRoiSizeY());
             }
             else if(function == PR_TriggerPolarity){
                 int triggerMode;
@@ -1646,15 +1784,19 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == ADMinX){
+            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == ADMinY){
+            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == ADSizeX){
+            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == ADSizeY){
+            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
