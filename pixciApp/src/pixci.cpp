@@ -732,18 +732,20 @@ Pixci::~Pixci(){
                     sizeX = maxSizeX - minX;
                 }
                 acquireStop();
+                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
                 status = setRoiSizeX(sizeX);
                 status = setRoiOffsetX(minX);
-                status = setRoiSizeY(sizeY);
-                status = setRoiOffsetY(minY);
-                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                // status = setRoiSizeY(sizeY);
+                // status = setRoiOffsetY(minY);
+                setIntegerParam(ADSizeX,getRoiSizeX());
+                setIntegerParam(ADMinX,getRoiOffsetX());
                 setupAquisition();
+                
                 if(acquire == 1){
                     acquireImage();
                 }
                 
-                setIntegerParam(ADSizeX,getRoiSizeX());
-                setIntegerParam(ADMinX,getRoiOffsetX());
+                
                 
             }
             else if(function == ADMinY){
@@ -758,19 +760,19 @@ Pixci::~Pixci(){
                     sizeY = maxSizeY - minY;     
                 }
                 acquireStop();
-               
-                status = setRoiSizeX(sizeX);
-                status = setRoiOffsetX(minX);
+                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                // status = setRoiSizeX(sizeX);
+                // status = setRoiOffsetX(minX);
                 status = setRoiSizeY(sizeY);
                 status = setRoiOffsetY(minY);
+                setIntegerParam(ADSizeY,getRoiSizeY());
+                setIntegerParam(ADMinY,getRoiOffsetY());
                 
-                pxd_setVideoResolution(UNIT, getRoiSizeX(), getRoiSizeY(), 0, 0);
                 setupAquisition();
                 if(acquire == 1){
                     acquireImage();
                 }
-                setIntegerParam(ADSizeY,getRoiSizeY());
-                setIntegerParam(ADMinY,getRoiOffsetY());
+                
 
             }
             else if(function == ADSizeX){
@@ -779,24 +781,26 @@ Pixci::~Pixci(){
                 getIntegerParam(ADMinX, &minX);
                 getIntegerParam(ADMinY, &minY);
                 getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADAcquire, &acquire);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
     
                 if((sizeX + minX) > maxSizeX){
                     minX = maxSizeX - sizeX;
                 }
                 acquireStop();
-                
+                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
                 status == setRoiSizeX(sizeX);
                 status = setRoiOffsetX(minX);
-                status = setRoiSizeY(sizeY);
-                status = setRoiOffsetY(minY);
-                // pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
-                setupAquisition();
-                if(acquire == 1){
-                    acquireImage();
-                }
+                // status = setRoiSizeY(sizeY);
+                // status = setRoiOffsetY(minY);
                 setIntegerParam(ADMinX,getRoiOffsetX());
                 setIntegerParam(ADSizeX,getRoiSizeX());
+                setupAquisition();
+                if(acquire == 1){
+
+                    acquireImage();
+                }
+                
             }
             else if(function == ADSizeY){
                 epicsInt32 maxSizeY, minY, sizeY, minX, sizeX;
@@ -804,23 +808,25 @@ Pixci::~Pixci(){
                 getIntegerParam(ADMinY, &minY);
                 getIntegerParam(ADMinX, &minX);
                 getIntegerParam(ADSizeX, &sizeX);
+                getIntegerParam(ADAcquire, &acquire);
                 sizeY = (val > maxSizeY) ? maxSizeY : val;
 
                 if((sizeY + minY) > maxSizeY){
                     minY = maxSizeY - sizeY;
                 }
                 acquireStop();
-                status == setRoiSizeX(sizeX);
-                status = setRoiOffsetX(minX);
+                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                // status == setRoiSizeX(sizeX);
+                // status = setRoiOffsetX(minX);
                 status = setRoiSizeY(sizeY);
                 status = setRoiOffsetY(minY);
-                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                setIntegerParam(ADMinY,getRoiOffsetY());
+                setIntegerParam(ADSizeY,getRoiSizeY());
                 setupAquisition();
                 if(acquire == 1){
                     acquireImage();
                 }
-                setIntegerParam(ADMinY,getRoiOffsetY());
-                setIntegerParam(ADSizeY,getRoiSizeY());
+                
             }
             else if(function == PR_TriggerPolarity){
                 int triggerMode;
