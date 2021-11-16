@@ -725,7 +725,6 @@ Pixci::~Pixci(){
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADSizeX, &sizeX);
                 getIntegerParam(ADSizeY, &sizeY);
-                getIntegerParam(ADMinY, &minY);
                 getIntegerParam(ADAcquire, &acquire);
                 minX = (val > maxSizeX) ? maxSizeX : val;
                 if((sizeX + minX) > maxSizeX){
@@ -735,10 +734,9 @@ Pixci::~Pixci(){
                 
                 status = setRoiSizeX(sizeX);
                 status = setRoiOffsetX(minX);
+                sizeX = getRoiSizeX();
                 pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
-                // status = setRoiSizeY(sizeY);
-                // status = setRoiOffsetY(minY);
-                setIntegerParam(ADSizeX,getRoiSizeX());
+                setIntegerParam(ADSizeX,sizeX);
                 setIntegerParam(ADMinX,getRoiOffsetX());
                 setupAquisition();
                 
@@ -750,11 +748,10 @@ Pixci::~Pixci(){
                 
             }
             else if(function == ADMinY){
-                epicsInt32 maxSizeY, minY, sizeY, sizeX, minX;
+                epicsInt32 maxSizeY, minY, sizeY, sizeX;
                 getIntegerParam(ADMaxSizeY, &maxSizeY);
                 getIntegerParam(ADSizeX, &sizeX);
                 getIntegerParam(ADSizeY, &sizeY);
-                getIntegerParam(ADMinX, &minX);
                 getIntegerParam(ADAcquire, &acquire);
                 minY = (val > maxSizeY) ? maxSizeY : val;
                 if((sizeY + minY) > maxSizeY){
@@ -766,8 +763,9 @@ Pixci::~Pixci(){
                 // status = setRoiOffsetX(minX);
                 status = setRoiSizeY(sizeY);
                 status = setRoiOffsetY(minY);
+                sizeY = getRoiSizeY();
                 pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
-                setIntegerParam(ADSizeY,getRoiSizeY());
+                setIntegerParam(ADSizeY,sizeY);
                 setIntegerParam(ADMinY,getRoiOffsetY());
                 
                 setupAquisition();
@@ -778,10 +776,9 @@ Pixci::~Pixci(){
 
             }
             else if(function == ADSizeX){
-                epicsInt32 maxSizeX, minX, sizeX, minY, sizeY;
+                epicsInt32 maxSizeX, minX, sizeX, sizeY;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADMinX, &minX);
-                getIntegerParam(ADMinY, &minY);
                 getIntegerParam(ADSizeY, &sizeY);
                 getIntegerParam(ADAcquire, &acquire);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
@@ -793,11 +790,12 @@ Pixci::~Pixci(){
                 
                 status == setRoiSizeX(sizeX);
                 status = setRoiOffsetX(minX);
+                sizeX = getRoiSizeX();
                 // status = setRoiSizeY(sizeY);
                 // status = setRoiOffsetY(minY);
                 pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
                 setIntegerParam(ADMinX,getRoiOffsetX());
-                setIntegerParam(ADSizeX,getRoiSizeX());
+                setIntegerParam(ADSizeX,sizeX);
                 setupAquisition();
                 if(acquire == 1){
 
@@ -806,10 +804,9 @@ Pixci::~Pixci(){
                 
             }
             else if(function == ADSizeY){
-                epicsInt32 maxSizeY, minY, sizeY, minX, sizeX;
+                epicsInt32 maxSizeY, minY, sizeY, sizeX;
                 getIntegerParam(ADMaxSizeY, &maxSizeY);
                 getIntegerParam(ADMinY, &minY);
-                getIntegerParam(ADMinX, &minX);
                 getIntegerParam(ADSizeX, &sizeX);
                 getIntegerParam(ADAcquire, &acquire);
                 sizeY = (val > maxSizeY) ? maxSizeY : val;
@@ -823,9 +820,10 @@ Pixci::~Pixci(){
                 // status = setRoiOffsetX(minX);
                 status = setRoiSizeY(sizeY);
                 status = setRoiOffsetY(minY);
+                sizeY = getRoiSizeY();
                 pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
                 setIntegerParam(ADMinY,getRoiOffsetY());
-                setIntegerParam(ADSizeY,getRoiSizeY());
+                setIntegerParam(ADSizeY,sizeY);
                 setupAquisition();
                 if(acquire == 1){
                     acquireImage();
