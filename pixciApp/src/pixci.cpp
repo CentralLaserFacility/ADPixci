@@ -721,10 +721,12 @@ Pixci::~Pixci(){
             }
 
             else if(function == ADMinX){
-                epicsInt32 maxSizeX, minX, sizeX, sizeY, minY;
+                epicsInt32 maxSizeX, minX, sizeX, sizeY, binX, binY;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADSizeX, &sizeX);
                 getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADBinX, &binX);
+                getIntegerParam(ADBinY, &binY);
                 getIntegerParam(ADAcquire, &acquire);
                 minX = (val > maxSizeX) ? maxSizeX : val;
                 if((sizeX + minX) > maxSizeX){
@@ -735,7 +737,7 @@ Pixci::~Pixci(){
                 status = setRoiSizeX(sizeX);
                 status = setRoiOffsetX(minX);
                 sizeX = getRoiSizeX();
-                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                pxd_setVideoResolution(UNIT, sizeX/binX, sizeY/binY, 0, 0);
                 setIntegerParam(ADSizeX,sizeX);
                 setIntegerParam(ADMinX,getRoiOffsetX());
                 setupAquisition();
@@ -748,10 +750,12 @@ Pixci::~Pixci(){
                 
             }
             else if(function == ADMinY){
-                epicsInt32 maxSizeY, minY, sizeY, sizeX;
+                epicsInt32 maxSizeY, minY, sizeY, sizeX, binX, binY;
                 getIntegerParam(ADMaxSizeY, &maxSizeY);
                 getIntegerParam(ADSizeX, &sizeX);
                 getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADBinX, &binX);
+                getIntegerParam(ADBinY, &binY);
                 getIntegerParam(ADAcquire, &acquire);
                 minY = (val > maxSizeY) ? maxSizeY : val;
                 if((sizeY + minY) > maxSizeY){
@@ -764,7 +768,7 @@ Pixci::~Pixci(){
                 status = setRoiSizeY(sizeY);
                 status = setRoiOffsetY(minY);
                 sizeY = getRoiSizeY();
-                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                pxd_setVideoResolution(UNIT, sizeX/binX, sizeY/binY, 0, 0);
                 setIntegerParam(ADSizeY,sizeY);
                 setIntegerParam(ADMinY,getRoiOffsetY());
                 
@@ -776,10 +780,12 @@ Pixci::~Pixci(){
 
             }
             else if(function == ADSizeX){
-                epicsInt32 maxSizeX, minX, sizeX, sizeY;
+                epicsInt32 maxSizeX, minX, sizeX, sizeY, binX, binY;
                 getIntegerParam(ADMaxSizeX, &maxSizeX);
                 getIntegerParam(ADMinX, &minX);
                 getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADBinX, &binX);
+                getIntegerParam(ADBinY, &binY);
                 getIntegerParam(ADAcquire, &acquire);
                 sizeX = (val > maxSizeX) ? maxSizeX : val;
     
@@ -793,7 +799,7 @@ Pixci::~Pixci(){
                 sizeX = getRoiSizeX();
                 // status = setRoiSizeY(sizeY);
                 // status = setRoiOffsetY(minY);
-                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                pxd_setVideoResolution(UNIT, sizeX/binX, sizeY/binY, 0, 0);
                 setIntegerParam(ADMinX,getRoiOffsetX());
                 setIntegerParam(ADSizeX,sizeX);
                 setupAquisition();
@@ -804,10 +810,12 @@ Pixci::~Pixci(){
                 
             }
             else if(function == ADSizeY){
-                epicsInt32 maxSizeY, minY, sizeY, sizeX;
+                epicsInt32 maxSizeY, minY, sizeY, sizeX, binX, binY;
                 getIntegerParam(ADMaxSizeY, &maxSizeY);
                 getIntegerParam(ADMinY, &minY);
                 getIntegerParam(ADSizeX, &sizeX);
+                getIntegerParam(ADBinX, &binX);
+                getIntegerParam(ADBinY, &binY);
                 getIntegerParam(ADAcquire, &acquire);
                 sizeY = (val > maxSizeY) ? maxSizeY : val;
 
@@ -821,7 +829,7 @@ Pixci::~Pixci(){
                 status = setRoiSizeY(sizeY);
                 status = setRoiOffsetY(minY);
                 sizeY = getRoiSizeY();
-                pxd_setVideoResolution(UNIT, sizeX, sizeY, 0, 0);
+                pxd_setVideoResolution(UNIT, sizeX/binX, sizeY/binY, 0, 0);
                 setIntegerParam(ADMinY,getRoiOffsetY());
                 setIntegerParam(ADSizeY,sizeY);
                 setupAquisition();
