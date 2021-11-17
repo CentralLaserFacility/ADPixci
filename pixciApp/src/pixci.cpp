@@ -1810,19 +1810,15 @@ Pixci::~Pixci(){
             addToParamQue(function,value);
         }
         else if(function == ADMinX){
-            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == ADMinY){
-            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == ADSizeX){
-            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == ADSizeY){
-            // addToParamQue(function,value);
             addToParamQue(function,value);
         }
         else if(function == PR_TriggerPolarity){
