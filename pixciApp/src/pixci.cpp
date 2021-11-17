@@ -580,14 +580,19 @@ Pixci::~Pixci(){
             function = (int)functionAndVal[0];
             val = functionAndVal[1];
             if(function==ADBinX){
+                epicsInt32 sizeX, sizeY, binY;
+                getIntegerParam(ADSizeX, &sizeX);
+                getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADBinY, &binY);
                 status = Pixci::setBin(val,0);
                 if (status==asynSuccess)
                 {   
                     setIntegerParam(ADBinX, val); //Updating the binX value.
-                    // callParamCallbacks();
+                    callParamCallbacks();
                     getIntegerParam(ADAcquire, &acquire); //Getting the ADAcquire value. 
                     reloadVideoSettings(); //Video settings have to be loaded respective of binning value.
                     acquireStop(); //Acquire have to be stopped before calling setupAcquisition.
+                    pxd_setVideoResolution(UNIT, sizeX/val, sizeY/binY, 0, 0);
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();//starting acquisition if acquisition was running before.
@@ -596,6 +601,10 @@ Pixci::~Pixci(){
                 
             }
             else if(function==ADBinY){
+                epicsInt32 sizeX, sizeY, binX;
+                getIntegerParam(ADSizeX, &sizeX);
+                getIntegerParam(ADSizeY, &sizeY);
+                getIntegerParam(ADBinX, &binX);
                 status = Pixci::setBin(val,1);
                 if(status==asynSuccess){
                     setIntegerParam(ADBinY, val);
@@ -603,6 +612,7 @@ Pixci::~Pixci(){
                     getIntegerParam(ADAcquire, &acquire);
                     reloadVideoSettings();
                     acquireStop();
+                    pxd_setVideoResolution(UNIT, sizeX/binX, sizeY/val, 0, 0);
                     setupAquisition();
                     if(acquire == 1){
                         acquireImage();
