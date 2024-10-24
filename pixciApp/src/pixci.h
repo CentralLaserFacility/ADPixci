@@ -101,7 +101,6 @@ public:
 
 protected:
     int PR_SoftTrigger;
-#define FIRST_PIXCI_PARAM PR_SoftTrigger
     int PR_UpdateTemperature;
     int PR_TemperaturePcb;
     int PR_ToggleTec;
@@ -114,6 +113,8 @@ protected:
     int PR_DACCalibrationZeroDegree;
     int PR_DACCalibrationFortyDegree;
     int PR_TriggerPolarity;
+
+#define FIRST_PIXCI_PARAM PR_SoftTrigger
 
 private:
     float ADC_M; // ADC Slope
@@ -229,11 +230,12 @@ private:
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
     /**
-     * @brief Get the Trigger Status of camera
+     * @brief Get the Trigger Mode of camera
      *
      * @return asynStatus
      */
-    asynStatus getTriggerStatus();
+    asynStatus getTriggerMode();
+
     /**
      * @brief Set the Trigger Mode for the image capturing
      *
@@ -247,7 +249,7 @@ private:
     asynStatus setTriggerMode(int mode);
 
     /**
-     * @brief Set the Frame Rate for Internal FFR mode 
+     * @brief Set the Frame Rate for Internal FFR mode
      *
      * @param frameRate
      * @return asynStatus
