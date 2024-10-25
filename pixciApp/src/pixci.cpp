@@ -305,6 +305,10 @@ extern "C" int pixciConfig(const char *portName,
     return (asynSuccess);
 }
 
+auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus) {
+    status = (status > returnedStatus) ? status : returnedStatus;
+};
+
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
@@ -2100,13 +2104,13 @@ asynStatus Pixci::getTriggerMode()
 {
     PRAcquisitionMode_t trigMode;
     PR_TriggerPolarity_t trigPolarity;
-    asynStatus status;
+    asynStatus status = asynSuccess;
 
     char cval = 0;
 
     // attempt to read the register and if fails, return the failure status
-    status = readSerialRegister(0xD4, &cval);
-    if (status > 0){
+    setStatIfHigher(status, readSerialRegister(0xD4, &cval));
+    if (status > asynSuccess){
         return status;
     }
 
@@ -2122,7 +2126,7 @@ asynStatus Pixci::getTriggerMode()
         {
             trigPolarity = PR_EXT_FALLING_EDGE;
         }
-        setIntegerParam(PR_TriggerPolarity, trigPolarity);
+        setStatIfHigher(status, setIntegerParam(PR_TriggerPolarity, trigPolarity));
     }
     else
     { // ext trig = 0
@@ -2144,7 +2148,7 @@ asynStatus Pixci::getTriggerMode()
             trigMode = PR_BUTTON_TRIGGER;
         }
     }
-    setIntegerParam(ADTriggerMode, trigMode);
+    setStatIfHigher(status, setIntegerParam(ADTriggerMode, trigMode));
     return status;
 }
 
