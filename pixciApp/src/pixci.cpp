@@ -697,7 +697,7 @@ void Pixci::paramTask()
         }
         else if (function == PR_UpdateStatus)
         {
-            updateStatus(true);
+            status = updateStatus(true);
         }
         else if (function == PR_UpdateTemperature)
         {
@@ -2203,6 +2203,14 @@ void Pixci::updateTemperaturePcb(bool callBackFlag)
         callParamCallbacks();
 }
 
+asynStatus Pixci::updateTriggerMode(bool callBackFlag){
+    asynStatus status;
+    status = getTriggerMode();
+    if (callBackFlag)
+        setStatIfHigher(status, callParamCallbacks());
+    return status;
+}
+
 asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 {
 
@@ -2273,14 +2281,17 @@ asynStatus Pixci::updateManufacturersData(bool callBackFlag)
     return asynError;
 }
 
-void Pixci::updateStatus(bool updateManufacturersDataFlag)
+asynStatus Pixci::updateStatus(bool updateManufacturersDataFlag)
 {
+    asynStatus status = asynSuccess;
     // TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
     if (updateManufacturersDataFlag)
-        updateManufacturersData(); // TODO: Implement Error Message
+        setStatIfHigher(status, updateManufacturersData()); // TODO: Implement Error Message
 
     updateADTemperatureActual();
     updateTemperaturePcb(true);
+    setStatIfHigher(status, updateTriggerMode(true));
+    return status;
 }
 
 asynStatus Pixci::updateIntialPVs()
