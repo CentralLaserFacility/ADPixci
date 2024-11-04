@@ -4,6 +4,8 @@
  */
 
 #include <stdio.h>
+#include <bitset>
+
 #include <stdlib.h>
 #include <string>
 
@@ -34,6 +36,7 @@ extern "C"
 #include <epicsExit.h>
 #include <epicsExport.h>
 #include <epicsMessageQueue.h>
+#include <iostream>
 
 using namespace std;
 
@@ -648,6 +651,7 @@ void Pixci::paramTask()
         // TODO: maybe need to add a gettriggermode call in here
         else if (function == ADTriggerMode)
         {
+            std::cout << "in adtriggermode branch, val = " << val << std::endl;
             int acquisitionStatus;
             int previousTriggerMode;
             status = setTriggerMode(val);
@@ -896,7 +900,9 @@ void Pixci::paramTask()
         }
         else if (function == PR_TriggerPolarity)
         {
+            std::cout << "we're in the trigger polarity mode branch" << std::endl;
             int triggerMode;
+            std::cout << "triggerPolarity (val) = " << val << std::endl;
             if (val == PR_EXT_RISING_EDGE)
             {
                 setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
@@ -2104,6 +2110,7 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 
 asynStatus Pixci::getTriggerMode()
 {
+    std::cout << "Getting trig mode" << std::endl;
     PRAcquisitionMode_t trigMode;
     PR_TriggerPolarity_t trigPolarity;
     asynStatus status = asynSuccess;
@@ -2112,29 +2119,29 @@ asynStatus Pixci::getTriggerMode()
 
     // attempt to read the register and if fails, return the failure status
     setStatIfHigher(status, readSerialRegister(0xD4, &cval));
+    std::cout << "stat = " << status << std::endl;
+
+    std::bitset<8> x(cval);
+    std::cout << "cval = " << x << std::endl;
     if (status > asynSuccess)
     {
         return status;
     }
-
     if (cval & (1 << 6))
     { // ext trig = 1
         trigMode = PR_EXTERNAL;
         // ext trig mode, rising edge = 1, falling edge = 0
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Trig mode of PR_EXTERNAL received from cam");
         if (cval & (1 << 7))
         {
             trigPolarity = PR_EXT_RISING_EDGE;
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Trig polarity of PR_EXT_RISING_EDGE received from cam");
         }
         else
         {
             trigPolarity = PR_EXT_FALLING_EDGE;
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Trig polarity of PR_EXT_FALLING_EDGE received from cam");
         }
-        asynStatus newStat;
-        newStat = setIntegerParam(PR_TriggerPolarity, trigPolarity);
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "status of setIntegerParam=%i", newStat);
+        std::cout << "Trig polarity of " << trigPolarity << " received from cam" << std::endl;
+        asynStatus newStat = setIntegerParam(PR_TriggerPolarity, trigPolarity);
+        std::cout << "status of setIntegerParam = " << newStat << std::endl;
         setStatIfHigher(status, newStat);
     }
     else
@@ -2157,7 +2164,10 @@ asynStatus Pixci::getTriggerMode()
             trigMode = PR_BUTTON_TRIGGER;
         }
     }
-    setStatIfHigher(status, setIntegerParam(ADTriggerMode, trigMode));
+    std::cout << "Trig mode of " << trigMode  << " received from cam" << std::endl;
+    asynStatus newStat2 = setIntegerParam(ADTriggerMode, trigMode);
+    setStatIfHigher(status, newStat2);
+    std::cout << "status of setIntegerParam2 = " << newStat2 << std::endl;
     return status;
 }
 
@@ -2168,26 +2178,26 @@ asynStatus Pixci::setTriggerMode(int mode)
     switch (mode)
     {
     case PR_INTERNAL_ITR:
-        hexval = 0x04;
+        hexval = 0x04; //00000100
         break;
     case PR_INTERNAL_FFR:
-        hexval = 0X06;
+        hexval = 0X06; //00000110
         break;
     case PR_EXTERNAL:
         int triggerPolarity;
         getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+        std::cout << "triggerPolarity = " << triggerPolarity << std::endl;
         if (triggerPolarity == PR_EXT_FALLING_EDGE)
         {
-            hexval = 0xc0;
+            hexval = 0xc0; //11000000
         }
         else
         {
-            hexval = 0x40;
+            hexval = 0x40; //01000000
         }
-
         break;
     case PR_BUTTON_TRIGGER:
-        hexval = 0x00;
+        hexval = 0x00; // 00000000
         break;
     default:
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d", mode);
@@ -2210,15 +2220,6 @@ void Pixci::updateTemperaturePcb(bool callBackFlag)
     setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()); // setting the PCB Temperature PV
     if (callBackFlag)
         callParamCallbacks();
-}
-
-asynStatus Pixci::updateTriggerMode(bool callBackFlag)
-{
-    asynStatus status;
-    status = getTriggerMode();
-    if (callBackFlag)
-        setStatIfHigher(status, callParamCallbacks());
-    return status;
 }
 
 asynStatus Pixci::updateManufacturersData(bool callBackFlag)
@@ -2300,30 +2301,31 @@ asynStatus Pixci::updateStatus(bool updateManufacturersDataFlag)
 
     updateADTemperatureActual();
     updateTemperaturePcb(true);
-    setStatIfHigher(status, updateTriggerMode(true));
     return status;
 }
 
 asynStatus Pixci::updateIntialPVs()
 {
+    std::cout << "updating init PVs" << std::endl;
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
     epicsFloat64 acquireFrameRate;
     acquireFrameRate = getFrameRate();
-    int status = asynSuccess;
+    asynStatus status = asynSuccess;
 
-    status |= setIntegerParam(ADMaxSizeX, sizeX);
-    status |= setIntegerParam(ADMaxSizeY, sizeY);
-    status |= setIntegerParam(ADSizeX, sizeX);
-    status |= setIntegerParam(ADSizeY, sizeY);
-    status |= setDoubleParam(ADAcquireTime, getExposure());
+    setStatIfHigher(status, setIntegerParam(ADMaxSizeX, sizeX));
+    setStatIfHigher(status, setIntegerParam(ADMaxSizeY, sizeY));
+    setStatIfHigher(status, setIntegerParam(ADSizeX, sizeX));
+    setStatIfHigher(status, setIntegerParam(ADSizeY, sizeY));
+    setStatIfHigher(status, setDoubleParam(ADAcquireTime, getExposure()));
     if (acquireFrameRate > 0)
     {
-        status |= setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate));
+        setStatIfHigher(status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
 
-    status |= callParamCallbacks();
-    return (asynStatus)status;
+    setStatIfHigher(status, getTriggerMode());
+    setStatIfHigher(status, callParamCallbacks());
+    return status;
 }
 
 asynStatus Pixci::setRoiSizeX(int RoisizeX)
