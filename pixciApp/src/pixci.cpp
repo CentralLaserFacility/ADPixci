@@ -305,7 +305,8 @@ extern "C" int pixciConfig(const char *portName,
     return (asynSuccess);
 }
 
-auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus) {
+auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus)
+{
     status = (status > returnedStatus) ? status : returnedStatus;
 };
 
@@ -644,6 +645,7 @@ void Pixci::paramTask()
                 }
             }
         }
+        // TODO: maybe need to add a gettriggermode call in here
         else if (function == ADTriggerMode)
         {
             int acquisitionStatus;
@@ -2110,7 +2112,8 @@ asynStatus Pixci::getTriggerMode()
 
     // attempt to read the register and if fails, return the failure status
     setStatIfHigher(status, readSerialRegister(0xD4, &cval));
-    if (status > asynSuccess){
+    if (status > asynSuccess)
+    {
         return status;
     }
 
@@ -2118,15 +2121,21 @@ asynStatus Pixci::getTriggerMode()
     { // ext trig = 1
         trigMode = PR_EXTERNAL;
         // ext trig mode, rising edge = 1, falling edge = 0
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Trig mode of PR_EXTERNAL received from cam");
         if (cval & (1 << 7))
         {
             trigPolarity = PR_EXT_RISING_EDGE;
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Trig polarity of PR_EXT_RISING_EDGE received from cam");
         }
         else
         {
             trigPolarity = PR_EXT_FALLING_EDGE;
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Trig polarity of PR_EXT_FALLING_EDGE received from cam");
         }
-        setStatIfHigher(status, setIntegerParam(PR_TriggerPolarity, trigPolarity));
+        asynStatus newStat;
+        newStat = setIntegerParam(PR_TriggerPolarity, trigPolarity);
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "status of setIntegerParam=%i", newStat);
+        setStatIfHigher(status, newStat);
     }
     else
     { // ext trig = 0
@@ -2203,7 +2212,8 @@ void Pixci::updateTemperaturePcb(bool callBackFlag)
         callParamCallbacks();
 }
 
-asynStatus Pixci::updateTriggerMode(bool callBackFlag){
+asynStatus Pixci::updateTriggerMode(bool callBackFlag)
+{
     asynStatus status;
     status = getTriggerMode();
     if (callBackFlag)
