@@ -604,6 +604,7 @@ void Pixci::paramTask()
         paramMsgQue->receive(functionAndVal, 16);
         function = (int)functionAndVal[0];
         val = functionAndVal[1];
+        std::cout << "function=" << function << ", val=" << val << std::endl;
         if (function == ADBinX)
         {
             epicsInt32 sizeX, sizeY, binY;
@@ -648,9 +649,9 @@ void Pixci::paramTask()
                 }
             }
         }
-        // TODO: maybe need to add a gettriggermode call in here
         else if (function == ADTriggerMode)
         {
+            // TODO: maybe need to add a gettriggermode call in here
             std::cout << "in adtriggermode branch, val = " << val << std::endl;
             int acquisitionStatus;
             int previousTriggerMode;
@@ -774,7 +775,6 @@ void Pixci::paramTask()
                 }
             }
         }
-
         else if (function == ADMinX)
         {
             epicsInt32 maxSizeX, minX, sizeX, sizeY, binX, binY;
