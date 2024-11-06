@@ -2302,7 +2302,6 @@ asynStatus Pixci::updateIntialPVs()
         setStatIfHigher(status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
 
-    setStatIfHigher(status, getTriggerMode());
     setStatIfHigher(status, callParamCallbacks());
     return status;
 }
