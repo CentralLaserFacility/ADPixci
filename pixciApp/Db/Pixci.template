@@ -13,6 +13,7 @@ record(mbbo, "$(P)$(R)TriggerMode")
    field(TWVL, "2")
    field(THST, "Btn. Triggered")
    field(THVL, "3")
+   field(DISP, "1")
 }
 
 record(mbbi, "$(P)$(R)TriggerMode_RBV")
@@ -25,6 +26,7 @@ record(mbbi, "$(P)$(R)TriggerMode_RBV")
    field(TWVL, "2")
    field(THST, "Btn. Triggered")
    field(THVL, "3")
+   field(FLNK, "$(P)$(R)WriteEnabler")
 }
 
 record(bo, "$(P)$(R)SoftTrigger")
@@ -33,6 +35,7 @@ record(bo, "$(P)$(R)SoftTrigger")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_SOFT_TRIGGER")
    field(ZNAM, "Done")
    field(ONAM, "Trigger")
+   field(DISP, "1")
 }
 
 record(bo, "$(P)$(R)TriggerPolarity")
@@ -42,6 +45,7 @@ record(bo, "$(P)$(R)TriggerPolarity")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
    field(ZNAM, "Rising Edge")
    field(ONAM, "Falling Edge")
+   field(DISP, "1")
    info(autosaveFields, "VAL")
 }
 
@@ -52,6 +56,16 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
    field(ZNAM, "Rising Edge")
    field(ONAM, "Falling Edge")
    field(SCAN, "I/O Intr")
+}
+
+record(dfanout, "$(P)$(R)WriteEnabler") {
+   field(DOL, "0")
+   field(OUTA, "$(P)$(R)WriteEnabler.DISV")
+   field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
+   field(OUTC, "$(P)$(R)TriggerMode.DISP")
+   field(OUTD, "$(P)$(R)Acquire.DISP")
+   field(OUTE, "$(P)$(R)SoftTrigger.DISP")
+   field(OMSL, "closed_loop")
 }
 
 record(bo, "$(P)$(R)UpdateTemperature")
@@ -166,6 +180,9 @@ record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
    field(SCAN, "I/O Intr")
 }
 
+record(bo, "$(P)$(R)Acquire") {
+   field(DISP, "1")
+}
 
 record(ai, "$(P)$(R)AcquireTime_RBV")
 {
