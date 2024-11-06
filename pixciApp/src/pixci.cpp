@@ -3,6 +3,7 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 
@@ -33,7 +34,6 @@ extern "C"
 #include <epicsExit.h>
 #include <epicsExport.h>
 #include <epicsMessageQueue.h>
-#include <iostream>
 
 using namespace std;
 
