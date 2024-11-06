@@ -509,14 +509,6 @@ private:
      */
     void updateTemperaturePcb(bool callBackFlag = false);
 
-
-    /**
-     * @brief update the PVs related to trigger mode
-     * 
-     * @param callBackFlag Flag for calling the callParamCallbacks function
-     */
-    asynStatus updateTriggerMode(bool callBackFlag = false);
-
     /**
      * @brief update the PVs related to manufacturers data
      *

@@ -3,9 +3,6 @@
  *
  */
 
-#include <stdio.h>
-#include <bitset>
-
 #include <stdlib.h>
 #include <string>
 
@@ -604,7 +601,6 @@ void Pixci::paramTask()
         paramMsgQue->receive(functionAndVal, 16);
         function = (int)functionAndVal[0];
         val = functionAndVal[1];
-        std::cout << "function=" << function << ", val=" << val << std::endl;
         if (function == ADBinX)
         {
             epicsInt32 sizeX, sizeY, binY;
@@ -651,8 +647,6 @@ void Pixci::paramTask()
         }
         else if (function == ADTriggerMode)
         {
-            // TODO: maybe need to add a gettriggermode call in here
-            std::cout << "in adtriggermode branch, val = " << val << std::endl;
             int acquisitionStatus;
             int previousTriggerMode;
             status = setTriggerMode(val);
@@ -900,9 +894,7 @@ void Pixci::paramTask()
         }
         else if (function == PR_TriggerPolarity)
         {
-            std::cout << "we're in the trigger polarity mode branch" << std::endl;
             int triggerMode;
-            std::cout << "triggerPolarity (val) = " << val << std::endl;
             if (val == PR_EXT_RISING_EDGE)
             {
                 setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
@@ -2110,19 +2102,14 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 
 asynStatus Pixci::getTriggerMode()
 {
-    std::cout << "Getting trig mode" << std::endl;
     PRAcquisitionMode_t trigMode;
     PR_TriggerPolarity_t trigPolarity;
     asynStatus status = asynSuccess;
-
     char cval = 0;
 
     // attempt to read the register and if fails, return the failure status
     setStatIfHigher(status, readSerialRegister(0xD4, &cval));
-    std::cout << "stat = " << status << std::endl;
 
-    std::bitset<8> x(cval);
-    std::cout << "cval = " << x << std::endl;
     if (status > asynSuccess)
     {
         return status;
@@ -2139,10 +2126,7 @@ asynStatus Pixci::getTriggerMode()
         {
             trigPolarity = PR_EXT_FALLING_EDGE;
         }
-        std::cout << "Trig polarity of " << trigPolarity << " received from cam" << std::endl;
-        asynStatus newStat = setIntegerParam(PR_TriggerPolarity, trigPolarity);
-        std::cout << "status of setIntegerParam = " << newStat << std::endl;
-        setStatIfHigher(status, newStat);
+        setStatIfHigher(status, setIntegerParam(PR_TriggerPolarity, trigPolarity));
     }
     else
     { // ext trig = 0
@@ -2164,10 +2148,7 @@ asynStatus Pixci::getTriggerMode()
             trigMode = PR_BUTTON_TRIGGER;
         }
     }
-    std::cout << "Trig mode of " << trigMode  << " received from cam" << std::endl;
-    asynStatus newStat2 = setIntegerParam(ADTriggerMode, trigMode);
-    setStatIfHigher(status, newStat2);
-    std::cout << "status of setIntegerParam2 = " << newStat2 << std::endl;
+    setStatIfHigher(status, setIntegerParam(ADTriggerMode, trigMode));
     return status;
 }
 
@@ -2178,22 +2159,21 @@ asynStatus Pixci::setTriggerMode(int mode)
     switch (mode)
     {
     case PR_INTERNAL_ITR:
-        hexval = 0x04; //00000100
+        hexval = 0x04; // 00000100
         break;
     case PR_INTERNAL_FFR:
-        hexval = 0X06; //00000110
+        hexval = 0X06; // 00000110
         break;
     case PR_EXTERNAL:
         int triggerPolarity;
         getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-        std::cout << "triggerPolarity = " << triggerPolarity << std::endl;
         if (triggerPolarity == PR_EXT_FALLING_EDGE)
         {
-            hexval = 0xc0; //11000000
+            hexval = 0xc0; // 11000000
         }
         else
         {
-            hexval = 0x40; //01000000
+            hexval = 0x40; // 01000000
         }
         break;
     case PR_BUTTON_TRIGGER:
@@ -2306,7 +2286,6 @@ asynStatus Pixci::updateStatus(bool updateManufacturersDataFlag)
 
 asynStatus Pixci::updateIntialPVs()
 {
-    std::cout << "updating init PVs" << std::endl;
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
     epicsFloat64 acquireFrameRate;
