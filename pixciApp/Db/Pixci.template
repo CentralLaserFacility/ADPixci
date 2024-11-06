@@ -1,8 +1,13 @@
+# Pixci.template
+# Database template for ADPixci, overrides some records from ADBase (ADCore) 
+# and adds Pixci specific records
+#
+
 include "ADBase.template"
 
-######################
-# Override ADBase to extend Trigger Mode
-######################
+################################################################################
+# Override ADBase to extend Trigger Mode and RBV
+#
 record(mbbo, "$(P)$(R)TriggerMode")
 {
    field(ZRST, "Live - ITR")
@@ -29,6 +34,9 @@ record(mbbi, "$(P)$(R)TriggerMode_RBV")
    field(FLNK, "$(P)$(R)WriteEnabler")
 }
 
+################################################################################
+# Records for sending a soft trigger and setting external trigger mode polarity
+#
 record(bo, "$(P)$(R)SoftTrigger")
 {
    field(DTYP, "asynInt32")
@@ -58,7 +66,10 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
    field(SCAN, "I/O Intr")
 }
 
-# TODO: add comments
+################################################################################
+# Record for enabling write access of various PVs after the device has first
+# initialised and sent a Trigger Mode back to the IOC
+#
 record(dfanout, "$(P)$(R)WriteEnabler") {
    field(DOL, "0")
    field(OUTA, "$(P)$(R)WriteEnabler.DISV")
@@ -69,23 +80,9 @@ record(dfanout, "$(P)$(R)WriteEnabler") {
    field(OMSL, "closed_loop")
 }
 
-record(bo, "$(P)$(R)UpdateTemperature")
-{
-   field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
-   field(ZNAM, "Updated")
-   field(ONAM, "Updated")
-   field(SCAN, "5 second")
-}
-
-record(bo, "$(P)$(R)UpdateStatus")
-{
-   field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
-   field(ZNAM, "Updated")
-   field(ONAM, "Updated")
-}
-
+################################################################################
+# Record for the temperature reading from the device PCB 
+#
 record(ai, "$(P)$(R)TemperaturePCB")
 {
    field(DTYP, "asynFloat64")
@@ -95,6 +92,20 @@ record(ai, "$(P)$(R)TemperaturePCB")
    field(SCAN, "I/O Intr")
 }
 
+################################################################################
+# TODO: check with Aoun about this record as the git blame shows that he wrote it
+#
+record(bo, "$(P)$(R)UpdateStatus")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
+   field(ZNAM, "Updated")
+   field(ONAM, "Updated")
+}
+
+################################################################################
+# Records related to ThermoElectric Cooling (TEC)
+#
 record(bo, "$(P)$(R)ToggleTEC")
 {
    field(DTYP, "asynInt32")
@@ -112,6 +123,48 @@ record(bi, "$(P)$(R)ToggleTEC_RBV")
    field(SCAN, "I/O Intr")
 }
 
+record(bo, "$(P)$(R)UpdateTemperature")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
+   field(ZNAM, "Updated")
+   field(ONAM, "Updated")
+   field(SCAN, "5 second")
+}
+
+# Analogue to Digital Converter Section
+record(ai, "$(P)$(R)ADCCalibrationZeroDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_ZERO_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)ADCCalibrationFortyDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_FORTY_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+# Digital to Analogue Converter Section
+record(ai, "$(P)$(R)DACCalibrationZeroDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_ZERO_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_FORTY_DEGREE")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Records related to pre amp gain
+#
 record(bo, "$(P)$(R)ToggleGain")
 {
    field(DTYP, "asynInt32")
@@ -129,6 +182,9 @@ record(bi, "$(P)$(R)ToggleGain_RBV")
    field(SCAN, "I/O Intr")
 }
 
+################################################################################
+# Records realted to the Field-programmable gate array
+# 
 record(bo, "$(P)$(R)ToggleFPGAComms")
 {
    field(DTYP, "asynInt32")
@@ -146,6 +202,9 @@ record(bi, "$(P)$(R)ToggleFPGAComms_RBV")
    field(SCAN, "I/O Intr")
 }
 
+################################################################################
+# Build info
+#  
 record(stringin, "$(P)$(R)BuildDate_RBV")
 {
    field(DTYP, "asynOctetRead")
@@ -153,34 +212,9 @@ record(stringin, "$(P)$(R)BuildDate_RBV")
    field(SCAN, "I/O Intr")
 }
 
-record(ai, "$(P)$(R)ADCCalibrationZeroDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_ZERO_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)ADCCalibrationFortyDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_FORTY_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)DACCalibrationZeroDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_ZERO_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_FORTY_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
+################################################################################
+# Override ADCore records for acquire settings
+#
 record(bo, "$(P)$(R)Acquire") {
    field(DISP, "1")
 }
