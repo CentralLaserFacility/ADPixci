@@ -58,6 +58,7 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
    field(SCAN, "I/O Intr")
 }
 
+# TODO: add comments
 record(dfanout, "$(P)$(R)WriteEnabler") {
    field(DOL, "0")
    field(OUTA, "$(P)$(R)WriteEnabler.DISV")
