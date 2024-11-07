@@ -93,14 +93,13 @@ record(ai, "$(P)$(R)TemperaturePCB")
 }
 
 ################################################################################
-# TODO: check with Aoun about this record as the git blame shows that he wrote it
+# If this record is processed, the driver will update the PCB temperature, the 
+# actual temperature, and the maunfacturer information 
 #
 record(bo, "$(P)$(R)UpdateStatus")
 {
    field(DTYP, "asynInt32")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
-   field(ZNAM, "Updated")
-   field(ONAM, "Updated")
 }
 
 ################################################################################
@@ -127,8 +126,6 @@ record(bo, "$(P)$(R)UpdateTemperature")
 {
    field(DTYP, "asynInt32")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
-   field(ZNAM, "Updated")
-   field(ONAM, "Updated")
    field(SCAN, "5 second")
 }
 
