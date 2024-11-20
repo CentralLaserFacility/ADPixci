@@ -23,6 +23,9 @@ static const char *driverName = "Pixci";
 #define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
 #define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
 
+#define BinAxisX 0
+#define BinAxisY 1
+
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
  The camera will immediately trigger the start of a new integration period
@@ -215,8 +218,8 @@ private:
      * @param function
      * @param value
      */
-    void addToParamQue(int function, int value);
-    void addToParamQue(int function, epicsFloat64 value);
+    void addToParamQue(epicsInt32 function, epicsInt32 value);
+    void addToParamQue(epicsInt32 function, epicsFloat64 value);
 
     /**
      * @brief write value to the registers of the camera using serial command, might take longer
@@ -240,6 +243,13 @@ private:
      * @return asynStatus
      */
     asynStatus setTriggerMode(int mode);
+
+    /**
+     * @brief Send a soft trigger to the camera to capture one image.
+     *
+     * @return asynStatus
+     */
+    asynStatus Pixci::sendSoftTrigger();
 
     /**
      * @brief Set the Frame Rate for Internal FFR mode
