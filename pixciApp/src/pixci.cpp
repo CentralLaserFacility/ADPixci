@@ -2100,58 +2100,6 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
     return asynError;
 }
 
-asynStatus Pixci::getTriggerMode()
-{
-    PRAcquisitionMode_t trigMode;
-    PR_TriggerPolarity_t trigPolarity;
-    asynStatus status = asynSuccess;
-    char cval = 0;
-
-    // attempt to read the register and if fails, return the failure status
-    setStatIfHigher(status, readSerialRegister(0xD4, &cval));
-
-    if (status > asynSuccess)
-    {
-        return status;
-    }
-    if (cval & (1 << 6))
-    { // ext trig = 1
-        trigMode = PR_EXTERNAL;
-        // ext trig mode, rising edge = 1, falling edge = 0
-        if (cval & (1 << 7))
-        {
-            trigPolarity = PR_EXT_RISING_EDGE;
-        }
-        else
-        {
-            trigPolarity = PR_EXT_FALLING_EDGE;
-        }
-        setStatIfHigher(status, setIntegerParam(PR_TriggerPolarity, trigPolarity));
-    }
-    else
-    { // ext trig = 0
-        if (cval & (1 << 2))
-        { // sequence trig = 1
-            // sequence trig mode, FFR = 1, ITR = 0
-            if (cval & (1 << 1))
-            {
-                trigMode = PR_INTERNAL_FFR;
-            }
-            else
-            {
-                trigMode = PR_INTERNAL_ITR;
-            }
-        }
-        else
-        { // sequence trig = 0
-            // then must be in button trigger mode
-            trigMode = PR_BUTTON_TRIGGER;
-        }
-    }
-    setStatIfHigher(status, setIntegerParam(ADTriggerMode, trigMode));
-    return status;
-}
-
 asynStatus Pixci::setTriggerMode(int mode)
 {
     char reg = 0xD4;
