@@ -230,13 +230,6 @@ private:
     asynStatus writeSerialRegister(int unit, char Register, char val);
 
     /**
-     * @brief Get the Trigger Mode of camera
-     *
-     * @return asynStatus
-     */
-    asynStatus getTriggerMode();
-
-    /**
      * @brief Set the Trigger Mode for the image capturing
      *
      * @param mode index of the mode,
