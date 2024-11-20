@@ -3,10 +3,6 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-
 /* For windows */
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 #include <windows.h>
@@ -45,6 +41,9 @@ using namespace std;
 #define BAUDRATE 115200
 
 #define SUCCESS_MESSAGE 0x50
+
+#define END_OF_TRANSMISSION_BYTE 0x50
+#define TRIGGER_MODE_BYTE 0xD4
 
 #define BINNING1 1
 #define BINNING2 2
@@ -598,8 +597,8 @@ void Pixci::paramTask()
 
     for (;;)
     {
-        paramMsgQue->receive(functionAndVal, 16);
-        function = (int)functionAndVal[0];
+        paramMsgQue->receive(functionAndVal, PARAM_MESSAGE_SIZE);
+        function = static_cast<epicsInt32>(functionAndVal[0]);
         val = functionAndVal[1];
         if (function == ADBinX)
         {
@@ -607,7 +606,7 @@ void Pixci::paramTask()
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
             getIntegerParam(ADBinY, &binY);
-            status = Pixci::setBin(val, 0);
+            status = Pixci::setBin(val, BinAxisX);
             if (status == asynSuccess)
             {
                 setIntegerParam(ADBinX, val); // Updating the binX value.
@@ -687,9 +686,7 @@ void Pixci::paramTask()
             getIntegerParam(ADTriggerMode, &triggerMode);
             if (triggerMode == PR_BUTTON_TRIGGER)
             {
-                char reg = 0xD4;
-                char hexval = 0x01;
-                status = Pixci::writeSerialRegister(UNIT, reg, hexval);
+                status = Pixci::sendSoftTrigger();
             }
             else
             {
@@ -1499,8 +1496,8 @@ void Pixci::resetVideoSettings()
         pxd_videoFormatAsIncluded(0);
     }
 
-    setBin(binX, 0);
-    setBin(binY, 1);
+    setBin(binX, BinAxisX);
+    setBin(binY, BinAxisY);
     reloadVideoSettings();
 }
 
@@ -1620,7 +1617,7 @@ asynStatus Pixci::setBin(int val, bool coordinate)
         break;
     }
 
-    if (coordinate == false)
+    if (coordinate == BinAxisX)
     {
         reg = 0xA1;
     }
@@ -1779,7 +1776,7 @@ unsigned char Pixci::getSystemStatus()
     char cval = 0;
     char inputMsg[2];
     int inSize;
-    char first_bufout[] = {0x49, 0x50};
+    char first_bufout[] = {0x49, END_OF_TRANSMISSION_BYTE};
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
@@ -1799,7 +1796,7 @@ asynStatus Pixci::setSystemStatus(char val)
     char inputMsg[1];
 
     /* template of message to write value to registers */
-    char bufout[] = {0x4F, 0x00, 0x50};
+    char bufout[] = {0x4F, 0x00, END_OF_TRANSMISSION_BYTE};
     bufout[1] = val;
 
     /*writing to serial connection*/
@@ -2037,10 +2034,9 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
     asynStatus status;
     int inSize;
     char inputMsg[20];
-    unsigned char success = 0x50;
 
     /* template of message to write value to registers */
-    char bufout[] = {0x53, 0xE0, 0x02, 0x00, 0x00, 0x50};
+    char bufout[] = {0x53, 0xE0, 0x02, 0x00, 0x00, END_OF_TRANSMISSION_BYTE};
     bufout[3] = Register;
     bufout[4] = val;
 
@@ -2052,7 +2048,7 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
         return asynError;
     }
 
-    if (inputMsg[0] == success)
+    if (inputMsg[0] == SUCCESS_MESSAGE)
     {
         return asynSuccess;
     }
@@ -2063,8 +2059,8 @@ asynStatus Pixci::readSerialRegister(char Register, char *val)
 {
     char inputMsg[20];
     int inSize;
-    char first_bufout[] = {0x53, 0xE0, 0x01, 0xFF, 0x50};
-    char last_bufout[] = {0x53, 0xE1, 0x01, 0x50};
+    char first_bufout[] = {0x53, 0xE0, 0x01, 0xFF, END_OF_TRANSMISSION_BYTE};
+    char last_bufout[] = {0x53, 0xE1, 0x01, END_OF_TRANSMISSION_BYTE};
     first_bufout[3] = Register;
 
     /*writing to serial connection*/
@@ -2083,8 +2079,8 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 {
     char inputMsg[20];
     int inSize;
-    char first_bufout[] = {0x53, 0xE0, 0x02, 0xFF, 0xFF, 0x50};
-    char last_bufout[] = {0x53, 0xE1, 0x01, 0x50};
+    char first_bufout[] = {0x53, 0xE0, 0x02, 0xFF, 0xFF, END_OF_TRANSMISSION_BYTE};
+    char last_bufout[] = {0x53, 0xE1, 0x01, END_OF_TRANSMISSION_BYTE};
     first_bufout[3] = Register1;
     first_bufout[4] = Register2;
 
@@ -2102,7 +2098,6 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 
 asynStatus Pixci::setTriggerMode(int mode)
 {
-    char reg = 0xD4;
     char hexval;
     switch (mode)
     {
@@ -2132,7 +2127,13 @@ asynStatus Pixci::setTriggerMode(int mode)
         return asynError;
         break;
     }
-    return Pixci::writeSerialRegister(UNIT, reg, hexval);
+    return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
+}
+
+asynStatus Pixci::sendSoftTrigger()
+{
+    char hexval = 0x01;
+    return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
 }
 
 // PV Updating Functions
@@ -2155,8 +2156,8 @@ asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 
     char inputMsg[20];
     int inSize;
-    char first_bufout[] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00, 0x50};
-    char last_bufout[] = {0x53, 0xAF, 0x12, 0x50};
+    char first_bufout[] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00, END_OF_TRANSMISSION_BYTE};
+    char last_bufout[] = {0x53, 0xAF, 0x12, END_OF_TRANSMISSION_BYTE};
 
     INT16 serialNumber = 0;
     string buildDate = "";
