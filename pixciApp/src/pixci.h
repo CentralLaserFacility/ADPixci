@@ -23,8 +23,19 @@ static const char *driverName = "Pixci";
 #define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
 #define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
 
-#define BinAxisX 0
-#define BinAxisY 1
+constexpr epicsBoolean BIN_AXIS_X = epicsFalse;
+constexpr epicsBoolean BIN_AXIS_Y = epicsTrue;
+constexpr epicsUInt8 SUCCESS_MESSAGE = 0x50;
+constexpr epicsUInt8 END_OF_TRANSMISSION_BYTE = 0x50;
+constexpr epicsUInt8 TRIGGER_MODE_BYTE = 0xD4;
+constexpr epicsUInt8 X_BIN_BYTE = 0xA1;
+constexpr epicsUInt8 Y_BIN_BYTE = 0xA2;
+
+constexpr epicsUInt8 FRAME_RATE_BYTES[5] = {0xDC, 0xDD, 0xDE, 0xDF, 0xE0};
+constexpr epicsUInt8 PCB_TEMPERATURE_BYTES[2] = {0X70, 0X71};
+constexpr epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[2] = {0X6E, 0X6F};
+constexpr epicsUInt8 TEC_TEMPERATURE_BYTES[2] = {0X03, 0X04};
+
 
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
@@ -202,7 +213,7 @@ private:
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return asynStatus
      */
-    asynStatus setBin(int val, bool coordinate);
+    asynStatus setBin(epicsInt32 val, epicsBoolean coordinate);
 
     /**
      * @brief queue for changing parameters that use serial communication.
