@@ -13,7 +13,7 @@ record(mbbo, "$(P)$(R)TriggerMode")
    field(TWVL, "2")
    field(THST, "Btn. Triggered")
    field(THVL, "3")
- }
+}
 
 record(mbbi, "$(P)$(R)TriggerMode_RBV")
 {
@@ -37,10 +37,12 @@ record(bo, "$(P)$(R)SoftTrigger")
 
 record(bo, "$(P)$(R)TriggerPolarity")
 {
+   field(PINI, "1")
    field(DTYP, "asynInt32")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
    field(ZNAM, "Rising Edge")
    field(ONAM, "Falling Edge")
+   info(autosaveFields, "VAL")
 }
 
 record(bi, "$(P)$(R)TriggerPolarity_RBV")
