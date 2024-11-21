@@ -1670,8 +1670,8 @@ double Pixci::getTemperatureActual()
 {
     char cval[2] = {0, 0};
 
-    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], 0x00, &cval[0]);
-    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[1], 0x00, &cval[1]);
+    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]);
+    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]);
 
     INT16 adcCount = 0;
     adcCount += (INT16)(unsigned char)cval[1];
@@ -1684,8 +1684,8 @@ double Pixci::getTemperaturePcb()
 {
     char cval[2] = {0, 0};
 
-    readSerialRegister(PCB_TEMPERATURE_BYTES[0], 0x00, &cval[1]);
-    readSerialRegister(PCB_TEMPERATURE_BYTES[1], 0x00, &cval[0]);
+    readSerialRegister(PCB_TEMPERATURE_BYTES[0], PCB_TEMPERATURE_BYTES[1], &cval[1]);
+    readSerialRegister(PCB_TEMPERATURE_BYTES[2], PCB_TEMPERATURE_BYTES[3], &cval[0]);
 
     INT16 lval = 0;
     lval += (INT16)(unsigned char)cval[0];
@@ -1717,14 +1717,14 @@ asynStatus Pixci::setTecTemperature(double temperature)
     cval[0] = (char)((dacCount & 0x0F00) >> 8);
     cval[1] = (char)((dacCount & 0x00FF));
 
-    writeSerialRegister(UNIT, 0x03, cval[0]);
-    return writeSerialRegister(UNIT, 0x04, cval[1]);
+    writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]);
 }
 
 unsigned char Pixci::getFpgaStatus()
 {
     char cval = 0;
-    readSerialRegister(0x00, &cval);
+    readSerialRegister(FPGA_STATUS_BYTE, &cval);
     // TODO: implement proper error handling
     return (unsigned char)cval;
 }
@@ -1733,9 +1733,9 @@ asynStatus Pixci::toggleTec(bool enableTec)
 {
     unsigned char fpgaStatus = getFpgaStatus();
     if (enableTec)
-        return writeSerialRegister(UNIT, 0x00, fpgaStatus | 0x01); // setting first bit = 1
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | 0x01); // setting first bit = 1
     else
-        return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(0x01)); // setting first bit = 0
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01)); // setting first bit = 0
 }
 
 bool Pixci::isTecEnabled()
@@ -1748,9 +1748,9 @@ asynStatus Pixci::toggleGain(bool enableGain)
 {
     unsigned char fpgaStatus = getFpgaStatus();
     if (enableGain)
-        return writeSerialRegister(UNIT, 0x00, fpgaStatus | (1 << 7)); // setting last bit = 1
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | (1 << 7)); // setting last bit = 1
     else
-        return writeSerialRegister(UNIT, 0x00, fpgaStatus & ~(1 << 7)); // setting last bit = 0
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7)); // setting last bit = 0
 }
 
 bool Pixci::isGainEnabled()
@@ -1764,7 +1764,7 @@ unsigned char Pixci::getSystemStatus()
     char cval = 0;
     char inputMsg[2];
     int inSize;
-    char first_bufout[] = {0x49, END_OF_TRANSMISSION_BYTE};
+    char first_bufout[] = {GET_SYSTEM_STATUS_BYTE, END_OF_TRANSMISSION_BYTE};
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
@@ -1784,8 +1784,7 @@ asynStatus Pixci::setSystemStatus(char val)
     char inputMsg[1];
 
     /* template of message to write value to registers */
-    char bufout[] = {0x4F, 0x00, END_OF_TRANSMISSION_BYTE};
-    bufout[1] = val;
+    char bufout[] = {SET_SYSTEM_STATUS_BYTE, val, END_OF_TRANSMISSION_BYTE};
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
@@ -1826,24 +1825,23 @@ asynStatus Pixci::setExposure(double exposureTime)
     exposureTimeCount = (unsigned long)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
     longTouchar(exposureTimeCount, exposureTimeHexVal);
 
-    writeSerialRegister(UNIT, 0xED, exposureTimeHexVal[0]);
-    writeSerialRegister(UNIT, 0xEE, exposureTimeHexVal[1]);
-    writeSerialRegister(UNIT, 0xEF, exposureTimeHexVal[2]);
-    writeSerialRegister(UNIT, 0xF0, exposureTimeHexVal[3]);
-    return writeSerialRegister(UNIT, 0xF1, exposureTimeHexVal[4]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[2], exposureTimeHexVal[2]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[3], exposureTimeHexVal[3]);
+    return writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]);
 }
 
 double Pixci::getExposure()
 {
     char cval[5] = {0, 0, 0, 0, 0};
     double exposureTime = 0.0;
-    asynStatus status;
     unsigned long long exposureTimeCount = 0;
-    readSerialRegister(0XED, &cval[0]);
-    readSerialRegister(0xEE, &cval[1]);
-    readSerialRegister(0xEF, &cval[2]);
-    readSerialRegister(0XF0, &cval[3]);
-    readSerialRegister(0XF1, &cval[4]);
+    readSerialRegister(EXPOSURE_BYTES[0], &cval[0]);
+    readSerialRegister(EXPOSURE_BYTES[1], &cval[1]);
+    readSerialRegister(EXPOSURE_BYTES[2], &cval[2]);
+    readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
+    readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
 
     exposureTimeCount = UcharToLong(cval);
     if (exposureTimeCount > 0)
@@ -2024,9 +2022,13 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
     char inputMsg[20];
 
     /* template of message to write value to registers */
-    char bufout[] = {0x53, 0xE0, 0x02, 0x00, 0x00, END_OF_TRANSMISSION_BYTE};
-    bufout[3] = Register;
-    bufout[4] = val;
+    char bufout[] = {
+        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0], 
+        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1], 
+        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2], 
+        Register, val, 
+        END_OF_TRANSMISSION_BYTE
+    };
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
@@ -2047,9 +2049,19 @@ asynStatus Pixci::readSerialRegister(char Register, char *val)
 {
     char inputMsg[20];
     int inSize;
-    char first_bufout[] = {0x53, 0xE0, 0x01, 0xFF, END_OF_TRANSMISSION_BYTE};
-    char last_bufout[] = {0x53, 0xE1, 0x01, END_OF_TRANSMISSION_BYTE};
-    first_bufout[3] = Register;
+    char first_bufout[] = {
+        SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0], 
+        SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1], 
+        SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2], 
+        Register, 
+        END_OF_TRANSMISSION_BYTE
+    };
+    char last_bufout[] = {
+        READ_SERIAL_PREFIX_BYTES[0], 
+        READ_SERIAL_PREFIX_BYTES[1], 
+        READ_SERIAL_PREFIX_BYTES[2], 
+        END_OF_TRANSMISSION_BYTE
+    };
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
@@ -2067,10 +2079,19 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 {
     char inputMsg[20];
     int inSize;
-    char first_bufout[] = {0x53, 0xE0, 0x02, 0xFF, 0xFF, END_OF_TRANSMISSION_BYTE};
-    char last_bufout[] = {0x53, 0xE1, 0x01, END_OF_TRANSMISSION_BYTE};
-    first_bufout[3] = Register1;
-    first_bufout[4] = Register2;
+    char first_bufout[] = {
+        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0], 
+        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1], 
+        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2], 
+        Register1, Register2, 
+        END_OF_TRANSMISSION_BYTE
+    };
+    char last_bufout[] = {
+        READ_SERIAL_PREFIX_BYTES[0], 
+        READ_SERIAL_PREFIX_BYTES[1], 
+        READ_SERIAL_PREFIX_BYTES[2], 
+        END_OF_TRANSMISSION_BYTE
+    };
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
@@ -2090,25 +2111,25 @@ asynStatus Pixci::setTriggerMode(int mode)
     switch (mode)
     {
     case PR_INTERNAL_ITR:
-        hexval = 0x04; // 00000100
+        hexval = INTERNAL_ITR_BYTE; // 00000100
         break;
     case PR_INTERNAL_FFR:
-        hexval = 0X06; // 00000110
+        hexval = INTERNAL_FFR_BYTE; // 00000110
         break;
     case PR_EXTERNAL:
         int triggerPolarity;
         getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
         if (triggerPolarity == PR_EXT_FALLING_EDGE)
         {
-            hexval = 0xc0; // 11000000
+            hexval = EXTERNAL_FALLING_EDGE_BYTE; // 11000000
         }
         else
         {
-            hexval = 0x40; // 01000000
+            hexval = EXTERNAL_RISING_EDGE_BYTE; // 01000000
         }
         break;
     case PR_BUTTON_TRIGGER:
-        hexval = 0x00; // 00000000
+        hexval = CLEAR_TRIGGER_MODE_BYTE; // 00000000
         break;
     default:
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d", mode);
@@ -2120,8 +2141,7 @@ asynStatus Pixci::setTriggerMode(int mode)
 
 asynStatus Pixci::sendSoftTrigger()
 {
-    char hexval = 0x01;
-    return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
+    return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
 }
 
 // PV Updating Functions
@@ -2144,8 +2164,23 @@ asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 
     char inputMsg[20];
     int inSize;
-    char first_bufout[] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00, END_OF_TRANSMISSION_BYTE};
-    char last_bufout[] = {0x53, 0xAF, 0x12, END_OF_TRANSMISSION_BYTE};
+    char first_bufout[] = {
+        GET_MISC_DATA_BYTES[0], 
+        GET_MISC_DATA_BYTES[1], 
+        GET_MISC_DATA_BYTES[2], 
+        GET_MISC_DATA_BYTES[3], 
+        GET_MISC_DATA_BYTES[4], 
+        GET_MISC_DATA_BYTES[5], 
+        GET_MISC_DATA_BYTES[6], 
+        GET_MISC_DATA_BYTES[7], 
+        END_OF_TRANSMISSION_BYTE
+    };
+    char last_bufout[] = {
+        MANUFACTURER_DATA_BYTES[0], 
+        MANUFACTURER_DATA_BYTES[1], 
+        MANUFACTURER_DATA_BYTES[2], 
+        END_OF_TRANSMISSION_BYTE
+    };
 
     INT16 serialNumber = 0;
     string buildDate = "";
@@ -2249,8 +2284,8 @@ asynStatus Pixci::setRoiSizeX(int RoisizeX)
     cval[0] = (char)((RoisizeX & 0x0F00) >> 8);
     cval[1] = (char)((RoisizeX & 0x00FF));
 
-    writeSerialRegister(UNIT, 0xB4, cval[0]);
-    return writeSerialRegister(UNIT, 0xB5, cval[1]);
+    writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]);
 }
 
 asynStatus Pixci::setRoiSizeY(int RoisizeY)
@@ -2259,8 +2294,8 @@ asynStatus Pixci::setRoiSizeY(int RoisizeY)
     cval[0] = (char)((RoisizeY & 0x0F00) >> 8);
     cval[1] = (char)((RoisizeY & 0x00FF));
 
-    writeSerialRegister(UNIT, 0xB8, cval[0]);
-    return writeSerialRegister(UNIT, 0xB9, cval[1]);
+    writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]);
 }
 
 asynStatus Pixci::setRoiOffsetX(int RoiOffsetX)
@@ -2269,8 +2304,8 @@ asynStatus Pixci::setRoiOffsetX(int RoiOffsetX)
     cval[0] = (char)((RoiOffsetX & 0x0F00) >> 8);
     cval[1] = (char)((RoiOffsetX & 0x00FF));
 
-    writeSerialRegister(UNIT, 0xB6, cval[0]);
-    return writeSerialRegister(UNIT, 0xB7, cval[1]);
+    writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]);
 }
 
 asynStatus Pixci::setRoiOffsetY(int RoiOffsetY)
@@ -2279,16 +2314,16 @@ asynStatus Pixci::setRoiOffsetY(int RoiOffsetY)
     cval[0] = (char)((RoiOffsetY & 0x0F00) >> 8);
     cval[1] = (char)((RoiOffsetY & 0x00FF));
 
-    writeSerialRegister(UNIT, 0xBA, cval[0]);
-    return writeSerialRegister(UNIT, 0xBB, cval[1]);
+    writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]);
 }
 
 int Pixci::getRoiSizeX()
 {
     char cval[2] = {0, 0};
 
-    readSerialRegister(0XB4, &cval[1]);
-    readSerialRegister(0XB5, &cval[0]);
+    readSerialRegister(ROI_X_SIZE_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_X_SIZE_BYTES[1], &cval[0]);
 
     INT16 ival = 0;
     ival += (INT16)(unsigned char)cval[0];
@@ -2301,8 +2336,8 @@ int Pixci::getRoiSizeY()
 {
     char cval[2] = {0, 0};
 
-    readSerialRegister(0XB8, &cval[1]);
-    readSerialRegister(0XB9, &cval[0]);
+    readSerialRegister(ROI_Y_SIZE_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_Y_SIZE_BYTES[1], &cval[0]);
 
     INT16 ival = 0;
     ival += (INT16)(unsigned char)cval[0];
@@ -2315,8 +2350,8 @@ int Pixci::getRoiOffsetX()
 {
     char cval[2] = {0, 0};
 
-    readSerialRegister(0XB6, &cval[1]);
-    readSerialRegister(0XB7, &cval[0]);
+    readSerialRegister(ROI_X_OFFSET_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_X_OFFSET_BYTES[1], &cval[0]);
 
     INT16 ival = 0;
     ival += (INT16)(unsigned char)cval[0];
@@ -2329,8 +2364,8 @@ int Pixci::getRoiOffsetY()
 {
     char cval[2] = {0, 0};
 
-    readSerialRegister(0XBA, &cval[1]);
-    readSerialRegister(0XBB, &cval[0]);
+    readSerialRegister(ROI_Y_OFFSET_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_Y_OFFSET_BYTES[1], &cval[0]);
 
     INT16 ival = 0;
     ival += (INT16)(unsigned char)cval[0];
