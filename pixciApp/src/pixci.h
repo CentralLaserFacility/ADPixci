@@ -23,8 +23,32 @@ static const char *driverName = "Pixci";
 #define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
 #define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
 
+#define BINNING1 1
+#define BINNING2 2
+#define BINNING4 4
+#define BINNING8 8
+#define BINNING16 16
+#define BINNING32 32
+
+#define DETECTOR_1024 4710
+#define DETECTOR_2048 4240
+
+#define NOERROR 0      // Errors are defined as integers below zero.
+
+constexpr const char* FORMAT = "";      // Video format configuration name.
+constexpr const char* DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
+constexpr epicsInt32 UNIT = 1;        // Unit to be selected for streaming, eb1 model only have 1 unit.
+constexpr epicsInt32 RESERVED  = 0;
+constexpr epicsFloat64 BAUDRATE = 115200;
+
 constexpr epicsBoolean BIN_AXIS_X = epicsFalse;
 constexpr epicsBoolean BIN_AXIS_Y = epicsTrue;
+
+constexpr epicsUInt32 PARAM_MESSAGE_QUE_SIZE = 20;
+constexpr epicsUInt32 PARAM_MESSAGE_SIZE = 16;
+constexpr epicsFloat64 COUNT_PER_FRAME = 40e6;
+constexpr epicsFloat64 EXPOSURE_COUNT_TO_TIME = 40e6;
+constexpr epicsFloat64 SEC_TO_mS = 10e2;
 
 constexpr epicsUInt8 SUCCESS_MESSAGE = 0x50;
 constexpr epicsUInt8 END_OF_TRANSMISSION_BYTE = 0x50;
@@ -51,11 +75,11 @@ constexpr epicsUInt8 READ_SERIAL_PREFIX_BYTES[3] = {0x53, 0xE1, 0x01};
 constexpr epicsUInt8 GET_MISC_DATA_BYTES[8] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00};
 constexpr epicsUInt8 MANUFACTURER_DATA_BYTES[3] = {0x53, 0xAF, 0x12};
 
+constexpr epicsUInt8 EXPOSURE_BYTES[5] = {0xED, 0xEE, 0xEF, 0xF0, 0xF1};
 constexpr epicsUInt8 FRAME_RATE_BYTES[5] = {0xDC, 0xDD, 0xDE, 0xDF, 0xE0};
 constexpr epicsUInt8 PCB_TEMPERATURE_BYTES[4] = {0X70, 0x00, 0X71, 0x00};
 constexpr epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[4] = {0X6E, 0x00, 0X6F, 0x00};
 constexpr epicsUInt8 TEC_TEMPERATURE_BYTES[2] = {0X03, 0X04};
-constexpr epicsUInt8 EXPOSURE_BYTES[5] = {0xED, 0xEE, 0xEF, 0xF0, 0xF1};
 constexpr epicsUInt8 ROI_X_SIZE_BYTES[2] = {0xB4, 0xB5};
 constexpr epicsUInt8 ROI_Y_SIZE_BYTES[2] = {0xB8, 0xB9};
 constexpr epicsUInt8 ROI_X_OFFSET_BYTES[2] = {0xB6, 0xB7};
