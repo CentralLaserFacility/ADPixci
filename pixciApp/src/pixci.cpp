@@ -659,7 +659,7 @@ void Pixci::paramTask()
             getIntegerParam(ADTriggerMode, &triggerMode);
             if (triggerMode == PR_BUTTON_TRIGGER)
             {
-                status = Pixci::sendSoftTrigger();
+                status = Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
             }
             else
             {
@@ -2108,11 +2108,6 @@ asynStatus Pixci::setTriggerMode(int mode)
         break;
     }
     return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
-}
-
-asynStatus Pixci::sendSoftTrigger()
-{
-    return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
 }
 
 // PV Updating Functions
