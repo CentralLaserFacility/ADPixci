@@ -25,16 +25,41 @@ static const char *driverName = "Pixci";
 
 constexpr epicsBoolean BIN_AXIS_X = epicsFalse;
 constexpr epicsBoolean BIN_AXIS_Y = epicsTrue;
+
 constexpr epicsUInt8 SUCCESS_MESSAGE = 0x50;
 constexpr epicsUInt8 END_OF_TRANSMISSION_BYTE = 0x50;
-constexpr epicsUInt8 TRIGGER_MODE_BYTE = 0xD4;
+
 constexpr epicsUInt8 X_BIN_BYTE = 0xA1;
 constexpr epicsUInt8 Y_BIN_BYTE = 0xA2;
 
+constexpr epicsUInt8 FPGA_STATUS_BYTE = 0x00;
+constexpr epicsUInt8 GET_SYSTEM_STATUS_BYTE = 0x49;
+constexpr epicsUInt8 SET_SYSTEM_STATUS_BYTE = 0x4F;
+
+constexpr epicsUInt8 TRIGGER_MODE_BYTE = 0xD4;
+constexpr epicsUInt8 CLEAR_TRIGGER_MODE_BYTE = 0x00;
+constexpr epicsUInt8 SOFT_TRIGGER_BYTE = 0x01;
+constexpr epicsUInt8 INTERNAL_ITR_BYTE = 0x04;
+constexpr epicsUInt8 INTERNAL_FFR_BYTE = 0x06;
+constexpr epicsUInt8 EXTERNAL_FALLING_EDGE_BYTE = 0xC0;
+constexpr epicsUInt8 EXTERNAL_RISING_EDGE_BYTE = 0x40;
+
+constexpr epicsUInt8 SINGLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x01};
+constexpr epicsUInt8 DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x02};
+constexpr epicsUInt8 READ_SERIAL_PREFIX_BYTES[3] = {0x53, 0xE1, 0x01};
+
+constexpr epicsUInt8 GET_MISC_DATA_BYTES[8] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00};
+constexpr epicsUInt8 MANUFACTURER_DATA_BYTES[3] = {0x53, 0xAF, 0x12};
+
 constexpr epicsUInt8 FRAME_RATE_BYTES[5] = {0xDC, 0xDD, 0xDE, 0xDF, 0xE0};
-constexpr epicsUInt8 PCB_TEMPERATURE_BYTES[2] = {0X70, 0X71};
-constexpr epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[2] = {0X6E, 0X6F};
+constexpr epicsUInt8 PCB_TEMPERATURE_BYTES[4] = {0X70, 0x00, 0X71, 0x00};
+constexpr epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[4] = {0X6E, 0x00, 0X6F, 0x00};
 constexpr epicsUInt8 TEC_TEMPERATURE_BYTES[2] = {0X03, 0X04};
+constexpr epicsUInt8 EXPOSURE_BYTES[5] = {0xED, 0xEE, 0xEF, 0xF0, 0xF1};
+constexpr epicsUInt8 ROI_X_SIZE_BYTES[2] = {0xB4, 0xB5};
+constexpr epicsUInt8 ROI_Y_SIZE_BYTES[2] = {0xB8, 0xB9};
+constexpr epicsUInt8 ROI_X_OFFSET_BYTES[2] = {0xB6, 0xB7};
+constexpr epicsUInt8 ROI_Y_OFFSET_BYTES[2] = {0xBA, 0xBB};
 
 
 /* Trigger modes of Raptor Eagle-XV" */
