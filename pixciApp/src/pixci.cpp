@@ -33,20 +33,6 @@ extern "C"
 
 using namespace std;
 
-#define FORMAT ""      // Video format configuration name.
-#define DRIVERPARMS "" // Default , user '-QU 0' for not using interrupts.
-#define UNIT 1         // Unit to be selected for streaming, eb1 model only have 1 unit.
-#define NOERROR 0      // Errors are defined as integers below zero.
-#define RESERVED 0
-#define BAUDRATE 115200
-
-#define BINNING1 1
-#define BINNING2 2
-#define BINNING4 4
-#define BINNING8 8
-#define BINNING16 16
-#define BINNING32 32
-
 #define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
 #define BINNINGSETTINGS_1X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x2.fmt"
 #define BINNINGSETTINGS_1X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x4.fmt"
@@ -120,16 +106,6 @@ using namespace std;
 #define BINNINGSETTINGS_4240_32X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x8.fmt"
 #define BINNINGSETTINGS_4240_32X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x16.fmt"
 #define BINNINGSETTINGS_4240_32X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x32.fmt"
-
-#define PARAM_MESSAGE_QUE_SIZE 20
-#define PARAM_MESSAGE_SIZE 16
-#define COUNT_PER_FRAME 40e6
-
-#define DETECTOR_1024 4710
-#define DETECTOR_2048 4240
-
-#define EXPOSURE_COUNT_TO_TIME 40e6
-#define SEC_TO_mS 10e2
 
 // Set video resolution and video offset.
 // Set capture resolution to same.
@@ -1690,9 +1666,7 @@ double Pixci::getTemperaturePcb()
     INT16 lval = 0;
     lval += (INT16)(unsigned char)cval[0];
     lval += (INT16)(unsigned char)(cval[1] & 0x0F) << 8;
-    double temperature = lval / 16.0f;
-
-    return temperature;
+    return lval / 16.0;
 }
 
 double Pixci::getTecTemperature()
