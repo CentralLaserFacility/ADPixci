@@ -1474,18 +1474,18 @@ void Pixci::resetVideoSettings()
     reloadVideoSettings();
 }
 
-unsigned long long Pixci::UcharToLong(char *cval)
+epicsInt64 Pixci::uCharToEpicsUInt64(char *cval)
 {
-    unsigned long long lval = 0;
-    lval += (unsigned long)(unsigned char)cval[4];
-    lval += ((unsigned long)(unsigned char)cval[3]) << 8;
-    lval += ((unsigned long)(unsigned char)cval[2]) << 16;
-    lval += ((unsigned long)(unsigned char)cval[1]) << 24;
-    lval += ((unsigned long)(unsigned char)cval[0]) << 32;
+    epicsInt64 lval = 0;
+    lval += (epicsUInt64)(epicsUInt8)cval[4];
+    lval += ((epicsUInt64)(epicsUInt8)cval[3]) << 8;
+    lval += ((epicsUInt64)(epicsUInt8)cval[2]) << 16;
+    lval += ((epicsUInt64)(epicsUInt8)cval[1]) << 24;
+    lval += ((epicsUInt64)(epicsUInt8)cval[0]) << 32;
     return lval;
 }
 
-void Pixci::longTouchar(long lval, char *cval)
+void Pixci::epicsUInt64ToUChar(epicsUInt64 lval, char *cval)
 {
     cval[0] = (char)((lval & 0xFF00000000) >> 32);
     cval[1] = (char)((lval & 0x00FF000000) >> 24);
@@ -1595,11 +1595,10 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 
 asynStatus Pixci::setFrameRate(double frameRate)
 {
-    unsigned long frameRateCount;
-    unsigned long long lval;
+    epicsUInt64 frameRateCount;
     char frameRateHexVal[5] = {0, 0, 0, 0, 0};
-    frameRateCount = (unsigned long)(COUNT_PER_FRAME / frameRate);
-    longTouchar(frameRateCount, frameRateHexVal);
+    frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
+    epicsUInt64ToUChar(frameRateCount, frameRateHexVal);
 
     writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]);
     writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]);
@@ -1619,7 +1618,7 @@ double Pixci::getFrameRate()
     readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]);
     readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]);
 
-    frameRateCount = UcharToLong(cval);
+    frameRateCount = uCharToEpicsUInt64(cval);
     if (frameRateCount > 0)
     {
         frameRate = 40e6 / double(frameRateCount);
@@ -1634,7 +1633,7 @@ double Pixci::convertAdcCountToCentigrade(INT16 adcCount)
 
 INT16 Pixci::convertCentigradeToDacCount(double temperature)
 {
-    return (temperature - DAC_C) / DAC_M;
+    return static_cast<INT16>((temperature - DAC_C) / DAC_M);
 }
 
 double Pixci::convertDacCountToCentigrade(INT16 dacCount)
@@ -1793,11 +1792,10 @@ bool Pixci::isFpgaCommsEnabled()
 
 asynStatus Pixci::setExposure(double exposureTime)
 {
-    unsigned long exposureTimeCount;
-    unsigned long long lval;
+    epicsUInt64 exposureTimeCount;
     char exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
-    exposureTimeCount = (unsigned long)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
-    longTouchar(exposureTimeCount, exposureTimeHexVal);
+    exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
+    epicsUInt64ToUChar(exposureTimeCount, exposureTimeHexVal);
 
     writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
     writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]);
@@ -1817,7 +1815,7 @@ double Pixci::getExposure()
     readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
     readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
 
-    exposureTimeCount = UcharToLong(cval);
+    exposureTimeCount = uCharToEpicsUInt64(cval);
     if (exposureTimeCount > 0)
     {
         exposureTime = (double(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
@@ -1991,15 +1989,14 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 
 asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
 {
-    asynStatus status;
     int inSize;
     char inputMsg[20];
 
     /* template of message to write value to registers */
     char bufout[] = {
-        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0], 
-        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1], 
-        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2], 
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]), 
         Register, val, 
         END_OF_TRANSMISSION_BYTE
     };
@@ -2024,16 +2021,16 @@ asynStatus Pixci::readSerialRegister(char Register, char *val)
     char inputMsg[20];
     int inSize;
     char first_bufout[] = {
-        SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0], 
-        SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1], 
-        SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2], 
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]), 
         Register, 
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-        READ_SERIAL_PREFIX_BYTES[0], 
-        READ_SERIAL_PREFIX_BYTES[1], 
-        READ_SERIAL_PREFIX_BYTES[2], 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]), 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]), 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]), 
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -2054,16 +2051,16 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
     char inputMsg[20];
     int inSize;
     char first_bufout[] = {
-        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0], 
-        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1], 
-        DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2], 
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]), 
         Register1, Register2, 
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-        READ_SERIAL_PREFIX_BYTES[0], 
-        READ_SERIAL_PREFIX_BYTES[1], 
-        READ_SERIAL_PREFIX_BYTES[2], 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]), 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]), 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]), 
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -2135,24 +2132,23 @@ void Pixci::updateTemperaturePcb(bool callBackFlag)
 
 asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 {
-
     char inputMsg[20];
     int inSize;
     char first_bufout[] = {
-        GET_MISC_DATA_BYTES[0], 
-        GET_MISC_DATA_BYTES[1], 
-        GET_MISC_DATA_BYTES[2], 
-        GET_MISC_DATA_BYTES[3], 
-        GET_MISC_DATA_BYTES[4], 
-        GET_MISC_DATA_BYTES[5], 
-        GET_MISC_DATA_BYTES[6], 
-        GET_MISC_DATA_BYTES[7], 
+         static_cast<char>(GET_MISC_DATA_BYTES[0]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[1]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[2]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[3]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[4]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[5]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[6]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[7]), 
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-        MANUFACTURER_DATA_BYTES[0], 
-        MANUFACTURER_DATA_BYTES[1], 
-        MANUFACTURER_DATA_BYTES[2], 
+         static_cast<char>(MANUFACTURER_DATA_BYTES[0]), 
+         static_cast<char>(MANUFACTURER_DATA_BYTES[1]), 
+         static_cast<char>(MANUFACTURER_DATA_BYTES[2]), 
         END_OF_TRANSMISSION_BYTE
     };
 
