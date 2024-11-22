@@ -1474,9 +1474,9 @@ void Pixci::resetVideoSettings()
     reloadVideoSettings();
 }
 
-epicsInt64 Pixci::uCharToEpicsUInt64(char *cval)
+epicsUInt64 Pixci::uCharToEpicsUInt64(char *cval)
 {
-    epicsInt64 lval = 0;
+    epicsUInt64 lval = 0;
     lval += (epicsUInt64)(epicsUInt8)cval[4];
     lval += ((epicsUInt64)(epicsUInt8)cval[3]) << 8;
     lval += ((epicsUInt64)(epicsUInt8)cval[2]) << 16;
@@ -1498,7 +1498,7 @@ int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *seri
 {
     int count, i;
     char bufOut[50];
-    char chkSum;
+    char chkSum = 0;
     int outMsgwait = 0;
     int inMsgwait = 0;
     int inMsgwaitFlag = 0;
@@ -1535,7 +1535,6 @@ int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *seri
                   "%s: Cannot serial write: %s.",
                   driverName, pxd_mesgErrorCode(count));
         return count;
-        ;
     }
     else
     {
@@ -1557,7 +1556,7 @@ int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *seri
 
 asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 {
-    char hexval;
+    char hexval = 0;
     char reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
 
     /* Assigning corresponding Hex value to send*/
@@ -1595,9 +1594,8 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 
 asynStatus Pixci::setFrameRate(double frameRate)
 {
-    epicsUInt64 frameRateCount;
     char frameRateHexVal[5] = {0, 0, 0, 0, 0};
-    frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
+    epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
     epicsUInt64ToUChar(frameRateCount, frameRateHexVal);
 
     writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]);
@@ -1611,14 +1609,13 @@ double Pixci::getFrameRate()
 {
     char cval[5] = {0, 0, 0, 0, 0};
     double frameRate = 0.0;
-    unsigned long long frameRateCount = 0;
     readSerialRegister(FRAME_RATE_BYTES[0], &cval[0]);
     readSerialRegister(FRAME_RATE_BYTES[1], &cval[1]);
     readSerialRegister(FRAME_RATE_BYTES[2], &cval[2]);
     readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]);
     readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]);
 
-    frameRateCount = uCharToEpicsUInt64(cval);
+    epicsUInt64 frameRateCount = uCharToEpicsUInt64(cval);
     if (frameRateCount > 0)
     {
         frameRate = 40e6 / double(frameRateCount);
@@ -1736,11 +1733,10 @@ unsigned char Pixci::getSystemStatus()
 {
     char cval = 0;
     char inputMsg[2];
-    int inSize;
     char first_bufout[] = {GET_SYSTEM_STATUS_BYTE, END_OF_TRANSMISSION_BYTE};
 
     /*writing to serial connection*/
-    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
+    int inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
 
     if (inputMsg[1] == SUCCESS_MESSAGE)
     {
@@ -1753,14 +1749,13 @@ unsigned char Pixci::getSystemStatus()
 
 asynStatus Pixci::setSystemStatus(char val)
 {
-    int inSize;
     char inputMsg[1];
 
     /* template of message to write value to registers */
     char bufout[] = {SET_SYSTEM_STATUS_BYTE, val, END_OF_TRANSMISSION_BYTE};
 
     /*writing to serial connection*/
-    inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
+    int inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
 
     if (inSize < NOERROR)
     {
@@ -1792,9 +1787,8 @@ bool Pixci::isFpgaCommsEnabled()
 
 asynStatus Pixci::setExposure(double exposureTime)
 {
-    epicsUInt64 exposureTimeCount;
     char exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
-    exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
+    epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
     epicsUInt64ToUChar(exposureTimeCount, exposureTimeHexVal);
 
     writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
@@ -1808,14 +1802,13 @@ double Pixci::getExposure()
 {
     char cval[5] = {0, 0, 0, 0, 0};
     double exposureTime = 0.0;
-    unsigned long long exposureTimeCount = 0;
     readSerialRegister(EXPOSURE_BYTES[0], &cval[0]);
     readSerialRegister(EXPOSURE_BYTES[1], &cval[1]);
     readSerialRegister(EXPOSURE_BYTES[2], &cval[2]);
     readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
     readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
 
-    exposureTimeCount = uCharToEpicsUInt64(cval);
+    epicsUInt64 exposureTimeCount = uCharToEpicsUInt64(cval);
     if (exposureTimeCount > 0)
     {
         exposureTime = (double(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
@@ -1989,7 +1982,6 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 
 asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
 {
-    int inSize;
     char inputMsg[20];
 
     /* template of message to write value to registers */
@@ -2002,7 +1994,7 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
     };
 
     /*writing to serial connection*/
-    inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
+    int inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
 
     if (inSize < NOERROR)
     {
