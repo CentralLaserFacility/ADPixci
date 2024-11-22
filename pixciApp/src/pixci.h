@@ -507,7 +507,7 @@ private:
      * @param cval char array of size 5
      * @return unsigned long long
      */
-    epicsInt64 uCharToEpicsUInt64(char *cval);
+    epicsUInt64 uCharToEpicsUInt64(char *cval);
 
     /**
      * @brief convert unsigned char value to unsigned long long
