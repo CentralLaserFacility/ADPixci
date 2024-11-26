@@ -263,7 +263,6 @@ static void paramTaskC(void *drvPvt);
 
 /* Event handler for acquire task */
 HANDLE g_hEvent;
-unsigned char g_ucSerialBuf[256];
 /*
  * @brief Configuration command for pixci driver; creates a new pixci object.
  * @param See the pixci.h
@@ -490,7 +489,7 @@ void Pixci::acquireTask()
     NDDataType_t dataType;
     epicsInt32 sizeX, sizeY;
     epicsInt32 binX, binY;
-    size_t dims[2];
+    size_t dims[2] = {};
     epicsTimeStamp currentTime;
     epicsInt32 numImagesCounter;
     epicsInt32 imageCounter;
@@ -560,7 +559,7 @@ static void paramTaskC(void *drvPvt)
 
 void Pixci::paramTask()
 {
-    epicsFloat64 functionAndVal[2];
+    epicsFloat64 functionAndVal[2] = {};
     epicsInt32 function;
     epicsFloat64 d_val;
     epicsInt32 i_val;
@@ -1497,7 +1496,7 @@ void Pixci::epicsUInt64ToUChar(epicsUInt64 lval, char *cval)
 int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *serialIn, int serialInBufferSize)
 {
     int count, i;
-    char bufOut[50];
+    char bufOut[50] = {};
     char chkSum = 0;
     int outMsgwait = 0;
     int inMsgwait = 0;
@@ -1732,7 +1731,7 @@ bool Pixci::isGainEnabled()
 unsigned char Pixci::getSystemStatus()
 {
     char cval = 0;
-    char inputMsg[2];
+    char inputMsg[2] = {};
     char first_bufout[] = {GET_SYSTEM_STATUS_BYTE, END_OF_TRANSMISSION_BYTE};
 
     /*writing to serial connection*/
@@ -1749,7 +1748,7 @@ unsigned char Pixci::getSystemStatus()
 
 asynStatus Pixci::setSystemStatus(char val)
 {
-    char inputMsg[1];
+    char inputMsg[1] = {};
 
     /* template of message to write value to registers */
     char bufout[] = {SET_SYSTEM_STATUS_BYTE, val, END_OF_TRANSMISSION_BYTE};
@@ -1964,25 +1963,21 @@ asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 
 void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value)
 {
-    epicsFloat64 functionAndVal[2];
-    functionAndVal[0] = function;
-    functionAndVal[1] = value;
+    epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), static_cast<epicsFloat64>(value)};
     /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
 void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 {
-    epicsFloat64 functionAndVal[2];
-    functionAndVal[0] = function;
-    functionAndVal[1] = value;
+    epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
     /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
 asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
 {
-    char inputMsg[20];
+    char inputMsg[20] = {};
 
     /* template of message to write value to registers */
     char bufout[] = {
@@ -2010,7 +2005,7 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
 
 asynStatus Pixci::readSerialRegister(char Register, char *val)
 {
-    char inputMsg[20];
+    char inputMsg[20] = {};
     int inSize;
     char first_bufout[] = {
          static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
@@ -2040,7 +2035,7 @@ asynStatus Pixci::readSerialRegister(char Register, char *val)
 
 asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 {
-    char inputMsg[20];
+    char inputMsg[20] = {};
     int inSize;
     char first_bufout[] = {
          static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
@@ -2119,7 +2114,7 @@ void Pixci::updateTemperaturePcb(bool callBackFlag)
 
 asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 {
-    char inputMsg[20];
+    char inputMsg[20] = {};
     int inSize;
     char first_bufout[] = {
          static_cast<char>(GET_MISC_DATA_BYTES[0]), 
@@ -2141,7 +2136,6 @@ asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 
     INT16 serialNumber = 0;
     string buildDate = "";
-    char buildCode[5];
     INT16 adcCountZeroDegree = 0;
     INT16 adcCountFortyDegree = 0;
     INT16 dacCountZeroDegree = 0;
@@ -2164,12 +2158,6 @@ asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 
         buildDate = to_string((INT16)(unsigned char)inputMsg[2]) + "/" + to_string((INT16)(unsigned char)inputMsg[3]) + "/" + to_string((INT16)(unsigned char)inputMsg[4]);
         setStringParam(PR_BuildDate, buildDate);
-
-        buildCode[0] = inputMsg[5];
-        buildCode[1] = inputMsg[6];
-        buildCode[2] = inputMsg[7];
-        buildCode[3] = inputMsg[8];
-        buildCode[4] = inputMsg[9];
 
         adcCountZeroDegree += (INT16)(unsigned char)inputMsg[10];
         adcCountZeroDegree += (INT16)(unsigned char)(inputMsg[11]) << 8;
