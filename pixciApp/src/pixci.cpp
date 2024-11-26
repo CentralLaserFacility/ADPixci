@@ -397,9 +397,12 @@ Pixci::~Pixci()
 
 asynStatus Pixci::setupAquisition()
 {
-    int binX, binY, sizeX, sizeY, RoiSizeX, RoiSizeY;
-    sizeX = pxd_imageXdim();
-    sizeY = pxd_imageYdim();
+    int binX = 0; 
+    int binY = 0; 
+    int RoiSizeX = 0; 
+    int RoiSizeY = 0;
+    int sizeX = pxd_imageXdim();
+    int sizeY = pxd_imageYdim();
     callParamCallbacks();
     getIntegerParam(ADBinX, &binX);
     if (binX <= 0)
@@ -432,10 +435,9 @@ asynStatus Pixci::acquireImage()
 
     /* TODO: implement all acquisition method like trigger, ringbuffer etc */
     static const char *functionName = "acquireImage";
-    int error;
     pxbuffer_t buffer = 1L; // Image frame buffer
     /* live capture the image into frame buffer */
-    error = pxd_goLive(UNIT, buffer);
+    int error = pxd_goLive(UNIT, buffer);
     if (error < NOERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -453,9 +455,8 @@ asynStatus Pixci::acquireImage()
 asynStatus Pixci::acquireStop()
 {
     static const char *functionName = "acquireStop";
-    int error;
     /* stop the live capturing */
-    error = pxd_goUnLive(UNIT);
+    int error = pxd_goUnLive(UNIT);
     if (error < NOERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -483,17 +484,18 @@ static void acquireTaskC(void *drvPvt)
 void Pixci::acquireTask()
 {
     /* TODO: need to implement in a seperate file */
-    NDArray *pImage;
+    NDArray *pImage = this->pArrays[0];
     pxbuffer_t buf = 1L;
-    pImage = this->pArrays[0];
-    NDDataType_t dataType;
-    epicsInt32 sizeX, sizeY;
-    epicsInt32 binX, binY;
+    NDDataType_t dataType = NDUInt16;
+    epicsInt32 sizeX = 0;
+    epicsInt32 sizeY = 0;
+    epicsInt32 binX = 0;
+    epicsInt32 binY = 0;
     size_t dims[2] = {};
-    epicsTimeStamp currentTime;
-    epicsInt32 numImagesCounter;
-    epicsInt32 imageCounter;
-    epicsInt32 arrayCallbacks;
+    epicsTimeStamp currentTime = {};
+    epicsInt32 numImagesCounter = 0;
+    epicsInt32 imageCounter = 0;
+    epicsInt32 arrayCallbacks = 0;
     setupAquisition();
 
     for (;;)
@@ -510,7 +512,6 @@ void Pixci::acquireTask()
 
         dims[0] = sizeX;
         dims[1] = sizeY;
-        dataType = NDUInt16;
 
         if (arrayCallbacks)
         {
@@ -560,11 +561,11 @@ static void paramTaskC(void *drvPvt)
 void Pixci::paramTask()
 {
     epicsFloat64 functionAndVal[2] = {};
-    epicsInt32 function;
-    epicsFloat64 d_val;
-    epicsInt32 i_val;
-    asynStatus status;
-    epicsInt32 acquire;
+    epicsInt32 function = 0;
+    epicsFloat64 d_val = 0.0;
+    epicsInt32 i_val = 0;
+    asynStatus status = asynSuccess;
+    epicsInt32 acquire = 0;
 
     for (;;)
     {
@@ -740,14 +741,18 @@ void Pixci::paramTask()
         }
         else if (function == ADMinX)
         {
-            epicsInt32 maxSizeX, minX, sizeX, sizeY, binX, binY;
+            epicsInt32 maxSizeX = 0;
+            epicsInt32 sizeX = 0;
+            epicsInt32 sizeY = 0;
+            epicsInt32 binX = 0;
+            epicsInt32 binY = 0;
             getIntegerParam(ADMaxSizeX, &maxSizeX);
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
             getIntegerParam(ADAcquire, &acquire);
-            minX = (i_val > maxSizeX) ? maxSizeX : i_val;
+            epicsInt32 minX = (i_val > maxSizeX) ? maxSizeX : i_val;
             if ((sizeX + minX) > maxSizeX)
             {
                 sizeX = maxSizeX - minX;
@@ -769,14 +774,18 @@ void Pixci::paramTask()
         }
         else if (function == ADMinY)
         {
-            epicsInt32 maxSizeY, minY, sizeY, sizeX, binX, binY;
+            epicsInt32 maxSizeY = 0;
+            epicsInt32 sizeX = 0;
+            epicsInt32 sizeY = 0;
+            epicsInt32 binX = 0;
+            epicsInt32 binY = 0;
             getIntegerParam(ADMaxSizeY, &maxSizeY);
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
             getIntegerParam(ADAcquire, &acquire);
-            minY = (i_val > maxSizeY) ? maxSizeY : i_val;
+            epicsInt32 minY = (i_val > maxSizeY) ? maxSizeY : i_val;
             if ((sizeY + minY) > maxSizeY)
             {
                 sizeY = maxSizeY - minY;
@@ -800,14 +809,18 @@ void Pixci::paramTask()
         }
         else if (function == ADSizeX)
         {
-            epicsInt32 maxSizeX, minX, sizeX, sizeY, binX, binY;
+            epicsInt32 maxSizeX = 0;
+            epicsInt32 minX = 0;
+            epicsInt32 sizeY = 0;
+            epicsInt32 binX = 0;
+            epicsInt32 binY = 0;
             getIntegerParam(ADMaxSizeX, &maxSizeX);
             getIntegerParam(ADMinX, &minX);
             getIntegerParam(ADSizeY, &sizeY);
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
             getIntegerParam(ADAcquire, &acquire);
-            sizeX = (i_val > maxSizeX) ? maxSizeX : i_val;
+            epicsInt32 sizeX = (i_val > maxSizeX) ? maxSizeX : i_val;
 
             if ((sizeX + minX) > maxSizeX)
             {
@@ -832,14 +845,18 @@ void Pixci::paramTask()
         }
         else if (function == ADSizeY)
         {
-            epicsInt32 maxSizeY, minY, sizeY, sizeX, binX, binY;
+            epicsInt32 maxSizeY = 0;
+            epicsInt32 minY = 0;
+            epicsInt32 sizeX = 0;
+            epicsInt32 binX = 0;
+            epicsInt32 binY = 0;
             getIntegerParam(ADMaxSizeY, &maxSizeY);
             getIntegerParam(ADMinY, &minY);
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADBinX, &binX);
             getIntegerParam(ADBinY, &binY);
             getIntegerParam(ADAcquire, &acquire);
-            sizeY = (i_val > maxSizeY) ? maxSizeY : i_val;
+            epicsInt32 sizeY = (i_val > maxSizeY) ? maxSizeY : i_val;
 
             if ((sizeY + minY) > maxSizeY)
             {
@@ -863,7 +880,7 @@ void Pixci::paramTask()
         }
         else if (function == PR_TriggerPolarity)
         {
-            int triggerMode;
+            int triggerMode = PR_INTERNAL_ITR;
             if (i_val == PR_EXT_RISING_EDGE)
             {
                 setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
@@ -885,8 +902,8 @@ void Pixci::paramTask()
 
 void Pixci::reloadVideoSettings()
 {
-    epicsInt32 sizeX;
-    epicsInt32 sizeY;
+    epicsInt32 sizeX = 0;
+    epicsInt32 sizeY = 0;
     getIntegerParam(ADBinX, &sizeX);
     getIntegerParam(ADBinY, &sizeY);
 
@@ -1452,7 +1469,8 @@ void Pixci::reloadVideoSettings()
 
 void Pixci::resetVideoSettings()
 {
-    epicsInt32 binX, binY;
+    epicsInt32 binX = 0;
+    epicsInt32 binY = 0;
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
     if (cameraModel == DETECTOR_2048)
@@ -1495,7 +1513,7 @@ void Pixci::epicsUInt64ToUChar(epicsUInt64 lval, char *cval)
 
 int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *serialIn, int serialInBufferSize)
 {
-    int count, i;
+    int count = 0;
     char bufOut[50] = {};
     char chkSum = 0;
     int outMsgwait = 0;
@@ -1517,7 +1535,7 @@ int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *seri
     outMsgwait = 0;
 
     /* creating checksum to send as the last character of the message */
-    for (i = 0; i < msgOutSize; i++)
+    for (int i = 0; i < msgOutSize; i++)
     {
         bufOut[i] = serialOut[i];
         chkSum ^= serialOut[i];
@@ -1528,7 +1546,7 @@ int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *seri
     count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize + 1);
     Sleep(130);
 
-    if (count < ERROR)
+    if (count < NOERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot serial write: %s.",
@@ -1857,7 +1875,7 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
             the trigger mode is changed from button trigger mode, the actual implementation
             of acquireStop() will be done.
             */
-            int triggerMode;
+            int triggerMode = PR_INTERNAL_ITR;
             getIntegerParam(ADTriggerMode, &triggerMode);
             if (triggerMode == PR_BUTTON_TRIGGER)
             {
@@ -2006,7 +2024,7 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
 asynStatus Pixci::readSerialRegister(char Register, char *val)
 {
     char inputMsg[20] = {};
-    int inSize;
+    int inSize = 0;
     char first_bufout[] = {
          static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
          static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
@@ -2036,7 +2054,7 @@ asynStatus Pixci::readSerialRegister(char Register, char *val)
 asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 {
     char inputMsg[20] = {};
-    int inSize;
+    int inSize = 0;
     char first_bufout[] = {
          static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
          static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
@@ -2065,7 +2083,7 @@ asynStatus Pixci::readSerialRegister(char Register1, char Register2, char *val)
 
 asynStatus Pixci::setTriggerMode(int mode)
 {
-    char hexval;
+    char hexval = 0;
     switch (mode)
     {
     case PR_INTERNAL_ITR:
@@ -2115,7 +2133,7 @@ void Pixci::updateTemperaturePcb(bool callBackFlag)
 asynStatus Pixci::updateManufacturersData(bool callBackFlag)
 {
     char inputMsg[20] = {};
-    int inSize;
+    int inSize = 0;
     char first_bufout[] = {
          static_cast<char>(GET_MISC_DATA_BYTES[0]), 
          static_cast<char>(GET_MISC_DATA_BYTES[1]), 
@@ -2205,8 +2223,7 @@ asynStatus Pixci::updateIntialPVs()
 {
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
-    epicsFloat64 acquireFrameRate;
-    acquireFrameRate = getFrameRate();
+    epicsFloat64 acquireFrameRate = getFrameRate();
     asynStatus status = asynSuccess;
 
     setStatIfHigher(status, setIntegerParam(ADMaxSizeX, sizeX));
@@ -2324,7 +2341,9 @@ void Pixci::report(FILE *fp, int details)
     fprintf(fp, "Raptor detector %s\n", this->portName);
     if (details > 0)
     {
-        int nx, ny, dataType;
+        int nx = 0;
+        int ny = 0;
+        int dataType = 0;
         getIntegerParam(ADSizeX, &nx);
         getIntegerParam(ADSizeY, &ny);
         getIntegerParam(NDDataType, &dataType);
