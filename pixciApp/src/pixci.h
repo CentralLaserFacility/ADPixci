@@ -185,6 +185,9 @@ private:
     float DAC_M; // DAC Slope
     float DAC_C; // DAC Offset
     int cameraModel;
+    
+    /* Event handler for acquire task */
+    HANDLE g_hEvent;
 
     /**
      * @brief starts live capture image to frame buffer.
