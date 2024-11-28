@@ -133,8 +133,8 @@ _cDcl(_dllpxlib, _cfunfcc, int)
         int voffset  // video voffset
     )
 {
-    int r = 0, r1;
-    int u, umap, multiple = 0;
+    int r = 0, r1 = 0;
+    int u = 0, umap = 0, multiple = 0;
     struct xclibs *xc;
 
 #if USEINTERNALAPI
@@ -575,7 +575,9 @@ void Pixci::paramTask()
         d_val = functionAndVal[1];
         if (function == ADBinX)
         {
-            epicsInt32 sizeX, sizeY, binY;
+            epicsInt32 sizeX = 0;
+            epicsInt32 sizeY = 0; 
+            epicsInt32 binY = 0;
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
             getIntegerParam(ADBinY, &binY);
@@ -597,7 +599,9 @@ void Pixci::paramTask()
         }
         else if (function == ADBinY)
         {
-            epicsInt32 sizeX, sizeY, binX;
+            epicsInt32 sizeX = 0;
+            epicsInt32 sizeY = 0; 
+            epicsInt32 binX = 0;
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
             getIntegerParam(ADBinX, &binX);
@@ -619,8 +623,8 @@ void Pixci::paramTask()
         }
         else if (function == ADTriggerMode)
         {
-            int acquisitionStatus;
-            int previousTriggerMode;
+            int acquisitionStatus = asynSuccess;
+            int previousTriggerMode = 0;
             status = setTriggerMode(i_val);
             if (status == asynSuccess)
             {
@@ -655,7 +659,7 @@ void Pixci::paramTask()
         else if (function == PR_SoftTrigger)
         {
             /* if trigger mode is button trigger then, do the soft trigger else print error */
-            int triggerMode;
+            int triggerMode = 0;
             getIntegerParam(ADTriggerMode, &triggerMode);
             if (triggerMode == PR_BUTTON_TRIGGER)
             {
@@ -681,8 +685,7 @@ void Pixci::paramTask()
                 status = setFrameRate(1 / d_val);
                 if (status == asynSuccess)
                 {
-                    double readBackFrameRate;
-                    readBackFrameRate = getFrameRate();
+                    double readBackFrameRate= getFrameRate();
                     if (readBackFrameRate > 0)
                     {
                         setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
@@ -730,8 +733,7 @@ void Pixci::paramTask()
                 status = setExposure(d_val);
                 if (status == asynSuccess)
                 {
-                    double readBackAcquireTime;
-                    readBackAcquireTime = getExposure();
+                    double readBackAcquireTime = getExposure(); 
                     if (readBackAcquireTime > 0)
                     {
                         setDoubleParam(ADAcquireTime, readBackAcquireTime);
@@ -2093,7 +2095,7 @@ asynStatus Pixci::setTriggerMode(int mode)
         hexval = INTERNAL_FFR_BYTE; // 00000110
         break;
     case PR_EXTERNAL:
-        int triggerPolarity;
+        int triggerPolarity = PR_EXT_RISING_EDGE;
         getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
         if (triggerPolarity == PR_EXT_FALLING_EDGE)
         {
