@@ -261,8 +261,6 @@ static void acquireTaskC(void *drvPvt);
 // static void serialTaskC(void *drvPvt);
 static void paramTaskC(void *drvPvt);
 
-/* Event handler for acquire task */
-HANDLE g_hEvent;
 /*
  * @brief Configuration command for pixci driver; creates a new pixci object.
  * @param See the pixci.h
