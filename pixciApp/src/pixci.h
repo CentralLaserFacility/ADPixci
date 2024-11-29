@@ -23,6 +23,69 @@ static const char *driverName = "Pixci";
 #define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
 #define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
 
+#define BINNING1 1
+#define BINNING2 2
+#define BINNING4 4
+#define BINNING8 8
+#define BINNING16 16
+#define BINNING32 32
+
+#define DETECTOR_1024 4710
+#define DETECTOR_2048 4240
+
+#define NOERROR 0      // Errors are defined as integers below zero.
+
+constexpr const char* FORMAT = "";      // Video format configuration name.
+constexpr const char* DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
+constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming, eb1 model only have 1 unit.
+constexpr const epicsInt32 RESERVED  = 0;
+constexpr const epicsFloat64 BAUDRATE = 115200;
+
+constexpr const epicsBoolean BIN_AXIS_X = epicsFalse;
+constexpr const epicsBoolean BIN_AXIS_Y = epicsTrue;
+
+constexpr const epicsUInt32 PARAM_MESSAGE_QUE_SIZE = 20;
+constexpr const epicsUInt32 PARAM_MESSAGE_SIZE = 16;
+constexpr const epicsFloat64 COUNT_PER_FRAME = 40e6;
+constexpr const epicsFloat64 EXPOSURE_COUNT_TO_TIME = 40e6;
+constexpr const epicsFloat64 SEC_TO_mS = 10e2;
+
+constexpr const epicsInt8 SUCCESS_MESSAGE = 0x50;
+constexpr const epicsInt8 END_OF_TRANSMISSION_BYTE = 0x50;
+
+constexpr const epicsUInt8 X_BIN_BYTE = 0xA1;
+constexpr const epicsUInt8 Y_BIN_BYTE = 0xA2;
+
+constexpr const epicsUInt8 FPGA_STATUS_BYTE = 0x00;
+constexpr const epicsUInt8 GET_SYSTEM_STATUS_BYTE = 0x49;
+constexpr const epicsUInt8 SET_SYSTEM_STATUS_BYTE = 0x4F;
+
+constexpr const epicsUInt8 TRIGGER_MODE_BYTE = 0xD4;
+constexpr const epicsUInt8 CLEAR_TRIGGER_MODE_BYTE = 0x00;
+constexpr const epicsUInt8 SOFT_TRIGGER_BYTE = 0x01;
+constexpr const epicsUInt8 INTERNAL_ITR_BYTE = 0x04;
+constexpr const epicsUInt8 INTERNAL_FFR_BYTE = 0x06;
+constexpr const epicsUInt8 EXTERNAL_FALLING_EDGE_BYTE = 0xC0;
+constexpr const epicsUInt8 EXTERNAL_RISING_EDGE_BYTE = 0x40;
+
+constexpr const epicsUInt8 SINGLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x01};
+constexpr const epicsUInt8 DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x02};
+constexpr const epicsUInt8 READ_SERIAL_PREFIX_BYTES[3] = {0x53, 0xE1, 0x01};
+
+constexpr const epicsUInt8 GET_MISC_DATA_BYTES[8] = {0x53, 0xAE, 0x05, 0x01, 0x00, 0x00, 0x02, 0x00};
+constexpr const epicsUInt8 MANUFACTURER_DATA_BYTES[3] = {0x53, 0xAF, 0x12};
+
+constexpr const epicsUInt8 EXPOSURE_BYTES[5] = {0xED, 0xEE, 0xEF, 0xF0, 0xF1};
+constexpr const epicsUInt8 FRAME_RATE_BYTES[5] = {0xDC, 0xDD, 0xDE, 0xDF, 0xE0};
+constexpr const epicsUInt8 PCB_TEMPERATURE_BYTES[4] = {0X70, 0x00, 0X71, 0x00};
+constexpr const epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[4] = {0X6E, 0x00, 0X6F, 0x00};
+constexpr const epicsUInt8 TEC_TEMPERATURE_BYTES[2] = {0X03, 0X04};
+constexpr const epicsUInt8 ROI_X_SIZE_BYTES[2] = {0xB4, 0xB5};
+constexpr const epicsUInt8 ROI_Y_SIZE_BYTES[2] = {0xB8, 0xB9};
+constexpr const epicsUInt8 ROI_X_OFFSET_BYTES[2] = {0xB6, 0xB7};
+constexpr const epicsUInt8 ROI_Y_OFFSET_BYTES[2] = {0xBA, 0xBB};
+
+
 /* Trigger modes of Raptor Eagle-XV" */
 /*ITR mode will be used to capture a continuous sequence of images.
  The camera will immediately trigger the start of a new integration period
@@ -122,6 +185,9 @@ private:
     float DAC_M; // DAC Slope
     float DAC_C; // DAC Offset
     int cameraModel;
+    
+    /* Event handler for acquire task */
+    HANDLE g_hEvent;
 
     /**
      * @brief starts live capture image to frame buffer.
@@ -199,7 +265,7 @@ private:
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return asynStatus
      */
-    asynStatus setBin(int val, bool coordinate);
+    asynStatus setBin(epicsInt32 val, epicsBoolean coordinate);
 
     /**
      * @brief queue for changing parameters that use serial communication.
@@ -215,8 +281,8 @@ private:
      * @param function
      * @param value
      */
-    void addToParamQue(int function, int value);
-    void addToParamQue(int function, epicsFloat64 value);
+    void addToParamQue(epicsInt32 function, epicsInt32 value);
+    void addToParamQue(epicsInt32 function, epicsFloat64 value);
 
     /**
      * @brief write value to the registers of the camera using serial command, might take longer
@@ -240,6 +306,13 @@ private:
      * @return asynStatus
      */
     asynStatus setTriggerMode(int mode);
+
+    /**
+     * @brief Send a soft trigger to the camera to capture one image.
+     *
+     * @return asynStatus
+     */
+    asynStatus Pixci::sendSoftTrigger();
 
     /**
      * @brief Set the Frame Rate for Internal FFR mode
@@ -437,7 +510,7 @@ private:
      * @param cval char array of size 5
      * @return unsigned long long
      */
-    unsigned long long UcharToLong(char *cval);
+    epicsUInt64 uCharToEpicsUInt64(char *cval);
 
     /**
      * @brief convert unsigned char value to unsigned long long
@@ -445,7 +518,7 @@ private:
      * @param lval unsigned long long value
      * @param cval address of unsigned char array of size 5
      */
-    void longTouchar(long lval, char *cval);
+    void epicsUInt64ToUChar(epicsUInt64 lval, char *cval);
 
     /**
      * @brief Set the Acquire Time (exposure)
