@@ -2093,15 +2093,10 @@ asynStatus Pixci::setTriggerMode(int mode)
         hexval = INTERNAL_FFR_BYTE; // 00000110
         break;
     case PR_EXTERNAL:
-        int triggerPolarity = PR_EXT_RISING_EDGE;
-        getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-        if (triggerPolarity == PR_EXT_FALLING_EDGE)
-        {
-            hexval = EXTERNAL_FALLING_EDGE_BYTE; // 11000000
-        }
-        else
-        {
-            hexval = EXTERNAL_RISING_EDGE_BYTE; // 01000000
+        { // brackets so that trigger polarity goes out of scope after this case
+            int triggerPolarity = PR_EXT_RISING_EDGE;
+            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+            hexval = (triggerPolarity == PR_EXT_FALLING_EDGE) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
         }
         break;
     case PR_BUTTON_TRIGGER:
