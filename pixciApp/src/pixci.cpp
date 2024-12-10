@@ -344,7 +344,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     }
 
     // Updating all the PVs related to the status of device and the manufacturers data
-    setStatIfHigher(status, updateStatus(true));
+    setStatIfHigher(status, updateStatus());
     setStatIfHigher(status, updateIntialPVs());
     if (status == asynError)
     {
@@ -654,11 +654,12 @@ void Pixci::paramTask()
         }
         else if (function == PR_UpdateStatus)
         {
-            status = updateStatus(true);
+            status = updateStatus();
         }
         else if (function == PR_UpdateTemperature)
         {
-            status = updateStatus();
+            updateADTemperatureActual();
+            updateTemperaturePcb(true);
         }
         else if (function == ADAcquirePeriod)
         {
@@ -2186,13 +2187,11 @@ asynStatus Pixci::updateManufacturersData(bool callBackFlag)
     return asynError;
 }
 
-asynStatus Pixci::updateStatus(bool updateManufacturersDataFlag)
+asynStatus Pixci::updateStatus()
 {
     asynStatus status = asynSuccess;
     // TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
-    if (updateManufacturersDataFlag)
-        setStatIfHigher(status, updateManufacturersData()); // TODO: Implement Error Message
-
+    setStatIfHigher(status, updateManufacturersData()); // TODO: Implement Error Message
     updateADTemperatureActual();
     updateTemperaturePcb(true);
     return status;
