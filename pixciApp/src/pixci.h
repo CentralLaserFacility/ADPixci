@@ -7,7 +7,7 @@
 /* AreaDetector headers */
 #include "ADDriver.h"
 
-static constexpr const char *driverName = "Pixci";
+constexpr const char *driverName = "Pixci";
 
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
