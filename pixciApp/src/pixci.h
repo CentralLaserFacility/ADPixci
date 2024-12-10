@@ -147,7 +147,7 @@ public:
      * @param[in] fp File pointer for the report output.
      * @param[in] details Level of report details desired; currently does nothing
      */
-    void report(FILE *fp, int details);
+    void report(FILE *fp, epicsInt32 details);
 
     /**
      * @brief thread that waits for signal from frame grabber during live capture
@@ -163,28 +163,28 @@ public:
     ~Pixci();
 
 protected:
-    int PR_SoftTrigger;
-    int PR_UpdateTemperature;
-    int PR_TemperaturePcb;
-    int PR_ToggleTec;
-    int PR_ToggleGain;
-    int PR_ToggleFpgaComms;
-    int PR_UpdateStatus;
-    int PR_BuildDate;
-    int PR_ADCCalibrationZeroDegree;
-    int PR_ADCCalibrationFortyDegree;
-    int PR_DACCalibrationZeroDegree;
-    int PR_DACCalibrationFortyDegree;
-    int PR_TriggerPolarity;
+    epicsInt32 PR_SoftTrigger;
+    epicsInt32 PR_UpdateTemperature;
+    epicsInt32 PR_TemperaturePcb;
+    epicsInt32 PR_ToggleTec;
+    epicsInt32 PR_ToggleGain;
+    epicsInt32 PR_ToggleFpgaComms;
+    epicsInt32 PR_UpdateStatus;
+    epicsInt32 PR_BuildDate;
+    epicsInt32 PR_ADCCalibrationZeroDegree;
+    epicsInt32 PR_ADCCalibrationFortyDegree;
+    epicsInt32 PR_DACCalibrationZeroDegree;
+    epicsInt32 PR_DACCalibrationFortyDegree;
+    epicsInt32 PR_TriggerPolarity;
 
 #define FIRST_PIXCI_PARAM PR_SoftTrigger
 
 private:
-    float ADC_M; // ADC Slope
-    float ADC_C; // ADC Offset
-    float DAC_M; // DAC Slope
-    float DAC_C; // DAC Offset
-    int cameraModel;
+    epicsFloat32 ADC_M; // ADC Slope
+    epicsFloat32 ADC_C; // ADC Offset
+    epicsFloat32 DAC_M; // DAC Slope
+    epicsFloat32 DAC_C; // DAC Offset
+    epicsInt32 cameraModel;
     
     /* Event handler for acquire task */
     HANDLE g_hEvent;
@@ -204,7 +204,7 @@ private:
      * @param serialOut serial command to be send to the camera
      * @return asynStatus
      */
-    asynStatus writeSerial(int unit, char *serialOut, int msgSize);
+    asynStatus writeSerial(epicsInt32 unit, epicsUInt8 *serialOut, epicsInt32 msgSize);
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -216,7 +216,7 @@ private:
      * @param serialInBufferSize size of input message buffer
      * @return int size of input message, return < 0 if there is an error
      */
-    int writeReadSerial(int unit, char *serialOut, int msgOutSize, char *serialIn, int serialInBufferSize);
+    epicsInt32 writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn, epicsInt32 serialInBufferSize);
 
     /**
      * @brief load initial settings parameters
@@ -246,7 +246,7 @@ private:
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(char Register, char *val);
+    asynStatus readSerialRegister(epicsUInt8 Register, epicsUInt8 *val);
 
     /**
      * @brief read camera 2 bytes registers over serial communication
@@ -256,7 +256,7 @@ private:
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(char Register1, char Register2, char *val);
+    asynStatus readSerialRegister(epicsUInt8 Register1, epicsUInt8 Register2, epicsUInt8 *val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication.
@@ -293,7 +293,7 @@ private:
      * @param val value to be written in the register
      * @return asynStatus
      */
-    asynStatus writeSerialRegister(int unit, char Register, char val);
+    asynStatus writeSerialRegister(epicsInt32 unit, epicsUInt8 Register, epicsUInt8 val);
 
     /**
      * @brief Set the Trigger Mode for the image capturing
@@ -305,7 +305,7 @@ private:
      * 3 = Button (software trigger mode)
      * @return asynStatus
      */
-    asynStatus setTriggerMode(int mode);
+    asynStatus setTriggerMode(epicsInt32 mode);
 
     /**
      * @brief Send a soft trigger to the camera to capture one image.
@@ -320,7 +320,7 @@ private:
      * @param frameRate
      * @return asynStatus
      */
-    asynStatus setFrameRate(double frameRate);
+    asynStatus setFrameRate(epicsFloat64 frameRate);
 
     /**
      * @brief Set the TEC Temperature
@@ -328,7 +328,7 @@ private:
      * @param temperature
      * @return asynStatus
      */
-    asynStatus setTecTemperature(double temperature);
+    asynStatus setTecTemperature(epicsFloat64 temperature);
 
     /**
      * @brief Set the system status of the camera
@@ -342,7 +342,7 @@ private:
      * Bit 0 = 1 to enable comms to FPGA EPROM
      * @return asynStatus
      */
-    asynStatus setSystemStatus(char val);
+    asynStatus setSystemStatus(epicsUInt8 val);
 
     /**
      * @brief Enable/ Disable TEC controller
@@ -350,7 +350,7 @@ private:
      * @param enableTec
      * @return asynStatus
      */
-    asynStatus toggleTec(bool enableTec);
+    asynStatus toggleTec(epicsBoolean enableTec);
 
     /**
      * @brief Enable/Disable Pre-Amp Gain
@@ -358,7 +358,7 @@ private:
      * @param enableGain
      * @return asynStatus
      */
-    asynStatus toggleGain(bool enableGain);
+    asynStatus toggleGain(epicsBoolean enableGain);
 
     /**
      * @brief Enable/Disable comms to FPGA EPROM
@@ -366,35 +366,35 @@ private:
      * @param enableFpgaComms
      * @return asynStatus
      */
-    asynStatus toggleFpgaComms(bool enableFpgaComms);
+    asynStatus toggleFpgaComms(epicsBoolean enableFpgaComms);
 
     /**
      * @brief Get the Frame Rate from the camera
      *
      * @return double framerate
      */
-    double getFrameRate();
+    epicsFloat64 getFrameRate();
 
     /**
      * @brief Get the Actual Temperature from the camera
      *
      * @return double actual temperature
      */
-    double getTemperatureActual();
+    epicsFloat64 getTemperatureActual();
 
     /**
      * @brief Get the PCB Temperature from the camera
      *
      * @return double PCB temperature
      */
-    double getTemperaturePcb();
+    epicsFloat64 getTemperaturePcb();
 
     /**
      * @brief Get the Tec Temperature from the camera
      *
      * @return double TEC temperature in centigrade
      */
-    double getTecTemperature();
+    epicsFloat64 getTecTemperature();
 
     /**
      * @brief Get the FPGA Status from camera
@@ -405,7 +405,7 @@ private:
      * Bit 1 = 1 OverTemp >80°C tripped (Default=0)
      * Bit 0 = 1 to enable TEC (Default=0)
      */
-    unsigned char getFpgaStatus();
+    epicsUInt8 getFpgaStatus();
 
     /**
      * @brief Get the System Status from camera
@@ -418,7 +418,7 @@ private:
      * Bit 1 = 0 to Hold FPGA in RESET
      * Bit 0 = 1 to enable comms to FPGA EPROM
      */
-    unsigned char getSystemStatus();
+    epicsUInt8 getSystemStatus();
 
     /**
      * @brief Get the TEC enable status
@@ -426,7 +426,7 @@ private:
      * @return true - TEC Enabled
      * @return false - TEC Disabled
      */
-    bool isTecEnabled();
+    epicsBoolean isTecEnabled();
 
     /**
      * @brief Get the Pre-Amp Gain enable status
@@ -434,7 +434,7 @@ private:
      * @return true = Pre Amp Gain Enabled
      * @return false = Pre Amp Gain Disabled
      */
-    bool isGainEnabled();
+    epicsBoolean isGainEnabled();
 
     /**
      * @brief Get the comms to FPGA EPROM enable status
@@ -442,7 +442,7 @@ private:
      * @return true  = comms to FPGA EPROM Enabled
      * @return false = comms to FPGA EPROM Disabled
      */
-    bool isFpgaCommsEnabled();
+    epicsBoolean isFpgaCommsEnabled();
 
     /**
      * @brief Set the ROI Size X
@@ -450,7 +450,7 @@ private:
      * @param RoisizeX
      * @return asynStatus
      */
-    asynStatus setRoiSizeX(int RoisizeX);
+    asynStatus setRoiSizeX(epicsInt32 RoisizeX);
 
     /**
      * @brief Set the ROI Size Y
@@ -458,7 +458,7 @@ private:
      * @param RoisizeY
      * @return asynStatus
      */
-    asynStatus setRoiSizeY(int RoisizeY);
+    asynStatus setRoiSizeY(epicsInt32 RoisizeY);
 
     /**
      * @brief Set the ROI X Offset
@@ -466,7 +466,7 @@ private:
      * @param RoiOffsetX
      * @return asynStatus
      */
-    asynStatus setRoiOffsetX(int RoiOffsetX);
+    asynStatus setRoiOffsetX(epicsInt32 RoiOffsetX);
 
     /**
      * @brief Set the ROI Y Offset
@@ -474,35 +474,35 @@ private:
      * @param RoiOffsetY
      * @return asynStatus
      */
-    asynStatus setRoiOffsetY(int RoiOffsetY);
+    asynStatus setRoiOffsetY(epicsInt32 RoiOffsetY);
 
     /**
      * @brief Get the Roi Size X
      *
      * @return int
      */
-    int getRoiSizeX();
+    epicsInt32 getRoiSizeX();
 
     /**
      * @brief Get the ROI Size Y
      *
      * @return int
      */
-    int getRoiSizeY();
+    epicsInt32 getRoiSizeY();
 
     /**
      * @brief Get the ROI Offset X
      *
      * @return int
      */
-    int getRoiOffsetX();
+    epicsInt32 getRoiOffsetX();
 
     /**
      * @brief Get the ROI Offset Y
      *
      * @return int
      */
-    int getRoiOffsetY();
+    epicsInt32 getRoiOffsetY();
 
     /**
      * @brief convert unsigned char to unsigned long long
@@ -510,7 +510,7 @@ private:
      * @param cval char array of size 5
      * @return unsigned long long
      */
-    epicsUInt64 uCharToEpicsUInt64(char *cval);
+    epicsUInt64 uCharToEpicsUInt64(epicsUInt8 *cval);
 
     /**
      * @brief convert unsigned char value to unsigned long long
@@ -518,7 +518,7 @@ private:
      * @param lval unsigned long long value
      * @param cval address of unsigned char array of size 5
      */
-    void epicsUInt64ToUChar(epicsUInt64 lval, char *cval);
+    void epicsUInt64ToUChar(epicsUInt64 lval, epicsUInt8 *cval);
 
     /**
      * @brief Set the Acquire Time (exposure)
@@ -526,14 +526,14 @@ private:
      * @param exposureTime
      * @return asynStatus
      */
-    asynStatus setExposure(double exposureTime);
+    asynStatus setExposure(epicsFloat64 exposureTime);
 
     /**
      * @brief Get the Aquire Time from the camera
      *
      * @return double
      */
-    double getExposure();
+    epicsFloat64 getExposure();
 
     /**
      * @brief Convert the ADC Count to the temperature in centigrade
@@ -541,7 +541,7 @@ private:
      * @param adcCount ADC count value
      * @return double temperature in centigrade
      */
-    double convertAdcCountToCentigrade(INT16 adcCount);
+    epicsFloat64 convertAdcCountToCentigrade(epicsInt16 adcCount);
 
     /**
      * @brief Convert the temperature in centigrade to DAC Count
@@ -549,7 +549,7 @@ private:
      * @param temperature Temperature in centigrade
      * @return unsigned INT16 output DAC count
      */
-    INT16 convertCentigradeToDacCount(double temperature);
+    epicsInt16 convertCentigradeToDacCount(epicsFloat64 temperature);
 
     /**
      * @brief Convert the DAC count to temperature in centigrade
@@ -557,7 +557,7 @@ private:
      * @param dacCount DAC count
      * @return double temperature in centigrade
      */
-    double convertDacCountToCentigrade(INT16 dacCount);
+    epicsFloat64 convertDacCountToCentigrade(epicsInt16 dacCount);
 
     // PV Updating Functions
 
@@ -566,21 +566,21 @@ private:
      *
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    void updateADTemperatureActual(bool callBackFlag = false);
+    void updateADTemperatureActual(epicsBoolean callBackFlag = epicsFalse);
 
     /**
      * @brief update the PV TemperaturePCB
      *
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    void updateTemperaturePcb(bool callBackFlag = false);
+    void updateTemperaturePcb(epicsBoolean callBackFlag = epicsFalse);
 
     /**
      * @brief update the PVs related to manufacturers data
      *
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    asynStatus updateManufacturersData(bool callBackFlag = false);
+    asynStatus updateManufacturersData(epicsBoolean callBackFlag = epicsFalse);
 
     /**
      * @brief update the status related to device
