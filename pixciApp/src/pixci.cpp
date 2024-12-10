@@ -1751,7 +1751,7 @@ epicsUInt8 Pixci::getSystemStatus()
     return cval; // cval will be 0x00 if there is no success
 }
 
-asynStatus Pixci::setSystemStatus(epicsUInt8 val)
+asynStatus Pixci::setSystemStatus(epicsInt8 val)
 {
     char inputMsg[1] = {};
 
@@ -1980,7 +1980,7 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
-asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsUInt8 Register, epicsUInt8 val)
+asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
 {
     char inputMsg[20] = {};
 
@@ -2008,7 +2008,7 @@ asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsUInt8 Register, epic
     return asynError;
 }
 
-asynStatus Pixci::readSerialRegister(epicsUInt8 Register, epicsUInt8 *val)
+asynStatus Pixci::readSerialRegister(epicsInt8 Register, epicsUInt8 *val)
 {
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
@@ -2038,7 +2038,7 @@ asynStatus Pixci::readSerialRegister(epicsUInt8 Register, epicsUInt8 *val)
     return asynError;
 }
 
-asynStatus Pixci::readSerialRegister(epicsUInt8 Register1, epicsUInt8 Register2, epicsUInt8 *val)
+asynStatus Pixci::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsUInt8 *val)
 {
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
