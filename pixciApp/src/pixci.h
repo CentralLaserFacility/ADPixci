@@ -246,7 +246,7 @@ private:
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(epicsUInt8 Register, epicsUInt8 *val);
+    asynStatus readSerialRegister(epicsInt8 Register, epicsUInt8 *val);
 
     /**
      * @brief read camera 2 bytes registers over serial communication
@@ -256,7 +256,7 @@ private:
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(epicsUInt8 Register1, epicsUInt8 Register2, epicsUInt8 *val);
+    asynStatus readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsUInt8 *val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication.
@@ -293,7 +293,7 @@ private:
      * @param val value to be written in the register
      * @return asynStatus
      */
-    asynStatus writeSerialRegister(epicsInt32 unit, epicsUInt8 Register, epicsUInt8 val);
+    asynStatus writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val);
 
     /**
      * @brief Set the Trigger Mode for the image capturing
@@ -342,7 +342,7 @@ private:
      * Bit 0 = 1 to enable comms to FPGA EPROM
      * @return asynStatus
      */
-    asynStatus setSystemStatus(epicsUInt8 val);
+    asynStatus setSystemStatus(epicsInt8 val);
 
     /**
      * @brief Enable/ Disable TEC controller
