@@ -586,7 +586,7 @@ private:
      * @brief update the status related to device
      *
      */
-    asynStatus updateStatus(bool updateManufacturersDataFlag = false);
+    asynStatus updateStatus();
 
     asynStatus updateIntialPVs();
 };
