@@ -386,12 +386,12 @@ Pixci::~Pixci()
 
 asynStatus Pixci::setupAquisition()
 {
-    int binX = 0; 
-    int binY = 0; 
-    int RoiSizeX = 0; 
-    int RoiSizeY = 0;
-    int sizeX = pxd_imageXdim();
-    int sizeY = pxd_imageYdim();
+    epicsInt32 binX = 0; 
+    epicsInt32 binY = 0; 
+    epicsInt32 RoiSizeX = 0; 
+    epicsInt32 RoiSizeY = 0;
+    epicsInt32 sizeX = pxd_imageXdim();
+    epicsInt32 sizeY = pxd_imageYdim();
     callParamCallbacks();
     getIntegerParam(ADBinX, &binX);
     if (binX <= 0)
@@ -612,8 +612,8 @@ void Pixci::paramTask()
         }
         else if (function == ADTriggerMode)
         {
-            int acquisitionStatus = asynSuccess;
-            int previousTriggerMode = 0;
+            epicsInt32 acquisitionStatus = asynSuccess;
+            epicsInt32 previousTriggerMode = PR_INTERNAL_ITR;
             status = setTriggerMode(i_val);
             if (status == asynSuccess)
             {
@@ -648,7 +648,7 @@ void Pixci::paramTask()
         else if (function == PR_SoftTrigger)
         {
             /* if trigger mode is button trigger then, do the soft trigger else print error */
-            int triggerMode = 0;
+            epicsInt32 triggerMode = PR_INTERNAL_ITR;
             getIntegerParam(ADTriggerMode, &triggerMode);
             if (triggerMode == PR_BUTTON_TRIGGER)
             {
@@ -665,7 +665,7 @@ void Pixci::paramTask()
         }
         else if (function == PR_UpdateTemperature)
         {
-            updateStatus();
+            status = updateStatus();
         }
         else if (function == ADAcquirePeriod)
         {
@@ -674,7 +674,7 @@ void Pixci::paramTask()
                 status = setFrameRate(1 / d_val);
                 if (status == asynSuccess)
                 {
-                    double readBackFrameRate= getFrameRate();
+                    epicsFloat64 readBackFrameRate= getFrameRate();
                     if (readBackFrameRate > 0)
                     {
                         setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
@@ -687,7 +687,7 @@ void Pixci::paramTask()
             status = setTecTemperature(d_val);
             if (status == asynSuccess)
             {
-                double tecTemperature = getTecTemperature();
+                epicsFloat64 tecTemperature = getTecTemperature();
                 setDoubleParam(ADTemperature, tecTemperature);
             }
         }
@@ -722,7 +722,7 @@ void Pixci::paramTask()
                 status = setExposure(d_val);
                 if (status == asynSuccess)
                 {
-                    double readBackAcquireTime = getExposure(); 
+                    epicsFloat64 readBackAcquireTime = getExposure(); 
                     if (readBackAcquireTime > 0)
                     {
                         setDoubleParam(ADAcquireTime, readBackAcquireTime);
@@ -871,7 +871,7 @@ void Pixci::paramTask()
         }
         else if (function == PR_TriggerPolarity)
         {
-            int triggerMode = PR_INTERNAL_ITR;
+            epicsInt32 triggerMode = PR_INTERNAL_ITR;
             if (i_val == PR_EXT_RISING_EDGE)
             {
                 setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
