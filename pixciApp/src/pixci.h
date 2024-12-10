@@ -7,21 +7,21 @@
 /* AreaDetector headers */
 #include "ADDriver.h"
 
-static const char *driverName = "Pixci";
+static constexpr const epicsInt8 *driverName = "Pixci";
 
-#define SoftTriggerParamString "PR_SOFT_TRIGGER"
-#define TriggerPolarityParamString "PR_TRIGGER_POLARITY"
-#define UpdateTemperatureString "PR_UPDATE_TEMPERATURE"
-#define TemperaturePCBString "PR_TEMPERATURE_PCB"
-#define ToggleTecString "PR_TOGGLE_TEC"
-#define ToggleGainString "PR_TOGGLE_Gain"
-#define ToggleFPGACommsString "PR_TOGGLE_FPGA_COMMS"
-#define UpdateStatusString "PR_UPDATE_STATUS"
-#define BuildDateString "PR_BUILD_DATE"
-#define ADCCalibrationZeroDegreeString "PR_ADC_CALIBRATION_ZERO_DEGREE"
-#define ADCCalibrationFortyDegreeString "PR_ADC_CALIBRATION_FORTY_DEGREE"
-#define DACCalibrationZeroDegreeString "PR_DAC_CALIBRATION_ZERO_DEGREE"
-#define DACCalibrationFortyDegreeString "PR_DAC_CALIBRATION_FORTY_DEGREE"
+constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
+constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
+constexpr const char *UpdateTemperatureString = "PR_UPDATE_TEMPERATURE";
+constexpr const char *TemperaturePCBString = "PR_TEMPERATURE_PCB";
+constexpr const char *ToggleTecString = "PR_TOGGLE_TEC";
+constexpr const char *ToggleGainString = "PR_TOGGLE_Gain";
+constexpr const char *ToggleFPGACommsString = "PR_TOGGLE_FPGA_COMMS";
+constexpr const char *UpdateStatusString = "PR_UPDATE_STATUS";
+constexpr const char *BuildDateString = "PR_BUILD_DATE";
+constexpr const char *ADCCalibrationZeroDegreeString = "PR_ADC_CALIBRATION_ZERO_DEGREE";
+constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORTY_DEGREE";
+constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
+constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
 
 #define BINNING1 1
 #define BINNING2 2
@@ -33,7 +33,7 @@ static const char *driverName = "Pixci";
 constexpr const epicsInt32 DETECTOR_1K = 4710; // 1056 x 1027 active pixels
 constexpr const epicsInt32 DETECTOR_2K = 4240; // 2048 x 2048 active pixels
 
-#define NOERROR 0      // Errors are defined as integers below zero.
+constexpr const epicsInt32 PIXCI_NO_ERROR =  0; // Errors are defined as integers below zero.
 
 constexpr const char* FORMAT = "";      // Video format configuration name.
 constexpr const char* DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
@@ -129,7 +129,7 @@ public:
      * @param cameraModel Select camera model, supported values are 4240 and 4710. Default value is 4710
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile);
+    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile);
 
     /* These are the methods that we override from ADDriver */
     /**
