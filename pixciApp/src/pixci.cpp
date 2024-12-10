@@ -306,21 +306,14 @@ Pixci::Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priorit
      * returns value <0 if any error occured
      * pxd_mesgErrorCode(int code) will return description of the error occured
      */
-    if (cameraModel == DETECTOR_2048)
-    {
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
-    }
-    else
-    {
-        connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
-    }
+    connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
+    
     if (connectionStatusCode < NOERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot OPEN camera: %s.",
                   driverName, pxd_mesgErrorCode(connectionStatusCode));
     }
-
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
@@ -912,7 +905,7 @@ void Pixci::reloadVideoSettings()
     case BINNING1:
         if (sizeY == BINNING1)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_1X1
                 pxd_videoFormatAsIncludedInit(0);
@@ -927,7 +920,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING2)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_1X2
                 pxd_videoFormatAsIncludedInit(0);
@@ -942,7 +935,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING4)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_1X4
                 pxd_videoFormatAsIncludedInit(0);
@@ -957,7 +950,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING8)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_1X8
                 pxd_videoFormatAsIncludedInit(0);
@@ -972,7 +965,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING16)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_1X16
                 pxd_videoFormatAsIncludedInit(0);
@@ -987,7 +980,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING32)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_1X32
                 pxd_videoFormatAsIncludedInit(0);
@@ -1004,7 +997,7 @@ void Pixci::reloadVideoSettings()
     case BINNING2:
         if (sizeY == BINNING1)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_2X1
                 pxd_videoFormatAsIncludedInit(0);
@@ -1019,7 +1012,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING2)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_2X2
                 pxd_videoFormatAsIncludedInit(0);
@@ -1034,7 +1027,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING4)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_2X4
                 pxd_videoFormatAsIncludedInit(0);
@@ -1049,7 +1042,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING8)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_2X8
                 pxd_videoFormatAsIncludedInit(0);
@@ -1064,7 +1057,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING16)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_2X16
                 pxd_videoFormatAsIncludedInit(0);
@@ -1079,7 +1072,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING32)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_2X32
                 pxd_videoFormatAsIncludedInit(0);
@@ -1096,7 +1089,7 @@ void Pixci::reloadVideoSettings()
     case BINNING4:
         if (sizeY == BINNING1)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_4X1
                 pxd_videoFormatAsIncludedInit(0);
@@ -1111,7 +1104,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING2)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_4X2
                 pxd_videoFormatAsIncludedInit(0);
@@ -1126,7 +1119,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING4)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_4X4
                 pxd_videoFormatAsIncludedInit(0);
@@ -1141,7 +1134,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING8)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_4X8
                 pxd_videoFormatAsIncludedInit(0);
@@ -1156,7 +1149,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING16)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_4X16
                 pxd_videoFormatAsIncludedInit(0);
@@ -1171,7 +1164,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING32)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_4X32
                 pxd_videoFormatAsIncludedInit(0);
@@ -1188,7 +1181,7 @@ void Pixci::reloadVideoSettings()
     case BINNING8:
         if (sizeY == BINNING1)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_8X1
                 pxd_videoFormatAsIncludedInit(0);
@@ -1203,7 +1196,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING2)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_8X2
                 pxd_videoFormatAsIncludedInit(0);
@@ -1218,7 +1211,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING4)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_8X4
                 pxd_videoFormatAsIncludedInit(0);
@@ -1233,7 +1226,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING8)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_8X8
                 pxd_videoFormatAsIncludedInit(0);
@@ -1248,7 +1241,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING16)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_8X16
                 pxd_videoFormatAsIncludedInit(0);
@@ -1263,7 +1256,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING32)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_8X32
                 pxd_videoFormatAsIncludedInit(0);
@@ -1280,7 +1273,7 @@ void Pixci::reloadVideoSettings()
     case BINNING16:
         if (sizeY == BINNING1)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_16X1
                 pxd_videoFormatAsIncludedInit(0);
@@ -1295,7 +1288,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING2)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_16X2
                 pxd_videoFormatAsIncludedInit(0);
@@ -1310,7 +1303,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING4)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_16X4
                 pxd_videoFormatAsIncludedInit(0);
@@ -1325,7 +1318,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING8)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_16X8
                 pxd_videoFormatAsIncludedInit(0);
@@ -1340,7 +1333,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING16)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_16X16
                 pxd_videoFormatAsIncludedInit(0);
@@ -1355,7 +1348,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING32)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_16X32
                 pxd_videoFormatAsIncludedInit(0);
@@ -1372,7 +1365,7 @@ void Pixci::reloadVideoSettings()
     case BINNING32:
         if (sizeY == BINNING1)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_32X1
                 pxd_videoFormatAsIncludedInit(0);
@@ -1387,7 +1380,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING2)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_32X2
                 pxd_videoFormatAsIncludedInit(0);
@@ -1402,7 +1395,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING4)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_32X4
                 pxd_videoFormatAsIncludedInit(0);
@@ -1417,7 +1410,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING8)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_32X8
                 pxd_videoFormatAsIncludedInit(0);
@@ -1432,7 +1425,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING16)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_32X16
                 pxd_videoFormatAsIncludedInit(0);
@@ -1447,7 +1440,7 @@ void Pixci::reloadVideoSettings()
         }
         else if (sizeY == BINNING32)
         {
-            if (cameraModel == DETECTOR_2048)
+            if (cameraModel == DETECTOR_2K)
             {
 #include BINNINGSETTINGS_4240_32X32
                 pxd_videoFormatAsIncludedInit(0);
@@ -1473,7 +1466,7 @@ void Pixci::resetVideoSettings()
     epicsInt32 binY = 0;
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
-    if (cameraModel == DETECTOR_2048)
+    if (cameraModel == DETECTOR_2K)
     {
 #include BINNINGSETTINGS_4240_1X1
         pxd_videoFormatAsIncludedInit(0);

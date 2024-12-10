@@ -30,8 +30,8 @@ static const char *driverName = "Pixci";
 #define BINNING16 16
 #define BINNING32 32
 
-#define DETECTOR_1024 4710
-#define DETECTOR_2048 4240
+constexpr const epicsInt32 DETECTOR_1K = 4710; // 1056 x 1027 active pixels
+constexpr const epicsInt32 DETECTOR_2K = 4240; // 2048 x 2048 active pixels
 
 #define NOERROR 0      // Errors are defined as integers below zero.
 
