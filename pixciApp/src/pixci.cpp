@@ -266,7 +266,7 @@ static void paramTaskC(void *drvPvt);
  * @param See the pixci.h
  */
 extern "C" int pixciConfig(const char *portName,
-                           int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile)
+                           epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile)
 {
     new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     return (asynSuccess);
@@ -280,11 +280,11 @@ auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus)
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priority, int stackSize, int cameraModel, const char *formatFile)
-    : ADDriver(portName, 1, (int)1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
+Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile)
+    : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
-    int connectionStatusCode = 0;
-    int serialConnection = 0;
+    epicsInt32 connectionStatusCode = 0;
+    epicsInt32 serialConnection = 0;
     Pixci::cameraModel = cameraModel;
 
     createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
@@ -314,7 +314,7 @@ Pixci::Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priorit
     {
         connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
     }
-    if (connectionStatusCode < NOERROR)
+    if (connectionStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot OPEN camera: %s.",
@@ -327,7 +327,7 @@ Pixci::Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priorit
                   "%s Camera connected;",
                   driverName);
         serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
-        if (serialConnection < NOERROR)
+        if (serialConnection < PIXCI_NO_ERROR)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                       "%s: Cannot make serial connection: %s.",
@@ -338,30 +338,21 @@ Pixci::Pixci(const char *portName, int maxBuffers, size_t maxMemory, int priorit
     /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap,
     pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
     g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
-    int status = asynSuccess;
+    asynStatus status = asynSuccess;
     status = setStringParam(ADManufacturer, "Raptor Photonics");
 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 
     /* Create the thread that does data acquisition */
-    if (connectionStatusCode >= NOERROR && serialConnection >= NOERROR)
+    if (connectionStatusCode >= PIXCI_NO_ERROR && serialConnection >= PIXCI_NO_ERROR)
     {
-        status |= (epicsThreadCreate("acquireTask",
-                                     epicsThreadPriorityMedium,
-                                     epicsThreadGetStackSize(epicsThreadStackMedium),
-                                     (EPICSTHREADFUNC)acquireTaskC,
-                                     this) == NULL);
-
-        status |= (epicsThreadCreate("paramTask",
-                                     epicsThreadPriorityMedium,
-                                     epicsThreadGetStackSize(epicsThreadStackMedium),
-                                     (EPICSTHREADFUNC)paramTaskC,
-                                     this) == NULL);
+        epicsThreadCreate("acquireTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium), (EPICSTHREADFUNC)acquireTaskC, this);
+        epicsThreadCreate("paramTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium), (EPICSTHREADFUNC)paramTaskC, this);
     }
 
-    // Updating all the PVs related to the status of device
-    updateStatus(true); // Also update the manufacturers data
-    status |= updateIntialPVs();
+    // Updating all the PVs related to the status of device and the manufacturers data
+    setStatIfHigher(status, updateStatus(true));
+    setStatIfHigher(status, updateIntialPVs());
     if (status == asynError)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
@@ -373,13 +364,13 @@ Pixci::~Pixci()
 {
 
     /* Closing connection to frame grabber */
-    int disconnectStatusCode = NOERROR;
+    int disconnectStatusCode = PIXCI_NO_ERROR;
     /*pxd_PIXCIclose() disconnect the driver from the device.
      * return 0 if disconnect successfull, return integer <0 if error occured
      * pxd_mesgErrorCode(int code) will return description of the error occured
      */
     disconnectStatusCode = pxd_PIXCIclose();
-    if (disconnectStatusCode < NOERROR)
+    if (disconnectStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: disconnect camera error: %s .",
@@ -435,8 +426,8 @@ asynStatus Pixci::acquireImage()
     static const char *functionName = "acquireImage";
     pxbuffer_t buffer = 1L; // Image frame buffer
     /* live capture the image into frame buffer */
-    int error = pxd_goLive(UNIT, buffer);
-    if (error < NOERROR)
+    epicsInt32 error = pxd_goLive(UNIT, buffer);
+    if (error < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "acquisition error: %s : %s", functionName, pxd_mesgErrorCode(error));
@@ -454,8 +445,8 @@ asynStatus Pixci::acquireStop()
 {
     static const char *functionName = "acquireStop";
     /* stop the live capturing */
-    int error = pxd_goUnLive(UNIT);
-    if (error < NOERROR)
+    epicsInt32 error = pxd_goUnLive(UNIT);
+    if (error < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "live couldn't stop: %s : %s", functionName, pxd_mesgErrorCode(error));
@@ -1546,7 +1537,7 @@ int Pixci::writeReadSerial(int unit, char *serialOut, int msgOutSize, char *seri
     count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize + 1);
     Sleep(130);
 
-    if (count < NOERROR)
+    if (count < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot serial write: %s.",
@@ -1774,7 +1765,7 @@ asynStatus Pixci::setSystemStatus(char val)
     /*writing to serial connection*/
     int inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
 
-    if (inSize < NOERROR)
+    if (inSize < PIXCI_NO_ERROR)
     {
         return asynError;
     }
@@ -2009,7 +2000,7 @@ asynStatus Pixci::writeSerialRegister(int unit, char Register, char val)
     /*writing to serial connection*/
     int inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
 
-    if (inSize < NOERROR)
+    if (inSize < PIXCI_NO_ERROR)
     {
         return asynError;
     }
