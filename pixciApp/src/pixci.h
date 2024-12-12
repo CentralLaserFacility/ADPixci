@@ -204,7 +204,7 @@ private:
      * @param serialOut serial command to be send to the camera
      * @return asynStatus
      */
-    asynStatus writeSerial(epicsInt32 unit, epicsUInt8 *serialOut, epicsInt32 msgSize);
+    asynStatus writeSerial(epicsInt32 unit, epicsInt8 *serialOut, epicsInt32 msgSize);
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -246,7 +246,7 @@ private:
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(epicsInt8 Register, epicsUInt8 *val);
+    asynStatus readSerialRegister(epicsInt8 Register, epicsInt8 *val);
 
     /**
      * @brief read camera 2 bytes registers over serial communication
@@ -256,7 +256,7 @@ private:
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsUInt8 *val);
+    asynStatus readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val);
 
     /**
      * @brief Set the Binning settings. Uses serial communication.
@@ -505,20 +505,20 @@ private:
     epicsInt32 getRoiOffsetY();
 
     /**
-     * @brief convert unsigned char to unsigned long long
+     * @brief convert char to unsigned long long
      *
      * @param cval char array of size 5
      * @return unsigned long long
      */
-    epicsUInt64 uCharToEpicsUInt64(epicsUInt8 *cval);
+    epicsUInt64 int8ToUInt64(epicsInt8 *cval);
 
     /**
-     * @brief convert unsigned char value to unsigned long long
+     * @brief convert unsigned long long to char value 
      *
      * @param lval unsigned long long value
-     * @param cval address of unsigned char array of size 5
+     * @param cval address of char array of size 5
      */
-    void epicsUInt64ToUChar(epicsUInt64 lval, epicsUInt8 *cval);
+    void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval);
 
     /**
      * @brief Set the Acquire Time (exposure)
@@ -549,7 +549,7 @@ private:
      * @param temperature Temperature in centigrade
      * @return unsigned INT16 output DAC count
      */
-    epicsInt16 convertCentigradeToDacCount(epicsFloat64 temperature);
+    epicsUInt16 convertCentigradeToDacCount(epicsFloat64 temperature);
 
     /**
      * @brief Convert the DAC count to temperature in centigrade

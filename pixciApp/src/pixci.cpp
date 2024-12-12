@@ -1478,7 +1478,7 @@ void Pixci::resetVideoSettings()
     reloadVideoSettings();
 }
 
-epicsUInt64 Pixci::uCharToEpicsUInt64(epicsUInt8 *cval)
+epicsUInt64 Pixci::int8ToUInt64(epicsInt8 *cval)
 {
     epicsUInt64 lval = 0;
     lval += (epicsUInt64)(epicsUInt8)cval[4];
@@ -1489,13 +1489,13 @@ epicsUInt64 Pixci::uCharToEpicsUInt64(epicsUInt8 *cval)
     return lval;
 }
 
-void Pixci::epicsUInt64ToUChar(epicsUInt64 lval, epicsUInt8 *cval)
+void Pixci::uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
 {
-    cval[0] = (epicsUInt8)((lval & 0xFF00000000) >> 32);
-    cval[1] = (epicsUInt8)((lval & 0x00FF000000) >> 24);
-    cval[2] = (epicsUInt8)((lval & 0x0000FF0000) >> 16);
-    cval[3] = (epicsUInt8)((lval & 0x000000FF00) >> 8);
-    cval[4] = (epicsUInt8)((lval & 0x00000000FF));
+    cval[0] = (epicsInt8)((lval & 0xFF00000000) >> 32);
+    cval[1] = (epicsInt8)((lval & 0x00FF000000) >> 24);
+    cval[2] = (epicsInt8)((lval & 0x0000FF0000) >> 16);
+    cval[3] = (epicsInt8)((lval & 0x000000FF00) >> 8);
+    cval[4] = (epicsInt8)((lval & 0x00000000FF));
 }
 
 epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn, epicsInt32 serialInBufferSize)
@@ -1598,9 +1598,9 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 
 asynStatus Pixci::setFrameRate(epicsFloat64 frameRate)
 {
-    epicsUInt8 frameRateHexVal[5] = {0, 0, 0, 0, 0};
+    epicsInt8 frameRateHexVal[5] = {0, 0, 0, 0, 0};
     epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
-    epicsUInt64ToUChar(frameRateCount, frameRateHexVal);
+    uInt64ToInt8(frameRateCount, frameRateHexVal);
 
     writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]);
     writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]);
@@ -1611,7 +1611,7 @@ asynStatus Pixci::setFrameRate(epicsFloat64 frameRate)
 
 epicsFloat64 Pixci::getFrameRate()
 {
-    epicsUInt8 cval[5] = {0, 0, 0, 0, 0};
+    epicsInt8 cval[5] = {0, 0, 0, 0, 0};
     epicsFloat64 frameRate = 0.0;
     readSerialRegister(FRAME_RATE_BYTES[0], &cval[0]);
     readSerialRegister(FRAME_RATE_BYTES[1], &cval[1]);
@@ -1619,7 +1619,7 @@ epicsFloat64 Pixci::getFrameRate()
     readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]);
     readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]);
 
-    epicsUInt64 frameRateCount = uCharToEpicsUInt64(cval);
+    epicsUInt64 frameRateCount = int8ToUInt64(cval);
     if (frameRateCount > 0)
     {
         frameRate = 40e6 / epicsFloat64(frameRateCount);
@@ -1632,9 +1632,9 @@ epicsFloat64 Pixci::convertAdcCountToCentigrade(epicsInt16 adcCount)
     return (ADC_M * adcCount) + ADC_C; // temperature in centigrade
 }
 
-epicsInt16 Pixci::convertCentigradeToDacCount(epicsFloat64 temperature)
+epicsUInt16 Pixci::convertCentigradeToDacCount(epicsFloat64 temperature)
 {
-    return static_cast<epicsInt16>((temperature - DAC_C) / DAC_M);
+    return static_cast<epicsUInt16>((temperature - DAC_C) / DAC_M);
 }
 
 epicsFloat64 Pixci::convertDacCountToCentigrade(epicsInt16 dacCount)
@@ -1644,7 +1644,7 @@ epicsFloat64 Pixci::convertDacCountToCentigrade(epicsInt16 dacCount)
 
 epicsFloat64 Pixci::getTemperatureActual()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]);
     readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]);
@@ -1658,7 +1658,7 @@ epicsFloat64 Pixci::getTemperatureActual()
 
 epicsFloat64 Pixci::getTemperaturePcb()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(PCB_TEMPERATURE_BYTES[0], PCB_TEMPERATURE_BYTES[1], &cval[1]);
     readSerialRegister(PCB_TEMPERATURE_BYTES[2], PCB_TEMPERATURE_BYTES[3], &cval[0]);
@@ -1671,7 +1671,7 @@ epicsFloat64 Pixci::getTemperaturePcb()
 
 epicsFloat64 Pixci::getTecTemperature()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(TEC_TEMPERATURE_BYTES[0], &cval[1]);
     readSerialRegister(TEC_TEMPERATURE_BYTES[1], &cval[0]);
@@ -1685,11 +1685,11 @@ epicsFloat64 Pixci::getTecTemperature()
 
 asynStatus Pixci::setTecTemperature(epicsFloat64 temperature)
 {
-    epicsInt16 dacCount = convertCentigradeToDacCount(temperature);
+    epicsUInt16 dacCount = convertCentigradeToDacCount(temperature);
 
-    epicsUInt8 cval[2] = {0, 0};
-    cval[0] = (epicsUInt8)((dacCount & 0x0F00) >> 8);
-    cval[1] = (epicsUInt8)((dacCount & 0x00FF));
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((dacCount & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((dacCount & 0x00FF));
 
     writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]);
     return writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]);
@@ -1697,7 +1697,7 @@ asynStatus Pixci::setTecTemperature(epicsFloat64 temperature)
 
 epicsUInt8 Pixci::getFpgaStatus()
 {
-    epicsUInt8 cval = 0;
+    epicsInt8 cval = 0;
     readSerialRegister(FPGA_STATUS_BYTE, &cval);
     // TODO: implement proper error handling
     return (epicsUInt8)cval;
@@ -1791,9 +1791,9 @@ epicsBoolean Pixci::isFpgaCommsEnabled()
 
 asynStatus Pixci::setExposure(epicsFloat64 exposureTime)
 {
-    epicsUInt8 exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
+    epicsInt8 exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
     epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
-    epicsUInt64ToUChar(exposureTimeCount, exposureTimeHexVal);
+    uInt64ToInt8(exposureTimeCount, exposureTimeHexVal);
 
     writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
     writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]);
@@ -1804,7 +1804,7 @@ asynStatus Pixci::setExposure(epicsFloat64 exposureTime)
 
 epicsFloat64 Pixci::getExposure()
 {
-    epicsUInt8 cval[5] = {0, 0, 0, 0, 0};
+    epicsInt8 cval[5] = {0, 0, 0, 0, 0};
     epicsFloat64 exposureTime = 0.0;
     readSerialRegister(EXPOSURE_BYTES[0], &cval[0]);
     readSerialRegister(EXPOSURE_BYTES[1], &cval[1]);
@@ -1812,7 +1812,7 @@ epicsFloat64 Pixci::getExposure()
     readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
     readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
 
-    epicsUInt64 exposureTimeCount = uCharToEpicsUInt64(cval);
+    epicsUInt64 exposureTimeCount = int8ToUInt64(cval);
     if (exposureTimeCount > 0)
     {
         exposureTime = (static_cast<epicsFloat64>(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
@@ -2008,7 +2008,7 @@ asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epics
     return asynError;
 }
 
-asynStatus Pixci::readSerialRegister(epicsInt8 Register, epicsUInt8 *val)
+asynStatus Pixci::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
 {
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
@@ -2038,7 +2038,7 @@ asynStatus Pixci::readSerialRegister(epicsInt8 Register, epicsUInt8 *val)
     return asynError;
 }
 
-asynStatus Pixci::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsUInt8 *val)
+asynStatus Pixci::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val)
 {
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
@@ -2070,7 +2070,7 @@ asynStatus Pixci::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, e
 
 asynStatus Pixci::setTriggerMode(epicsInt32 mode)
 {
-    epicsUInt8 hexval = 0;
+    epicsInt8 hexval = 0;
     switch (mode)
     {
     case PR_INTERNAL_ITR:
@@ -2222,9 +2222,9 @@ asynStatus Pixci::updateIntialPVs()
 
 asynStatus Pixci::setRoiSizeX(epicsInt32 RoisizeX)
 {
-    epicsUInt8 cval[2] = {0, 0};
-    cval[0] = (epicsUInt8)((RoisizeX & 0x0F00) >> 8);
-    cval[1] = (epicsUInt8)((RoisizeX & 0x00FF));
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoisizeX & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoisizeX & 0x00FF));
 
     writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]);
     return writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]);
@@ -2232,9 +2232,9 @@ asynStatus Pixci::setRoiSizeX(epicsInt32 RoisizeX)
 
 asynStatus Pixci::setRoiSizeY(epicsInt32 RoisizeY)
 {
-    epicsUInt8 cval[2] = {0, 0};
-    cval[0] = (epicsUInt8)((RoisizeY & 0x0F00) >> 8);
-    cval[1] = (epicsUInt8)((RoisizeY & 0x00FF));
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoisizeY & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoisizeY & 0x00FF));
 
     writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]);
     return writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]);
@@ -2242,9 +2242,9 @@ asynStatus Pixci::setRoiSizeY(epicsInt32 RoisizeY)
 
 asynStatus Pixci::setRoiOffsetX(epicsInt32 RoiOffsetX)
 {
-    epicsUInt8 cval[2] = {0, 0};
-    cval[0] = (epicsUInt8)((RoiOffsetX & 0x0F00) >> 8);
-    cval[1] = (epicsUInt8)((RoiOffsetX & 0x00FF));
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoiOffsetX & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoiOffsetX & 0x00FF));
 
     writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]);
     return writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]);
@@ -2252,9 +2252,9 @@ asynStatus Pixci::setRoiOffsetX(epicsInt32 RoiOffsetX)
 
 asynStatus Pixci::setRoiOffsetY(epicsInt32 RoiOffsetY)
 {
-    epicsUInt8 cval[2] = {0, 0};
-    cval[0] = (epicsUInt8)((RoiOffsetY & 0x0F00) >> 8);
-    cval[1] = (epicsUInt8)((RoiOffsetY & 0x00FF));
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoiOffsetY & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoiOffsetY & 0x00FF));
 
     writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]);
     return writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]);
@@ -2262,7 +2262,7 @@ asynStatus Pixci::setRoiOffsetY(epicsInt32 RoiOffsetY)
 
 epicsInt32 Pixci::getRoiSizeX()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(ROI_X_SIZE_BYTES[0], &cval[1]);
     readSerialRegister(ROI_X_SIZE_BYTES[1], &cval[0]);
@@ -2276,7 +2276,7 @@ epicsInt32 Pixci::getRoiSizeX()
 
 epicsInt32 Pixci::getRoiSizeY()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(ROI_Y_SIZE_BYTES[0], &cval[1]);
     readSerialRegister(ROI_Y_SIZE_BYTES[1], &cval[0]);
@@ -2290,7 +2290,7 @@ epicsInt32 Pixci::getRoiSizeY()
 
 epicsInt32 Pixci::getRoiOffsetX()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(ROI_X_OFFSET_BYTES[0], &cval[1]);
     readSerialRegister(ROI_X_OFFSET_BYTES[1], &cval[0]);
@@ -2304,7 +2304,7 @@ epicsInt32 Pixci::getRoiOffsetX()
 
 epicsInt32 Pixci::getRoiOffsetY()
 {
-    epicsUInt8 cval[2] = {0, 0};
+    epicsInt8 cval[2] = {0, 0};
 
     readSerialRegister(ROI_Y_OFFSET_BYTES[0], &cval[1]);
     readSerialRegister(ROI_Y_OFFSET_BYTES[1], &cval[0]);
