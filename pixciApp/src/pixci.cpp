@@ -2147,7 +2147,7 @@ asynStatus Pixci::updateManufacturersData(epicsBoolean callBackFlag)
     inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
     inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
 
-    toggleFpgaComms(epicsTrue);
+    toggleFpgaComms(epicsFalse);
 
     if (inputMsg[18] == SUCCESS_MESSAGE)
     {
