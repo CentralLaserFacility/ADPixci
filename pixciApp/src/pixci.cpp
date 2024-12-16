@@ -33,79 +33,79 @@ extern "C"
 
 using namespace std;
 
-#define BINNINGSETTINGS_1X1 "videoSettings\Raptor_Photonics_EagleXV_47-10.fmt"
-#define BINNINGSETTINGS_1X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x2.fmt"
-#define BINNINGSETTINGS_1X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x4.fmt"
-#define BINNINGSETTINGS_1X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x8.fmt"
-#define BINNINGSETTINGS_1X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x16.fmt"
-#define BINNINGSETTINGS_1X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning1x32.fmt"
-#define BINNINGSETTINGS_2X1 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x1.fmt"
-#define BINNINGSETTINGS_2X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x2.fmt"
-#define BINNINGSETTINGS_2X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x4.fmt"
-#define BINNINGSETTINGS_2X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x8.fmt"
-#define BINNINGSETTINGS_2X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x16.fmt"
-#define BINNINGSETTINGS_2X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning2x32.fmt"
-#define BINNINGSETTINGS_4X1 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x1.fmt"
-#define BINNINGSETTINGS_4X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x2.fmt"
-#define BINNINGSETTINGS_4X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x4.fmt"
-#define BINNINGSETTINGS_4X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x8.fmt"
-#define BINNINGSETTINGS_4X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x16.fmt"
-#define BINNINGSETTINGS_4X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning4x32.fmt"
-#define BINNINGSETTINGS_8X1 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x1.fmt"
-#define BINNINGSETTINGS_8X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x2.fmt"
-#define BINNINGSETTINGS_8X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x4.fmt"
-#define BINNINGSETTINGS_8X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x8.fmt"
-#define BINNINGSETTINGS_8X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x16.fmt"
-#define BINNINGSETTINGS_8X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning8x32.fmt"
-#define BINNINGSETTINGS_16X1 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x1.fmt"
-#define BINNINGSETTINGS_16X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x2.fmt"
-#define BINNINGSETTINGS_16X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x4.fmt"
-#define BINNINGSETTINGS_16X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x8.fmt"
-#define BINNINGSETTINGS_16X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x16.fmt"
-#define BINNINGSETTINGS_16X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning16x32.fmt"
-#define BINNINGSETTINGS_32X1 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x1.fmt"
-#define BINNINGSETTINGS_32X2 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x2.fmt"
-#define BINNINGSETTINGS_32X4 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x4.fmt"
-#define BINNINGSETTINGS_32X8 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x8.fmt"
-#define BINNINGSETTINGS_32X16 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x16.fmt"
-#define BINNINGSETTINGS_32X32 "videoSettings\Raptor_Photonics_EagleXV_47-10_binning32x32.fmt"
+#define BINNING_SETTINGS_1X1 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x1.fmt"
+#define BINNING_SETTINGS_1X2 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x2.fmt"
+#define BINNING_SETTINGS_1X4 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x4.fmt"
+#define BINNING_SETTINGS_1X8 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x8.fmt"
+#define BINNING_SETTINGS_1X16 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x16.fmt"
+#define BINNING_SETTINGS_1X32 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x32.fmt"
+#define BINNING_SETTINGS_2X1 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x1.fmt"
+#define BINNING_SETTINGS_2X2 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x2.fmt"
+#define BINNING_SETTINGS_2X4 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x4.fmt"
+#define BINNING_SETTINGS_2X8 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x8.fmt"
+#define BINNING_SETTINGS_2X16 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x16.fmt"
+#define BINNING_SETTINGS_2X32 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x32.fmt"
+#define BINNING_SETTINGS_4X1 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x1.fmt"
+#define BINNING_SETTINGS_4X2 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x2.fmt"
+#define BINNING_SETTINGS_4X4 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x4.fmt"
+#define BINNING_SETTINGS_4X8 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x8.fmt"
+#define BINNING_SETTINGS_4X16 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x16.fmt"
+#define BINNING_SETTINGS_4X32 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x32.fmt"
+#define BINNING_SETTINGS_8X1 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x1.fmt"
+#define BINNING_SETTINGS_8X2 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x2.fmt"
+#define BINNING_SETTINGS_8X4 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x4.fmt"
+#define BINNING_SETTINGS_8X8 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x8.fmt"
+#define BINNING_SETTINGS_8X16 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x16.fmt"
+#define BINNING_SETTINGS_8X32 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x32.fmt"
+#define BINNING_SETTINGS_16X1 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x1.fmt"
+#define BINNING_SETTINGS_16X2 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x2.fmt"
+#define BINNING_SETTINGS_16X4 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x4.fmt"
+#define BINNING_SETTINGS_16X8 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x8.fmt"
+#define BINNING_SETTINGS_16X16 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x16.fmt"
+#define BINNING_SETTINGS_16X32 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x32.fmt"
+#define BINNING_SETTINGS_32X1 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x1.fmt"
+#define BINNING_SETTINGS_32X2 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x2.fmt"
+#define BINNING_SETTINGS_32X4 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x4.fmt"
+#define BINNING_SETTINGS_32X8 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x8.fmt"
+#define BINNING_SETTINGS_32X16 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x16.fmt"
+#define BINNING_SETTINGS_32X32 "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x32.fmt"
 
-#define BINNINGSETTINGS_4240_1X1 "videoSettings\Raptor_Photonics_EagleXV_42-40.fmt"
-#define BINNINGSETTINGS_4240_1X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x2.fmt"
-#define BINNINGSETTINGS_4240_1X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x4.fmt"
-#define BINNINGSETTINGS_4240_1X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x8.fmt"
-#define BINNINGSETTINGS_4240_1X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x16.fmt"
-#define BINNINGSETTINGS_4240_1X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning1x32.fmt"
-#define BINNINGSETTINGS_4240_2X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x1.fmt"
-#define BINNINGSETTINGS_4240_2X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x2.fmt"
-#define BINNINGSETTINGS_4240_2X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x4.fmt"
-#define BINNINGSETTINGS_4240_2X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x8.fmt"
-#define BINNINGSETTINGS_4240_2X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x16.fmt"
-#define BINNINGSETTINGS_4240_2X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning2x32.fmt"
-#define BINNINGSETTINGS_4240_4X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x1.fmt"
-#define BINNINGSETTINGS_4240_4X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x2.fmt"
-#define BINNINGSETTINGS_4240_4X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x4.fmt"
-#define BINNINGSETTINGS_4240_4X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x8.fmt"
-#define BINNINGSETTINGS_4240_4X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x16.fmt"
-#define BINNINGSETTINGS_4240_4X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning4x32.fmt"
-#define BINNINGSETTINGS_4240_8X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x1.fmt"
-#define BINNINGSETTINGS_4240_8X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x2.fmt"
-#define BINNINGSETTINGS_4240_8X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x4.fmt"
-#define BINNINGSETTINGS_4240_8X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x8.fmt"
-#define BINNINGSETTINGS_4240_8X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x16.fmt"
-#define BINNINGSETTINGS_4240_8X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning8x32.fmt"
-#define BINNINGSETTINGS_4240_16X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x1.fmt"
-#define BINNINGSETTINGS_4240_16X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x2.fmt"
-#define BINNINGSETTINGS_4240_16X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x4.fmt"
-#define BINNINGSETTINGS_4240_16X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x8.fmt"
-#define BINNINGSETTINGS_4240_16X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x16.fmt"
-#define BINNINGSETTINGS_4240_16X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning16x32.fmt"
-#define BINNINGSETTINGS_4240_32X1 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x1.fmt"
-#define BINNINGSETTINGS_4240_32X2 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x2.fmt"
-#define BINNINGSETTINGS_4240_32X4 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x4.fmt"
-#define BINNINGSETTINGS_4240_32X8 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x8.fmt"
-#define BINNINGSETTINGS_4240_32X16 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x16.fmt"
-#define BINNINGSETTINGS_4240_32X32 "videoSettings\Raptor_Photonics_EagleXV_42-40_binning32x32.fmt"
+#define BINNING_SETTINGS_4240_1X1 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x1.fmt"
+#define BINNING_SETTINGS_4240_1X2 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x2.fmt"
+#define BINNING_SETTINGS_4240_1X4 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x4.fmt"
+#define BINNING_SETTINGS_4240_1X8 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x8.fmt"
+#define BINNING_SETTINGS_4240_1X16 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x16.fmt"
+#define BINNING_SETTINGS_4240_1X32 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x32.fmt"
+#define BINNING_SETTINGS_4240_2X1 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x1.fmt"
+#define BINNING_SETTINGS_4240_2X2 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x2.fmt"
+#define BINNING_SETTINGS_4240_2X4 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x4.fmt"
+#define BINNING_SETTINGS_4240_2X8 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x8.fmt"
+#define BINNING_SETTINGS_4240_2X16 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x16.fmt"
+#define BINNING_SETTINGS_4240_2X32 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x32.fmt"
+#define BINNING_SETTINGS_4240_4X1 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x1.fmt"
+#define BINNING_SETTINGS_4240_4X2 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x2.fmt"
+#define BINNING_SETTINGS_4240_4X4 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x4.fmt"
+#define BINNING_SETTINGS_4240_4X8 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x8.fmt"
+#define BINNING_SETTINGS_4240_4X16 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x16.fmt"
+#define BINNING_SETTINGS_4240_4X32 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x32.fmt"
+#define BINNING_SETTINGS_4240_8X1 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x1.fmt"
+#define BINNING_SETTINGS_4240_8X2 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x2.fmt"
+#define BINNING_SETTINGS_4240_8X4 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x4.fmt"
+#define BINNING_SETTINGS_4240_8X8 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x8.fmt"
+#define BINNING_SETTINGS_4240_8X16 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x16.fmt"
+#define BINNING_SETTINGS_4240_8X32 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x32.fmt"
+#define BINNING_SETTINGS_4240_16X1 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x1.fmt"
+#define BINNING_SETTINGS_4240_16X2 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x2.fmt"
+#define BINNING_SETTINGS_4240_16X4 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x4.fmt"
+#define BINNING_SETTINGS_4240_16X8 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x8.fmt"
+#define BINNING_SETTINGS_4240_16X16 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x16.fmt"
+#define BINNING_SETTINGS_4240_16X32 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x32.fmt"
+#define BINNING_SETTINGS_4240_32X1 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x1.fmt"
+#define BINNING_SETTINGS_4240_32X2 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x2.fmt"
+#define BINNING_SETTINGS_4240_32X4 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x4.fmt"
+#define BINNING_SETTINGS_4240_32X8 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x8.fmt"
+#define BINNING_SETTINGS_4240_32X16 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x16.fmt"
+#define BINNING_SETTINGS_4240_32X32 "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x32.fmt"
 
 // Set video resolution and video offset.
 // Set capture resolution to same.
@@ -901,13 +901,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_1X1
+#include BINNING_SETTINGS_4240_1X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_1X1
+#include BINNING_SETTINGS_1X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -916,13 +916,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_1X2
+#include BINNING_SETTINGS_4240_1X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_1X2
+#include BINNING_SETTINGS_1X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -931,13 +931,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_1X4
+#include BINNING_SETTINGS_4240_1X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_1X4
+#include BINNING_SETTINGS_1X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -946,13 +946,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_1X8
+#include BINNING_SETTINGS_4240_1X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_1X8
+#include BINNING_SETTINGS_1X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -961,13 +961,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_1X16
+#include BINNING_SETTINGS_4240_1X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_1X16
+#include BINNING_SETTINGS_1X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -976,13 +976,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_1X32
+#include BINNING_SETTINGS_4240_1X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_1X32
+#include BINNING_SETTINGS_1X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -993,13 +993,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_2X1
+#include BINNING_SETTINGS_4240_2X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_2X1
+#include BINNING_SETTINGS_2X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1008,13 +1008,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_2X2
+#include BINNING_SETTINGS_4240_2X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_2X2
+#include BINNING_SETTINGS_2X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1023,13 +1023,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_2X4
+#include BINNING_SETTINGS_4240_2X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_2X4
+#include BINNING_SETTINGS_2X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1038,13 +1038,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_2X8
+#include BINNING_SETTINGS_4240_2X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_2X8
+#include BINNING_SETTINGS_2X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1053,13 +1053,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_2X16
+#include BINNING_SETTINGS_4240_2X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_2X16
+#include BINNING_SETTINGS_2X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1068,13 +1068,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_2X32
+#include BINNING_SETTINGS_4240_2X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_2X32
+#include BINNING_SETTINGS_2X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1085,13 +1085,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_4X1
+#include BINNING_SETTINGS_4240_4X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_4X1
+#include BINNING_SETTINGS_4X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1100,13 +1100,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_4X2
+#include BINNING_SETTINGS_4240_4X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_4X2
+#include BINNING_SETTINGS_4X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1115,13 +1115,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_4X4
+#include BINNING_SETTINGS_4240_4X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_4X4
+#include BINNING_SETTINGS_4X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1130,13 +1130,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_4X8
+#include BINNING_SETTINGS_4240_4X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_4X8
+#include BINNING_SETTINGS_4X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1145,13 +1145,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_4X16
+#include BINNING_SETTINGS_4240_4X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_4X16
+#include BINNING_SETTINGS_4X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1160,13 +1160,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_4X32
+#include BINNING_SETTINGS_4240_4X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_4X32
+#include BINNING_SETTINGS_4X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1177,13 +1177,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_8X1
+#include BINNING_SETTINGS_4240_8X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_8X1
+#include BINNING_SETTINGS_8X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1192,13 +1192,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_8X2
+#include BINNING_SETTINGS_4240_8X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_8X2
+#include BINNING_SETTINGS_8X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1207,13 +1207,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_8X4
+#include BINNING_SETTINGS_4240_8X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_8X4
+#include BINNING_SETTINGS_8X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1222,13 +1222,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_8X8
+#include BINNING_SETTINGS_4240_8X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_8X8
+#include BINNING_SETTINGS_8X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1237,13 +1237,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_8X16
+#include BINNING_SETTINGS_4240_8X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_8X16
+#include BINNING_SETTINGS_8X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1252,13 +1252,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_8X32
+#include BINNING_SETTINGS_4240_8X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_8X32
+#include BINNING_SETTINGS_8X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1269,13 +1269,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_16X1
+#include BINNING_SETTINGS_4240_16X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_16X1
+#include BINNING_SETTINGS_16X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1284,13 +1284,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_16X2
+#include BINNING_SETTINGS_4240_16X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_16X2
+#include BINNING_SETTINGS_16X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1299,13 +1299,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_16X4
+#include BINNING_SETTINGS_4240_16X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_16X4
+#include BINNING_SETTINGS_16X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1314,13 +1314,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_16X8
+#include BINNING_SETTINGS_4240_16X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_16X8
+#include BINNING_SETTINGS_16X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1329,13 +1329,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_16X16
+#include BINNING_SETTINGS_4240_16X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_16X16
+#include BINNING_SETTINGS_16X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1344,13 +1344,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_16X32
+#include BINNING_SETTINGS_4240_16X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_16X32
+#include BINNING_SETTINGS_16X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1361,13 +1361,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_32X1
+#include BINNING_SETTINGS_4240_32X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_32X1
+#include BINNING_SETTINGS_32X1
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1376,13 +1376,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_32X2
+#include BINNING_SETTINGS_4240_32X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_32X2
+#include BINNING_SETTINGS_32X2
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1391,13 +1391,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_32X4
+#include BINNING_SETTINGS_4240_32X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_32X4
+#include BINNING_SETTINGS_32X4
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1406,13 +1406,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_32X8
+#include BINNING_SETTINGS_4240_32X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_32X8
+#include BINNING_SETTINGS_32X8
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1421,13 +1421,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_32X16
+#include BINNING_SETTINGS_4240_32X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_32X16
+#include BINNING_SETTINGS_32X16
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1436,13 +1436,13 @@ void Pixci::reloadVideoSettings()
         {
             if (cameraModel == DETECTOR_2K)
             {
-#include BINNINGSETTINGS_4240_32X32
+#include BINNING_SETTINGS_4240_32X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
             else
             {
-#include BINNINGSETTINGS_32X32
+#include BINNING_SETTINGS_32X32
                 pxd_videoFormatAsIncludedInit(0);
                 pxd_videoFormatAsIncluded(0);
             }
@@ -1462,13 +1462,13 @@ void Pixci::resetVideoSettings()
     getIntegerParam(ADBinY, &binY);
     if (cameraModel == DETECTOR_2K)
     {
-#include BINNINGSETTINGS_4240_1X1
+#include BINNING_SETTINGS_4240_1X1
         pxd_videoFormatAsIncludedInit(0);
         pxd_videoFormatAsIncluded(0);
     }
     else
     {
-#include BINNINGSETTINGS_1X1
+#include BINNING_SETTINGS_1X1
         pxd_videoFormatAsIncludedInit(0);
         pxd_videoFormatAsIncluded(0);
     }
