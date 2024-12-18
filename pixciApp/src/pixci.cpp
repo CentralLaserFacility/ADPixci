@@ -192,9 +192,9 @@ static void paramTaskC(void *drvPvt);
  * @param See the pixci.h
  */
 extern "C" epicsInt32 pixciConfig(const char *portName,
-                           epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile)
+                           epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel)
 {
-    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
+    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel);
     return (asynSuccess);
 }
 
@@ -203,10 +203,35 @@ auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus)
     status = (status > returnedStatus) ? status : returnedStatus;
 };
 
+char* Pixci::getFormatFileForCam(epicsInt32 model) {
+    std::string basePath = "videoSettings\\Raptor_Eagle_XV_";
+    
+    switch (model) {
+        case DETECTOR_1K:
+            basePath += "47_10";
+            break;
+        case DETECTOR_2K:
+            basePath += "42_40";
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model not supported, defaulting to Raptor Eagle XV 47-10 configuration \n");
+            basePath += "47_10";
+            break;
+    }
+
+    basePath += "\\bin_1x1.fmt";
+
+    // Allocate memory for the char* to return
+    char* result = new char[basePath.size() + 1];
+    std::strcpy(result, basePath.c_str());
+    
+    return result;
+}
+
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile)
+Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel)
     : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
     epicsInt32 connectionStatusCode = 0;
@@ -228,12 +253,16 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
 
+    
+    const char *formatFile = getFormatFileForCam(cameraModel);
+
     /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
      * returns value <0 if any error occured
      * pxd_mesgErrorCode(int code) will return description of the error occured
      */
     connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
-    
+    delete[] formatFile;
+
     if (connectionStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -2170,19 +2199,17 @@ static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
 static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
 static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
 static const iocshArg pixciConfigArg5 = {"camera model", iocshArgInt};
-static const iocshArg pixciConfigArg6 = {"camera Format", iocshArgString};
 static const iocshArg *const pixciConfigArgs[] = {&pixciConfigArg0,
                                                   &pixciConfigArg1,
                                                   &pixciConfigArg2,
                                                   &pixciConfigArg3,
                                                   &pixciConfigArg4,
-                                                  &pixciConfigArg5,
-                                                  &pixciConfigArg6};
-static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
+                                                  &pixciConfigArg5};
+static const iocshFuncDef configpixci = {"pixciConfig", 6, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
     pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
-                args[4].ival, args[5].ival, args[6].sval);
+                args[4].ival, args[5].ival);
 }
 
 static void pixciRegister(void)
