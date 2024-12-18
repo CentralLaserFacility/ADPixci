@@ -824,217 +824,217 @@ void Pixci::changeVideoFormatConfig()
     {
         if(binX == PR_BIN_1 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_1x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_1x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_1x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_1x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_1x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_1x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_1x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_2x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_2x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_2x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_2x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_2x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_2x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_2x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_4x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_4x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_4x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_4x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_4x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_4x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_4x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_8x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_8x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_8x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_8x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_8x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_8x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_8x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_16x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_16x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_16x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_16x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_16x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_16x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_16x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_32x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_32x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_32x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_32x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_32x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_47_10\\bin_32x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_47_10\bin_32x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
@@ -1046,253 +1046,253 @@ void Pixci::changeVideoFormatConfig()
     {
         if(binX == PR_BIN_1 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_1 && binY == PR_BIN_FVB)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_1xFVB.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_1xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_FVB)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_2 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_2xFVB.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_2xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_4 && binY == PR_BIN_FVB)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_4xFVB.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_4xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_8 && binY == PR_BIN_FVB)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_8xFVB.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_8xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_16 && binY == PR_BIN_FVB)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_16xFVB.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_16xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_1)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x1.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_2)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x2.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_4)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x4.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_8)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x8.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_16)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x16.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_32)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32x32.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
         else if(binX == PR_BIN_32 && binY == PR_BIN_FVB)
         {
-            #include "videoSettings\\Raptor_Eagle_XV_42_40\\bin_32xFVB.fmt"
+            #include "videoSettings\Raptor_Eagle_XV_42_40\bin_32xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
