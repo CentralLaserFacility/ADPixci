@@ -23,13 +23,6 @@ constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORT
 constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
 constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
 
-#define BINNING1 1
-#define BINNING2 2
-#define BINNING4 4
-#define BINNING8 8
-#define BINNING16 16
-#define BINNING32 32
-
 constexpr const epicsInt32 DETECTOR_1K = 4710; // 1056 x 1027 active pixels
 constexpr const epicsInt32 DETECTOR_2K = 4240; // 2048 x 2048 active pixels
 
@@ -107,6 +100,17 @@ typedef enum
     PR_EXT_RISING_EDGE,
     PR_EXT_FALLING_EDGE
 } PR_TriggerPolarity_t;
+
+typedef enum
+{
+    PR_BIN_1 = 1,
+    PR_BIN_2 = 2,
+    PR_BIN_4 = 4,
+    PR_BIN_8 = 8,
+    PR_BIN_16 = 16,
+    PR_BIN_32 = 32,
+    PR_BIN_FVB = 2048,
+} PR_BinningOptions_t;
 
 /**
  * @brief Inherited from ADDriver class which has all the parameters that all areaDetector drivers should implement.
@@ -230,14 +234,7 @@ private:
      * video settings in order to reflect in image.
      *
      */
-    void reloadVideoSettings();
-
-    /**
-     * @brief reset video settings file to the default. minX , sizeX parameter changes require reset
-     * video settings in order to reflect in image.
-     *
-     */
-    void resetVideoSettings();
+    void changeVideoFormatConfig();
 
     /**
      * @brief read camera registers over serial communication.
