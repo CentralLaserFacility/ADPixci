@@ -210,45 +210,6 @@ record(stringin, "$(P)$(R)BuildDate_RBV")
 }
 
 ################################################################################
-# Binning options
-#
-record(mbbo, "$(P)$(R)BinX_Option")
-{
-   field(OUT, "$(P)$(R)BinX")
-   field(ZRST, "1")
-   field(ZRVL, "1")
-   field(ONST, "2")
-   field(ONVL, "2")
-   field(TWST, "4")
-   field(TWVL, "4")
-   field(THST, "8")
-   field(THVL, "8")
-   field(FRVL, "16")
-   field(FRST, "16")
-   field(FVVL, "32")
-   field(FVST, "32")
-}
-
-record(mbbo, "$(P)$(R)BinY_Option")
-{
-   field(OUT, "$(P)$(R)BinY")
-   field(ZRST, "1")
-   field(ZRVL, "1")
-   field(ONST, "2")
-   field(ONVL, "2")
-   field(TWST, "4")
-   field(TWVL, "4")
-   field(THST, "8")
-   field(THVL, "8")
-   field(FRVL, "16")
-   field(FRST, "16")
-   field(FVVL, "32")
-   field(FVST, "32")
-   field(SXVL, "2048")
-   field(SXST, "FVB")
-}
-
-################################################################################
 # Override ADCore records for acquire settings
 #
 record(bo, "$(P)$(R)Acquire") {
