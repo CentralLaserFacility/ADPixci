@@ -27,7 +27,7 @@ epicsEnvSet("RAPTOR_SETTINGS_FILE","$(ADPIXCI)/videoSettings/Raptor_Eagle_XV_$(C
 
 
 #pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)
-pixciConfig("$(PORT)", 0,  0, 0, 0, $(CAMERA_MODEL))
+pixciConfig("$(PORT)", 0,  0, 0, 0, $(CAMERA_MODEL), $(RAPTOR_SETTINGS_FILE))
 dbLoadRecords("$(ADPIXCI)/db/Pixci.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 NDStdArraysConfigure("Image1", 20, 0, "$(PORT)", 0, 0, 0, 0, 0, 5)
