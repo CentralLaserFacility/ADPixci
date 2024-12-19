@@ -200,12 +200,19 @@ record(bi, "$(P)$(R)ToggleFPGAComms_RBV")
 }
 
 ################################################################################
-# Build info
+# Build info and camera model records
 #  
 record(stringin, "$(P)$(R)BuildDate_RBV")
 {
    field(DTYP, "asynOctetRead")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_BUILD_DATE")
+   field(SCAN, "I/O Intr")
+}
+
+record(stringin, "$(P)$(R)CameraModel")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CAMERA_MODEL")
    field(SCAN, "I/O Intr")
 }
 

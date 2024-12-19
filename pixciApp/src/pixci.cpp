@@ -211,7 +211,6 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
 {
     epicsInt32 connectionStatusCode = 0;
     epicsInt32 serialConnection = 0;
-    Pixci::cameraModel = cameraModel;
 
     createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
     createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity);
@@ -227,6 +226,9 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree);
     createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
+    createParam(CameraModelString, asynParamInt32, &PR_CameraModel);
+
+    setIntegerParam(PR_CameraModel, cameraModel);
 
     /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
      * returns value <0 if any error occured
@@ -817,9 +819,10 @@ void Pixci::changeVideoFormatConfig()
 {
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
+    epicsInt32 cameraModel = 0;
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
-
+    getIntegerParam(PR_CameraModel, &cameraModel);
     if(cameraModel == DETECTOR_1K)
     {
         if(binX == PR_BIN_1 && binY == PR_BIN_1)
