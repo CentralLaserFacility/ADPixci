@@ -133,7 +133,7 @@ public:
      * @param cameraModel Select camera model, supported values are 4240 and 4710. Default value is 4710
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel);
+    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile);
 
     /* These are the methods that we override from ADDriver */
     /**
@@ -586,6 +586,4 @@ private:
     asynStatus updateStatus();
 
     asynStatus updateIntialPVs();
-
-    char *getFormatFileForCam(epicsInt32 model);
 };
