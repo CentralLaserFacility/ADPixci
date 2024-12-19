@@ -209,7 +209,7 @@ record(stringin, "$(P)$(R)BuildDate_RBV")
    field(SCAN, "I/O Intr")
 }
 
-record(stringin, "$(P)$(R)CameraModel")
+record(longin, "$(P)$(R)CameraModel")
 {
    field(DTYP, "asynInt32")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CAMERA_MODEL")
