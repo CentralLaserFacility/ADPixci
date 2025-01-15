@@ -228,6 +228,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
     createParam(CameraModelString, asynParamInt32, &PR_CameraModel);
 
+    setIntegerParam(ADStatus, ADStatusInitializing);
     setIntegerParam(PR_CameraModel, cameraModel);
 
     /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
@@ -256,11 +257,16 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
         }
     }
 
+    asynStatus status = asynSuccess;
+
+    // stop acquiring when camera is connected to, incase it was previously acquiring
+    setStatIfHigher(status, acquireStop());
+
     /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap,
     pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
     g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
-    asynStatus status = asynSuccess;
-    status = setStringParam(ADManufacturer, "Raptor Photonics");
+
+    setStatIfHigher(status, setStringParam(ADManufacturer, "Raptor Photonics"));
 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 
@@ -274,6 +280,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     // Updating all the PVs related to the status of device and the manufacturers data
     setStatIfHigher(status, updateStatus());
     setStatIfHigher(status, updateIntialPVs());
+    setIntegerParam(ADStatus, ADStatusIdle);
     if (status == asynError)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
@@ -342,7 +349,6 @@ asynStatus Pixci::setupAquisition()
 
 asynStatus Pixci::acquireImage()
 {
-
     /* TODO: implement all acquisition method like trigger, ringbuffer etc */
     static const char *functionName = "acquireImage";
     pxbuffer_t buffer = 1L; // Image frame buffer
@@ -352,12 +358,14 @@ asynStatus Pixci::acquireImage()
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "acquisition error: %s : %s", functionName, pxd_mesgErrorCode(error));
+        setIntegerParam(ADStatus, ADStatusError);
         return asynError;
     }
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "acquisition initiated ");
+        setIntegerParam(ADStatus, ADStatusAcquire);
         return asynSuccess;
     }
 }
@@ -371,12 +379,14 @@ asynStatus Pixci::acquireStop()
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "live couldn't stop: %s : %s", functionName, pxd_mesgErrorCode(error));
+        setIntegerParam(ADStatus, ADStatusError);
         return asynError;
     }
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
+        setIntegerParam(ADStatus, ADStatusIdle);
         return asynSuccess;
     }
 }
@@ -1672,6 +1682,17 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
     if (function == ADAcquire)
     {
+        /* In button trigger mode , acquisition should no be stoped, that will
+        affect the WaitForSingleObject. So only status is updated to STOP. once
+        the trigger mode is changed from button trigger mode, the actual implementation
+        of acquireStop() will be done.
+        */
+        epicsInt32 triggerMode = PR_INTERNAL_ITR;
+        getIntegerParam(ADTriggerMode, &triggerMode);
+        if (triggerMode == PR_BUTTON_TRIGGER)
+        {
+            return asynSuccess;
+        }
         /* TODO: adstatus == ADStatusIdle has to be checked */
         if (value)
         {
@@ -1687,22 +1708,8 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         /* TODO: adstatus != ADStatusIdle has to be checked */
         if (!value)
         {
-            /* In button trigger mode , acquisition should no be stoped, that will
-            affect the WaitForSingleObject. So only status is updated to STOP. once
-            the trigger mode is changed from button trigger mode, the actual implementation
-            of acquireStop() will be done.
-            */
-            epicsInt32 triggerMode = PR_INTERNAL_ITR;
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if (triggerMode == PR_BUTTON_TRIGGER)
-            {
-                status = asynSuccess;
-            }
-            else
-            {
-                status = acquireStop();
-            }
-
+            status = acquireStop();
+            
             if (status == asynSuccess)
             {
                 setIntegerParam(ADAcquire, 0);
