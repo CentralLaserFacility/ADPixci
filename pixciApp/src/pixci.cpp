@@ -357,15 +357,13 @@ asynStatus Pixci::acquireImage()
     if (error < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "acquisition error: %s : %s", functionName, pxd_mesgErrorCode(error));
-        setIntegerParam(ADStatus, ADStatusError);
+                  "acquisition error: %s : %s \n", functionName, pxd_mesgErrorCode(error));
         return asynError;
     }
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "acquisition initiated ");
-        setIntegerParam(ADStatus, ADStatusAcquire);
+                  "acquisition initiated \n");
         return asynSuccess;
     }
 }
@@ -378,15 +376,13 @@ asynStatus Pixci::acquireStop()
     if (error < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "live couldn't stop: %s : %s", functionName, pxd_mesgErrorCode(error));
-        setIntegerParam(ADStatus, ADStatusError);
+                  "live couldn't stop: %s : %s \n", functionName, pxd_mesgErrorCode(error));
         return asynError;
     }
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "live stopped \n");
-        setIntegerParam(ADStatus, ADStatusIdle);
         return asynSuccess;
     }
 }
@@ -404,6 +400,7 @@ static void acquireTaskC(void *drvPvt)
 void Pixci::acquireTask()
 {
     /* TODO: need to implement in a seperate file */
+
     NDArray *pImage = this->pArrays[0];
     pxbuffer_t buf = 1L;
     NDDataType_t dataType = NDUInt16;
@@ -416,6 +413,7 @@ void Pixci::acquireTask()
     epicsInt32 numImagesCounter = 0;
     epicsInt32 imageCounter = 0;
     epicsInt32 arrayCallbacks = 0;
+    epicsInt32 adstatus = ADStatusIdle;
     setupAquisition();
 
     for (;;)
@@ -429,13 +427,21 @@ void Pixci::acquireTask()
         getIntegerParam(ADBinX, &binX);
         getIntegerParam(ADBinY, &binY);
         getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
+        getIntegerParam(ADStatus, &adstatus);
+        if (adstatus != ADStatusAcquire)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DEVICE,
+                      "Acquisition status is: %d\n", adstatus);
+            continue;
+        }
+        setIntegerParam(ADStatus, ADStatusReadout);
 
         dims[0] = sizeX;
         dims[1] = sizeY;
 
         if (arrayCallbacks)
         {
-            lock();
+            this->lock();
             /* Allocate NDArray */
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer
@@ -448,7 +454,7 @@ void Pixci::acquireTask()
             epicsTimeGetCurrent(&currentTime);
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
             updateTimeStamp(&pImage->epicsTS);
-            unlock();
+            this->unlock();
             getAttributes(pImage->pAttributeList);
 
             /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
@@ -465,10 +471,16 @@ void Pixci::acquireTask()
         imageCounter++;
         numImagesCounter++;
 
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
+                  "Image %d acquired\n", imageCounter);
+
         setIntegerParam(NDArraySize, static_cast<epicsInt32>(dims[0] * dims[1] * sizeof(NDUInt16)));
         setIntegerParam(NDArrayCounter, imageCounter);
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
         callParamCallbacks();
+
+        // Set the status back to its original state
+        setIntegerParam(ADStatus, adstatus);
     }
 }
 
@@ -1693,28 +1705,58 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         {
             return asynSuccess;
         }
-        /* TODO: adstatus == ADStatusIdle has to be checked */
-        if (value)
+
+        epicsInt32 adstatus = ADStatusIdle;
+        getIntegerParam(ADStatus, &adstatus);
+        epicsInt32 liveStatus = epicsFalse;
+
+        if (value && adstatus == ADStatusIdle)
         {
             status = acquireImage();
             if (status == asynSuccess)
             {
-                setIntegerParam(ADAcquire, 1);
-                callParamCallbacks();
+                while(pxd_goneLive(UNIT, RESERVED) == PIXCI_NOT_LIVE) // wait for the camera to start acquiring
+                {
+                    epicsThreadSleep(1);
+                }
+                
+                setIntegerParam(ADAcquire, epicsTrue);
+                setIntegerParam(ADStatus, ADStatusAcquire);
+                setStringParam(ADStatusMessage, "Acquisition started");
+                asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started\n");
             }
+            else
+            {
+                status = asynError;
+                setIntegerParam(ADStatus, ADStatusError);
+                setStringParam(ADStatusMessage, "Error starting acquisition");
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error starting acquisition\n");
+            }
+            callParamCallbacks();
         }
-
-        // Stop acquisition
-        /* TODO: adstatus != ADStatusIdle has to be checked */
-        if (!value)
+        if (!value && adstatus != ADStatusIdle)
         {
+            setIntegerParam(ADStatus, ADStatusAborted);
             status = acquireStop();
-            
             if (status == asynSuccess)
             {
-                setIntegerParam(ADAcquire, 0);
-                callParamCallbacks();
+                while(pxd_goneLive(UNIT, RESERVED) != PIXCI_NOT_LIVE) // wait for the camera to stop acquiring
+                {
+                    epicsThreadSleep(1);
+                }
+                setIntegerParam(ADAcquire, epicsFalse);
+                setIntegerParam(ADStatus, ADStatusIdle);
+                setStringParam(ADStatusMessage, "Acquisition stopped");
+                asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
             }
+            else
+            {
+                status = asynError;
+                setIntegerParam(ADStatus, ADStatusError);
+                setStringParam(ADStatusMessage, "Error stopping acquisition");
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error stopping acquisition\n");
+            }
+            callParamCallbacks();
         }
 
     } /* set  value for default parameters */

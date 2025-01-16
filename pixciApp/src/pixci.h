@@ -28,6 +28,7 @@ constexpr const epicsInt32 DETECTOR_1K = 4710; // 1056 x 1027 active pixels
 constexpr const epicsInt32 DETECTOR_2K = 4240; // 2048 x 2048 active pixels
 
 constexpr const epicsInt32 PIXCI_NO_ERROR =  0; // Errors are defined as integers below zero.
+constexpr const epicsInt32 PIXCI_NOT_LIVE = 0;
 
 constexpr const char* FORMAT = "";      // Video format configuration name.
 constexpr const char* DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
