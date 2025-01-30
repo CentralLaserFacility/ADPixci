@@ -1710,6 +1710,9 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         getIntegerParam(ADStatus, &adstatus);
         epicsInt32 liveStatus = epicsFalse;
 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "ADStatus: %d\n", adstatus); //TODO: Remove after debug use
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Value: %d\n", value); //TODO: Remove after debug use
+
         if (value && adstatus == ADStatusIdle)
         {
             status = acquireImage();
