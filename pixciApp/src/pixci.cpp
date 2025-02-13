@@ -811,6 +811,14 @@ void Pixci::paramTask()
                 setTriggerMode(PR_EXTERNAL);
             }
         }
+        else if (function == ADShutterOpenDelay)
+        {
+            
+        }
+        else if (function == ADShutterCloseDelay)
+        {
+            
+        }
         callParamCallbacks();
     }
 }
@@ -1650,6 +1658,30 @@ epicsFloat64 Pixci::getExposure()
     return exposureTime;
 }
 
+asynStatus Pixci::setShutterOpenDelay(epicsFloat64 delayTime)
+{
+    
+    return asynSuccess;
+}
+
+epicsFloat64 Pixci::getShutterOpenDelay()
+{
+    epicsFloat64 delayTime = 0.0;
+    return delayTime;
+}
+
+asynStatus Pixci::setShutterCloseDelay(epicsFloat64 delayTime)
+{
+    
+    return asynSuccess;
+}
+
+epicsFloat64 Pixci::getShutterCloseDelay()
+{
+    epicsFloat64 delayTime = 0.0;
+    return delayTime;
+}
+
 asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
@@ -1768,6 +1800,14 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         addToParamQue(function, value);
     }
     else if (function == PR_TriggerPolarity)
+    {
+        addToParamQue(function, value);
+    }
+    else if (function == ADShutterOpenDelay)
+    {
+        addToParamQue(function, value);
+    }
+    else if (function == ADShutterCloseDelay)
     {
         addToParamQue(function, value);
     }

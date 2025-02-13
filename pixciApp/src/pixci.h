@@ -62,6 +62,9 @@ constexpr const epicsUInt8 INTERNAL_FFR_BYTE = 0x06;
 constexpr const epicsUInt8 EXTERNAL_FALLING_EDGE_BYTE = 0xC0;
 constexpr const epicsUInt8 EXTERNAL_RISING_EDGE_BYTE = 0x40;
 
+constexpr const epicsUInt8 SHUTTER_OPEN_DELAY_BYTE = 0xA6;
+constexpr const epicsUInt8 SHUTTER_CLOSE_DELAY_BYTE = 0xA7;
+
 constexpr const epicsUInt8 SINGLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x01};
 constexpr const epicsUInt8 DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x02};
 constexpr const epicsUInt8 READ_SERIAL_PREFIX_BYTES[3] = {0x53, 0xE1, 0x01};
@@ -532,6 +535,36 @@ private:
      * @return double
      */
     epicsFloat64 getExposure();
+
+    /**
+     * @brief Set the shutter open delay
+     * 
+     * @param delayTime
+     * @return asynStatus
+     */
+    asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
+
+    /**
+     * @brief Get the shutter open delay
+     * 
+     * @return double
+     */
+    epicsFloat64 getShutterOpenDelay();
+
+    /**
+     * @brief Set the shutter close delay
+     * 
+     * @param delayTime
+     * @return asynStatus
+     */
+    asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
+
+    /**
+     * @brief Get the shutter close delay
+     * 
+     * @return double
+     */
+    epicsFloat64 getShutterCloseDelay();
 
     /**
      * @brief Convert the ADC Count to the temperature in centigrade
