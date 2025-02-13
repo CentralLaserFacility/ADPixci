@@ -590,6 +590,8 @@ void Pixci::paramTask()
         {
             updateADTemperatureActual();
             updateTemperaturePcb(epicsTrue);
+            epicsFloat64 tecTemperature = getTecTemperature();
+            setStatIfHigher(status, setDoubleParam(ADTemperature, tecTemperature));
         }
         else if (function == ADAcquirePeriod)
         {
