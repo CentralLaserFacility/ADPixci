@@ -159,6 +159,14 @@ record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
    field(SCAN, "I/O Intr")
 }
 
+# Override Temperature from ADCore 
+# to initialize the temperature to 20C (not 25C) and stop autosave
+record(ao, "$(P)$(R)Temperature")
+{
+   field(VAL, "20.0")
+   info(autosaveFields, "")
+}
+
 ################################################################################
 # Records related to pre amp gain
 #

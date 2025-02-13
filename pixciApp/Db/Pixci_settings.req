@@ -1,6 +1,32 @@
-$(P)$(R)SoftTrigger
 $(P)$(R)TriggerPolarity
-$(P)$(R)UpdateTemperature
-$(P)$(R)ToggleTEC
 $(P)$(R)ToggleGain
-file "ADBase_settings.req", P=$(P), R=$(R)
+# the following is taken from ADBase_settings and modified to exclude some records
+# temperature must not be an autosave value as it can damage the detector
+$(P)$(R)BinX
+$(P)$(R)BinY
+$(P)$(R)MinX
+$(P)$(R)MinY
+$(P)$(R)SizeX
+$(P)$(R)SizeY
+$(P)$(R)ReverseX
+$(P)$(R)ReverseY
+$(P)$(R)AcquireTime
+$(P)$(R)AcquirePeriod
+$(P)$(R)Gain
+$(P)$(R)FrameType
+$(P)$(R)ImageMode
+$(P)$(R)TriggerMode
+$(P)$(R)NumExposures
+$(P)$(R)NumImages
+$(P)$(R)ShutterMode
+$(P)$(R)ShutterOpenDelay
+$(P)$(R)ShutterCloseDelay
+$(P)$(R)ShutterOpenEPICS.OUT
+$(P)$(R)ShutterCloseEPICS.OUT
+$(P)$(R)ShutterOpenEPICS.OCAL
+$(P)$(R)ShutterCloseEPICS.OCAL
+$(P)$(R)ShutterStatusEPICS_RBV.INP
+$(P)$(R)ShutterStatusEPICS_RBV.ZRVL
+$(P)$(R)ShutterStatusEPICS_RBV.ONVL
+$(P)$(R)ReadStatus.SCAN
+file "NDArrayBase_settings.req", P=$(P), R=$(R)
