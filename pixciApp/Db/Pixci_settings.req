@@ -1,6 +1,7 @@
 $(P)$(R)TriggerPolarity
 $(P)$(R)ToggleGain
 # the following is taken from ADBase_settings and modified to exclude some records
+# temperature must not be an autosave value as it can damage the detector
 $(P)$(R)BinX
 $(P)$(R)BinY
 $(P)$(R)MinX
