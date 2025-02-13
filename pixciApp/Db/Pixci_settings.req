@@ -1,5 +1,6 @@
 $(P)$(R)TriggerPolarity
 $(P)$(R)ToggleGain
+# the following is taken from ADBase_settings and modified to exclude some records
 $(P)$(R)BinX
 $(P)$(R)BinY
 $(P)$(R)MinX
