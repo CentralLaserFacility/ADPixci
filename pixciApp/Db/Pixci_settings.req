@@ -1,7 +1,4 @@
-$(P)$(R)SoftTrigger
 $(P)$(R)TriggerPolarity
-$(P)$(R)UpdateTemperature
-$(P)$(R)ToggleTEC
 $(P)$(R)ToggleGain
 $(P)$(R)BinX
 $(P)$(R)BinY
