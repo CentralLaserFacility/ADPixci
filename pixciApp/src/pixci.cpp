@@ -813,11 +813,21 @@ void Pixci::paramTask()
         }
         else if (function == ADShutterOpenDelay)
         {
-            
+            status = setShutterOpenDelay(d_val);
+            if (status == asynSuccess)
+            {
+                epicsFloat64 openDelay = getShutterOpenDelay();
+                setDoubleParam(ADShutterOpenDelay, openDelay);
+            }
         }
         else if (function == ADShutterCloseDelay)
         {
-            
+            status = setShutterCloseDelay(d_val);
+            if (status == asynSuccess)
+            {
+                epicsFloat64 closeDelay = getShutterCloseDelay();
+                setDoubleParam(ADShutterCloseDelay, closeDelay);
+            }
         }
         callParamCallbacks();
     }
@@ -1658,28 +1668,40 @@ epicsFloat64 Pixci::getExposure()
     return exposureTime;
 }
 
+epicsInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime)
+{
+    return static_cast<epicsInt8>(round(delayTime / MILLISECOND_PER_COUNT));
+}
+
+epicsFloat64 Pixci::convertHexToDelayTime(epicsInt8 hexVal)
+{
+    return static_cast<epicsFloat64>(hexVal) * MILLISECOND_PER_COUNT;
+}
+
 asynStatus Pixci::setShutterOpenDelay(epicsFloat64 delayTime)
 {
-    
-    return asynSuccess;
+    epicsInt8 hexval = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, hexval);
 }
 
 epicsFloat64 Pixci::getShutterOpenDelay()
 {
-    epicsFloat64 delayTime = 0.0;
-    return delayTime;
+    epicsInt8 cval = 0;
+    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &cval);
+    return convertHexToDelayTime(cval);
 }
 
 asynStatus Pixci::setShutterCloseDelay(epicsFloat64 delayTime)
 {
-    
-    return asynSuccess;
+    epicsInt8 hexval = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, hexval);
 }
 
 epicsFloat64 Pixci::getShutterCloseDelay()
 {
-    epicsFloat64 delayTime = 0.0;
-    return delayTime;
+    epicsInt8 cval = 0;
+    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &cval);
+    return convertHexToDelayTime(cval);
 }
 
 asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)

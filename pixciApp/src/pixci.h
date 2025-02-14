@@ -35,6 +35,10 @@ constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming
 constexpr const epicsInt32 RESERVED  = 0;
 constexpr const epicsFloat64 BAUDRATE = 115200;
 
+constexpr const epicsFloat64 CLOCK_SPEED = 80e6; // 80 MHz = 80,000,000
+constexpr const epicsInt32 TIMING_RESOLUTION = 131072; // 2^17 divisions
+constexpr const epicsFloat64 MILLISECOND_PER_COUNT = TIMING_RESOLUTION / CLOCK_SPEED; // 1.6384 ms per count
+
 constexpr const epicsBoolean BIN_AXIS_X = epicsFalse;
 constexpr const epicsBoolean BIN_AXIS_Y = epicsTrue;
 
@@ -537,7 +541,23 @@ private:
     epicsFloat64 getExposure();
 
     /**
-     * @brief Set the shutter open delay
+     * @brief Convert delay time (ms) to hex value
+     * 
+     * @param delayTime
+     * @return epicsInt8
+     */
+    epicsInt8 convertDelayTimeToHex(epicsFloat64 delayTime);
+
+    /**
+     * @brief Convert hex value to delay time (ms)
+     * 
+     * @param hexVal
+     * @return epicsFloat64
+     */
+    epicsFloat64 convertHexToDelayTime(epicsInt8 hexVal);
+
+    /**
+     * @brief Set the shutter open delay (ms)
      * 
      * @param delayTime
      * @return asynStatus
@@ -545,14 +565,14 @@ private:
     asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
 
     /**
-     * @brief Get the shutter open delay
+     * @brief Get the shutter open delay (ms)
      * 
      * @return double
      */
     epicsFloat64 getShutterOpenDelay();
 
     /**
-     * @brief Set the shutter close delay
+     * @brief Set the shutter close delay (ms)
      * 
      * @param delayTime
      * @return asynStatus
@@ -560,7 +580,7 @@ private:
     asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
 
     /**
-     * @brief Get the shutter close delay
+     * @brief Get the shutter close delay (ms)
      * 
      * @return double
      */
