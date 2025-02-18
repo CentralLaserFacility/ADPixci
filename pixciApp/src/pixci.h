@@ -35,6 +35,8 @@ constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming
 constexpr const epicsInt32 RESERVED  = 0;
 constexpr const epicsFloat64 BAUDRATE = 115200;
 
+constexpr const epicsFloat64 MILLISECOND_PER_COUNT = 1.6384;
+
 constexpr const epicsBoolean BIN_AXIS_X = epicsFalse;
 constexpr const epicsBoolean BIN_AXIS_Y = epicsTrue;
 
@@ -61,6 +63,9 @@ constexpr const epicsUInt8 INTERNAL_ITR_BYTE = 0x04;
 constexpr const epicsUInt8 INTERNAL_FFR_BYTE = 0x06;
 constexpr const epicsUInt8 EXTERNAL_FALLING_EDGE_BYTE = 0xC0;
 constexpr const epicsUInt8 EXTERNAL_RISING_EDGE_BYTE = 0x40;
+
+constexpr const epicsUInt8 SHUTTER_OPEN_DELAY_BYTE = 0xA6;
+constexpr const epicsUInt8 SHUTTER_CLOSE_DELAY_BYTE = 0xA7;
 
 constexpr const epicsUInt8 SINGLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x01};
 constexpr const epicsUInt8 DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x02};
@@ -532,6 +537,52 @@ private:
      * @return double
      */
     epicsFloat64 getExposure();
+
+    /**
+     * @brief Convert delay time (ms) to hex value
+     * 
+     * @param delayTime delay time in ms
+     * @return epicsInt8 hex value of delay time for camera
+     */
+    epicsUInt8 convertDelayTimeToHex(epicsFloat64 delayTime);
+
+    /**
+     * @brief Convert hex value to delay time (ms)
+     * 
+     * @param hexVal Hexidecimal value of delay time from camera
+     * @return epicsFloat64 delay time in ms
+     */
+    epicsFloat64 convertHexToDelayTime(epicsUInt8 hexVal);
+
+    /**
+     * @brief Set the shutter open delay (ms)
+     * 
+     * @param delayTime delay time in ms
+     * @return asynStatus
+     */
+    asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
+
+    /**
+     * @brief Get the shutter open delay (ms)
+     * 
+     * @return epicsFloat64 delay time in ms
+     */
+    epicsFloat64 getShutterOpenDelay();
+
+    /**
+     * @brief Set the shutter close delay (ms)
+     * 
+     * @param delayTime delay time in ms
+     * @return asynStatus
+     */
+    asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
+
+    /**
+     * @brief Get the shutter close delay (ms)
+     * 
+     * @return epicsFloat64 delay time in ms
+     */
+    epicsFloat64 getShutterCloseDelay();
 
     /**
      * @brief Convert the ADC Count to the temperature in centigrade
