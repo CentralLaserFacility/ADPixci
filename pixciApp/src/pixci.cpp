@@ -819,6 +819,9 @@ void Pixci::paramTask()
                 epicsFloat64 openDelay = getShutterOpenDelay();
                 setDoubleParam(ADShutterOpenDelay, openDelay);
             }
+            else {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter open delay\n");
+            }
         }
         else if (function == ADShutterCloseDelay)
         {
@@ -827,6 +830,9 @@ void Pixci::paramTask()
             {
                 epicsFloat64 closeDelay = getShutterCloseDelay();
                 setDoubleParam(ADShutterCloseDelay, closeDelay);
+            }
+            else {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter close delay\n");
             }
         }
         callParamCallbacks();
@@ -1668,40 +1674,43 @@ epicsFloat64 Pixci::getExposure()
     return exposureTime;
 }
 
-epicsInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime)
-{
-    return static_cast<epicsInt8>(round(delayTime / MILLISECOND_PER_COUNT));
+epicsInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime) {
+    epicsFloat64 scaled = delayTime * 1.6384;
+    epicsInt32 rounded = static_cast<epicsInt32>(std::round(scaled));
+    epicsInt8 hexVal = static_cast<epicsInt8>(rounded);
+    return hexVal;
 }
 
-epicsFloat64 Pixci::convertHexToDelayTime(epicsInt8 hexVal)
-{
-    return static_cast<epicsFloat64>(hexVal) * MILLISECOND_PER_COUNT;
+epicsFloat64 Pixci::convertHexToDelayTime(epicsInt8 hexVal) {
+    epicsFloat64 hexAsDouble = static_cast<epicsFloat64>(hexVal);
+    epicsFloat64 delayTime = hexAsDouble / 1.6384;
+    return delayTime;
 }
 
 asynStatus Pixci::setShutterOpenDelay(epicsFloat64 delayTime)
 {
-    epicsInt8 hexval = convertDelayTimeToHex(delayTime);
-    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, hexval);
+    epicsInt8 hexVal = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, hexVal);
 }
 
 epicsFloat64 Pixci::getShutterOpenDelay()
 {
-    epicsInt8 cval = 0;
-    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &cval);
-    return convertHexToDelayTime(cval);
+    epicsInt8 hexVal = 0;
+    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
+    return convertHexToDelayTime(hexVal);
 }
 
 asynStatus Pixci::setShutterCloseDelay(epicsFloat64 delayTime)
 {
-    epicsInt8 hexval = convertDelayTimeToHex(delayTime);
-    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, hexval);
+    epicsInt8 hexVal = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, hexVal);
 }
 
 epicsFloat64 Pixci::getShutterCloseDelay()
 {
-    epicsInt8 cval = 0;
-    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &cval);
-    return convertHexToDelayTime(cval);
+    epicsInt8 hexVal = 0;
+    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
+    return convertHexToDelayTime(hexVal);
 }
 
 asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
