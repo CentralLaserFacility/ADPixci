@@ -257,6 +257,8 @@ record(ai, "$(P)$(R)AcquirePeriod_RBV")
 record(ao, "$(P)$(R)ShutterOpenDelay")
 {
    field(EGU, "ms")
+   field(DRVL, "0")
+   field(DRVH, "155.94")
 }
 
 record(ai, "$(P)$(R)ShutterOpenDelay_RBV")
@@ -267,6 +269,8 @@ record(ai, "$(P)$(R)ShutterOpenDelay_RBV")
 record(ao, "$(P)$(R)ShutterCloseDelay")
 {
    field(EGU, "ms")
+   field(DRVL, "0")
+   field(DRVH, "155.94")
 }
 
 record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
