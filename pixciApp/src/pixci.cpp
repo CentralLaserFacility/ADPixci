@@ -1441,6 +1441,9 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
     case 64:
         hexval = 0x3F;
         break;
+    case 2048:
+        hexval = 0x80;
+        break;
     default:
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d", val);
         return asynError;
