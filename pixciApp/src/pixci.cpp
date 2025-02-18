@@ -1675,7 +1675,7 @@ epicsFloat64 Pixci::getExposure()
 }
 
 epicsInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime) {
-    epicsFloat64 scaled = delayTime * 1.6384;
+    epicsFloat64 scaled = delayTime * MILLISECOND_PER_COUNT;
     epicsInt32 rounded = static_cast<epicsInt32>(std::round(scaled));
     epicsInt8 hexVal = static_cast<epicsInt8>(rounded);
     return hexVal;
@@ -1683,7 +1683,7 @@ epicsInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime) {
 
 epicsFloat64 Pixci::convertHexToDelayTime(epicsInt8 hexVal) {
     epicsFloat64 hexAsDouble = static_cast<epicsFloat64>(hexVal);
-    epicsFloat64 delayTime = hexAsDouble / 1.6384;
+    epicsFloat64 delayTime = hexAsDouble / MILLISECOND_PER_COUNT;
     return delayTime;
 }
 
