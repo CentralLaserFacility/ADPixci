@@ -476,7 +476,6 @@ void Pixci::paramTask()
     epicsInt32 i_val = 0;
     epicsBoolean b_val = epicsFalse;
     asynStatus status = asynSuccess;
-    epicsInt32 acquire = 0;
 
     for (;;)
     {
@@ -496,13 +495,19 @@ void Pixci::paramTask()
             status = Pixci::setBin(i_val, BIN_AXIS_X);
             if (status == asynSuccess)
             {
+                epicsInt32 acquire = 0;
+                epicsInt32 triggerMode;
+                epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
                 setIntegerParam(ADBinX, i_val); // Updating the binX value.
-                callParamCallbacks();
                 getIntegerParam(ADAcquire, &acquire); // Getting the ADAcquire value.
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
                 changeVideoFormatConfig();                // Video settings have to be loaded respective of binning value.
                 acquireStop();                        // Acquire have to be stopped before calling setupAcquisition.
                 pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
                 setupAquisition();
+                setIntegerParam(ADTriggerMode, triggerMode);
+                setIntegerParam(PR_TriggerPolarity, triggerPolarity);
                 if (acquire == 1)
                 {
                     acquireImage(); // starting acquisition if acquisition was running before.
@@ -520,13 +525,19 @@ void Pixci::paramTask()
             status = Pixci::setBin(i_val, BIN_AXIS_Y);
             if (status == asynSuccess)
             {
+                epicsInt32 acquire = 0;
+                epicsInt32 triggerMode = ADTriggerInternal;
+                epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
                 setIntegerParam(ADBinY, i_val);
-                callParamCallbacks();
                 getIntegerParam(ADAcquire, &acquire);
+                getIntegerParam(ADTriggerMode, &triggerMode);
+                getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
                 changeVideoFormatConfig();
                 acquireStop();
                 pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / i_val, 0, 0);
                 setupAquisition();
+                setIntegerParam(ADTriggerMode, triggerMode);
+                setIntegerParam(PR_TriggerPolarity, triggerPolarity);
                 if (acquire == 1)
                 {
                     acquireImage();
@@ -661,6 +672,7 @@ void Pixci::paramTask()
             epicsInt32 sizeY = 0;
             epicsInt32 binX = 0;
             epicsInt32 binY = 0;
+            epicsInt32 acquire = 0;
             getIntegerParam(ADMaxSizeX, &maxSizeX);
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
@@ -694,6 +706,7 @@ void Pixci::paramTask()
             epicsInt32 sizeY = 0;
             epicsInt32 binX = 0;
             epicsInt32 binY = 0;
+            epicsInt32 acquire = 0;
             getIntegerParam(ADMaxSizeY, &maxSizeY);
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
@@ -729,6 +742,7 @@ void Pixci::paramTask()
             epicsInt32 sizeY = 0;
             epicsInt32 binX = 0;
             epicsInt32 binY = 0;
+            epicsInt32 acquire = 0;
             getIntegerParam(ADMaxSizeX, &maxSizeX);
             getIntegerParam(ADMinX, &minX);
             getIntegerParam(ADSizeY, &sizeY);
@@ -765,6 +779,7 @@ void Pixci::paramTask()
             epicsInt32 sizeX = 0;
             epicsInt32 binX = 0;
             epicsInt32 binY = 0;
+            epicsInt32 acquire = 0;
             getIntegerParam(ADMaxSizeY, &maxSizeY);
             getIntegerParam(ADMinY, &minY);
             getIntegerParam(ADSizeX, &sizeX);
