@@ -35,7 +35,7 @@ constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming
 constexpr const epicsInt32 RESERVED  = 0;
 constexpr const epicsFloat64 BAUDRATE = 115200;
 
-constexpr const epicsFloat64 MILLISECOND_PER_COUNT = 1.6384; // 1.6384 ms per count
+constexpr const epicsFloat64 MILLISECOND_PER_COUNT = 1.6384;
 
 constexpr const epicsBoolean BIN_AXIS_X = epicsFalse;
 constexpr const epicsBoolean BIN_AXIS_Y = epicsTrue;
