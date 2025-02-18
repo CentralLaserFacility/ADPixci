@@ -811,6 +811,30 @@ void Pixci::paramTask()
                 setTriggerMode(PR_EXTERNAL);
             }
         }
+        else if (function == ADShutterOpenDelay)
+        {
+            status = setShutterOpenDelay(d_val);
+            if (status == asynSuccess)
+            {
+                epicsFloat64 openDelay = getShutterOpenDelay();
+                setDoubleParam(ADShutterOpenDelay, openDelay);
+            }
+            else {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter open delay\n");
+            }
+        }
+        else if (function == ADShutterCloseDelay)
+        {
+            status = setShutterCloseDelay(d_val);
+            if (status == asynSuccess)
+            {
+                epicsFloat64 closeDelay = getShutterCloseDelay();
+                setDoubleParam(ADShutterCloseDelay, closeDelay);
+            }
+            else {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter close delay\n");
+            }
+        }
         callParamCallbacks();
     }
 }
@@ -1650,6 +1674,45 @@ epicsFloat64 Pixci::getExposure()
     return exposureTime;
 }
 
+epicsUInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime) {
+    epicsFloat64 scaled = delayTime * MILLISECOND_PER_COUNT;
+    epicsInt32 rounded = static_cast<epicsInt32>(std::round(scaled));
+    epicsUInt8 hexVal = static_cast<epicsUInt8>(rounded);
+    return hexVal;
+}
+
+epicsFloat64 Pixci::convertHexToDelayTime(epicsUInt8 hexVal) {
+    epicsFloat64 hexAsDouble = static_cast<epicsFloat64>(hexVal);
+    epicsFloat64 delayTime = hexAsDouble / MILLISECOND_PER_COUNT;
+    return delayTime;
+}
+
+asynStatus Pixci::setShutterOpenDelay(epicsFloat64 delayTime)
+{
+    epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
+}
+
+epicsFloat64 Pixci::getShutterOpenDelay()
+{
+    epicsInt8 hexVal = 0;
+    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
+    return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
+}
+
+asynStatus Pixci::setShutterCloseDelay(epicsFloat64 delayTime)
+{
+    epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
+}
+
+epicsFloat64 Pixci::getShutterCloseDelay()
+{
+    epicsInt8 hexVal = 0;
+    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
+    return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
+}
+
 asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
@@ -1782,18 +1845,18 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
     epicsInt32 function = pasynUser->reason;
-    asynStatus status = asynSuccess;
     static const char *functionName = "writeFloat64";
 
-    if (function == ADAcquirePeriod || function == ADAcquireTime)
+    if (function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature || function == ADShutterOpenDelay || function == ADShutterCloseDelay)
     {
         addToParamQue(function, value);
+        return asynSuccess;
     }
-    else if (function == ADTemperature)
+    else
     {
-        addToParamQue(function, value);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function %d\n", functionName, function);  
+        return asynError; 
     }
-    return asynSuccess;
 }
 
 void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value)
