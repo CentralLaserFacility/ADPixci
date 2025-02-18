@@ -544,7 +544,7 @@ private:
      * @param delayTime delay time in ms
      * @return epicsInt8 hex value of delay time for camera
      */
-    epicsInt8 convertDelayTimeToHex(epicsFloat64 delayTime);
+    epicsUInt8 convertDelayTimeToHex(epicsFloat64 delayTime);
 
     /**
      * @brief Convert hex value to delay time (ms)
@@ -552,7 +552,7 @@ private:
      * @param hexVal Hexidecimal value of delay time from camera
      * @return epicsFloat64 delay time in ms
      */
-    epicsFloat64 convertHexToDelayTime(epicsInt8 hexVal);
+    epicsFloat64 convertHexToDelayTime(epicsUInt8 hexVal);
 
     /**
      * @brief Set the shutter open delay (ms)
