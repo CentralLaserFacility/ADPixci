@@ -1416,6 +1416,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 {
     epicsInt8 hexval = 0;
     epicsInt8 reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
+    epicsInt32 cameraModel = 0;
 
     /* Assigning corresponding Hex value to send*/
     switch (val)
@@ -1441,6 +1442,12 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
     case 64:
         hexval = 0x3F;
         break;
+    case 2048:
+        getIntegerParam(PR_CameraModel, &cameraModel);
+        if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) { 
+            hexval = 0x80;
+            break;
+        }   
     default:
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d", val);
         return asynError;
