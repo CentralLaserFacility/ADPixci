@@ -159,6 +159,14 @@ record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
    field(SCAN, "I/O Intr")
 }
 
+# Override Temperature from ADCore 
+# to initialize the temperature to 20C (not 25C) and stop autosave
+record(ao, "$(P)$(R)Temperature")
+{
+   field(VAL, "20.0")
+   info(autosaveFields, "")
+}
+
 ################################################################################
 # Records related to pre amp gain
 #
@@ -243,3 +251,29 @@ record(ai, "$(P)$(R)AcquirePeriod_RBV")
    field(EGU, "s")
 }
 
+################################################################################
+# Override ADCore shutter delay records to add EGU
+#
+record(ao, "$(P)$(R)ShutterOpenDelay")
+{
+   field(EGU, "ms")
+   field(DRVL, "0")
+   field(DRVH, "155.640")
+}
+
+record(ai, "$(P)$(R)ShutterOpenDelay_RBV")
+{
+   field(EGU, "ms")
+}
+
+record(ao, "$(P)$(R)ShutterCloseDelay")
+{
+   field(EGU, "ms")
+   field(DRVL, "0")
+   field(DRVH, "155.640")
+}
+
+record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
+{
+   field(EGU, "ms")
+}
