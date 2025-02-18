@@ -1825,14 +1825,6 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     {
         addToParamQue(function, value);
     }
-    else if (function == ADShutterOpenDelay)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADShutterCloseDelay)
-    {
-        addToParamQue(function, value);
-    }
     else
     {
         status = ADDriver::writeInt32(pasynUser, value);
@@ -1844,18 +1836,18 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
     epicsInt32 function = pasynUser->reason;
-    asynStatus status = asynSuccess;
     static const char *functionName = "writeFloat64";
 
-    if (function == ADAcquirePeriod || function == ADAcquireTime)
+    if (function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature || function == ADShutterOpenDelay || function == ADShutterCloseDelay)
     {
         addToParamQue(function, value);
+        return asynSuccess;
     }
-    else if (function == ADTemperature)
+    else
     {
-        addToParamQue(function, value);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function %d\n", functionName, function);  
+        return asynError; 
     }
-    return asynSuccess;
 }
 
 void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value)
