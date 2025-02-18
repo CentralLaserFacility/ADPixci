@@ -541,23 +541,23 @@ private:
     /**
      * @brief Convert delay time (ms) to hex value
      * 
-     * @param delayTime
-     * @return epicsInt8
+     * @param delayTime delay time in ms
+     * @return epicsInt8 hex value of delay time for camera
      */
     epicsInt8 convertDelayTimeToHex(epicsFloat64 delayTime);
 
     /**
      * @brief Convert hex value to delay time (ms)
      * 
-     * @param hexVal
-     * @return epicsFloat64
+     * @param hexVal Hexidecimal value of delay time from camera
+     * @return epicsFloat64 delay time in ms
      */
     epicsFloat64 convertHexToDelayTime(epicsInt8 hexVal);
 
     /**
      * @brief Set the shutter open delay (ms)
      * 
-     * @param delayTime
+     * @param delayTime delay time in ms
      * @return asynStatus
      */
     asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
@@ -565,14 +565,14 @@ private:
     /**
      * @brief Get the shutter open delay (ms)
      * 
-     * @return double
+     * @return epicsFloat64 delay time in ms
      */
     epicsFloat64 getShutterOpenDelay();
 
     /**
      * @brief Set the shutter close delay (ms)
      * 
-     * @param delayTime
+     * @param delayTime delay time in ms
      * @return asynStatus
      */
     asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
@@ -580,7 +580,7 @@ private:
     /**
      * @brief Get the shutter close delay (ms)
      * 
-     * @return double
+     * @return epicsFloat64 delay time in ms
      */
     epicsFloat64 getShutterCloseDelay();
 
