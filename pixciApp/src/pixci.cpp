@@ -1854,14 +1854,14 @@ asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     epicsInt32 function = pasynUser->reason;
     static const char *functionName = "writeFloat64";
 
-    if (function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature || function == ADShutterOpenDelay || function == ADShutterCloseDelay)
+    if (function == ADGain || function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature || function == ADShutterOpenDelay || function == ADShutterCloseDelay)
     {
         addToParamQue(function, value);
         return asynSuccess;
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function %d\n", functionName, function);  
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function(%d) with value: %f\n", functionName, function, value);
         return asynError; 
     }
 }
