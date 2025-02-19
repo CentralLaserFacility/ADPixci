@@ -1414,7 +1414,7 @@ epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 m
 
 asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 {
-    epicsUInt8 hexval = 0;
+    epicsInt8 hexval = 0;
     epicsInt8 reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
     epicsInt32 cameraModel = 0;
 
@@ -1445,7 +1445,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
     case 2048:
         getIntegerParam(PR_CameraModel, &cameraModel);
         if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) { 
-            hexval = 0x80;
+            hexval = static_cast<epicsInt8>(0x80);
             break;
         }   
     default:
@@ -1454,7 +1454,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
         break;
     }
 
-    return Pixci::writeSerialRegister(UNIT, reg, reinterpret_cast<epicsInt8&>(hexval));
+    return Pixci::writeSerialRegister(UNIT, reg, hexval);
 }
 
 asynStatus Pixci::setFrameRate(epicsFloat64 frameRate)
