@@ -506,7 +506,6 @@ void Pixci::paramTask()
                 {
                     acquireStop();
                 }
-                setTriggerMode(ADTriggerInternal);
                 callParamCallbacks();
                 changeVideoFormatConfig();                // Video settings have to be loaded respective of binning value.
                 pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
