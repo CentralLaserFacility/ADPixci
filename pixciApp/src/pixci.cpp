@@ -476,7 +476,6 @@ void Pixci::paramTask()
     epicsInt32 i_val = 0;
     epicsBoolean b_val = epicsFalse;
     asynStatus status = asynSuccess;
-    epicsInt32 adStatus = ADStatusIdle;
 
     for (;;)
     {
