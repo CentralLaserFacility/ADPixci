@@ -240,19 +240,19 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     if (connectionStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: Cannot OPEN camera: %s.",
+                  "%s: Cannot OPEN camera: %s.\n",
                   driverName, pxd_mesgErrorCode(connectionStatusCode));
     }
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "%s Camera connected;",
+                  "%s Camera connected;\n",
                   driverName);
         serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
         if (serialConnection < PIXCI_NO_ERROR)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                      "%s: Cannot make serial connection: %s.",
+                      "%s: Cannot make serial connection: %s.\n",
                       driverName, pxd_mesgErrorCode(connectionStatusCode));
         }
     }
@@ -284,6 +284,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     if (status == asynError)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
+        setIntegerParam(ADStatus, ADStatusError);
         return;
     }
 }
@@ -301,13 +302,13 @@ Pixci::~Pixci()
     if (disconnectStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: disconnect camera error: %s .",
+                  "%s: disconnect camera error: %s\n",
                   driverName, pxd_mesgErrorCode(disconnectStatusCode));
     }
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "%s: camera disconnected;",
+                  "%s: camera disconnected;\n",
                   driverName);
     }
 }
@@ -620,7 +621,7 @@ void Pixci::paramTask()
             }
             else
             {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected\n");
             }
         }
         else if (function == PR_UpdateStatus)
@@ -1111,7 +1112,7 @@ void Pixci::changeVideoFormatConfig()
             pxd_videoFormatAsIncluded(0);
         }
         else {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value\n");
         }
     }
     else if(cameraModel == DETECTOR_2K)
@@ -1369,11 +1370,11 @@ void Pixci::changeVideoFormatConfig()
             pxd_videoFormatAsIncluded(0);
         }
         else {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value\n");
         }
     }
     else {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model not supported");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model not supported\n");
     }
 }
 
@@ -1435,7 +1436,7 @@ epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 m
     if (count < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: Cannot serial write: %s.",
+                  "%s: Cannot serial write: %s.\n",
                   driverName, pxd_mesgErrorCode(count));
         return count;
     }
@@ -1494,7 +1495,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
             break;
         }   
     default:
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d", val);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d\n", val);
         return asynError;
         break;
     }
@@ -1787,74 +1788,7 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
     if (function == ADAcquire)
     {
-        /* In button trigger mode , acquisition should no be stoped, that will
-        affect the WaitForSingleObject. So only status is updated to STOP. once
-        the trigger mode is changed from button trigger mode, the actual implementation
-        of acquireStop() will be done.
-        */
-        epicsInt32 triggerMode = PR_INTERNAL_ITR;
-        getIntegerParam(ADTriggerMode, &triggerMode);
-        if (triggerMode == PR_BUTTON_TRIGGER)
-        {
-            return asynSuccess;
-        }
-
-        epicsInt32 adstatus = ADStatusIdle;
-        getIntegerParam(ADStatus, &adstatus);
-        epicsInt32 liveStatus = epicsFalse;
-
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "ADStatus: %d\n", adstatus); //TODO: Remove after debug use
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Value: %d\n", value); //TODO: Remove after debug use
-
-        if (value && adstatus == ADStatusIdle)
-        {
-            status = acquireImage();
-            if (status == asynSuccess)
-            {
-                while(pxd_goneLive(UNIT, RESERVED) == PIXCI_NOT_LIVE) // wait for the camera to start acquiring
-                {
-                    epicsThreadSleep(1);
-                }
-                
-                setIntegerParam(ADAcquire, epicsTrue);
-                setIntegerParam(ADStatus, ADStatusAcquire);
-                setStringParam(ADStatusMessage, "Acquisition started");
-                asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started\n");
-            }
-            else
-            {
-                status = asynError;
-                setIntegerParam(ADStatus, ADStatusError);
-                setStringParam(ADStatusMessage, "Error starting acquisition");
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error starting acquisition\n");
-            }
-            callParamCallbacks();
-        }
-        if (!value && adstatus != ADStatusIdle)
-        {
-            setIntegerParam(ADStatus, ADStatusAborted);
-            status = acquireStop();
-            if (status == asynSuccess)
-            {
-                while(pxd_goneLive(UNIT, RESERVED) != PIXCI_NOT_LIVE) // wait for the camera to stop acquiring
-                {
-                    epicsThreadSleep(1);
-                }
-                setIntegerParam(ADAcquire, epicsFalse);
-                setIntegerParam(ADStatus, ADStatusIdle);
-                setStringParam(ADStatusMessage, "Acquisition stopped");
-                asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
-            }
-            else
-            {
-                status = asynError;
-                setIntegerParam(ADStatus, ADStatusError);
-                setStringParam(ADStatusMessage, "Error stopping acquisition");
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error stopping acquisition\n");
-            }
-            callParamCallbacks();
-        }
-
+        status = processAcquire(value);
     } /* set  value for default parameters */
     else if (function == ADBinX)
     {
@@ -1921,7 +1855,7 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         status = ADDriver::writeInt32(pasynUser, value);
     }
 
-    return asynSuccess;
+    return status;
 }
 
 asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
@@ -1953,6 +1887,80 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
     /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+}
+
+
+asynStatus Pixci::processAcquire(epicsInt32 value)
+{
+    asynStatus status = asynSuccess;
+
+    /* In button trigger mode , acquisition should not be stoped, that will affect the 
+    WaitForSingleObject. So only status is updated to STOP. once the trigger mode is changed from 
+    button trigger mode, the actual implementation of acquireStop() will be done.
+    */    
+    epicsInt32 triggerMode = PR_INTERNAL_ITR;
+    getIntegerParam(ADTriggerMode, &triggerMode);
+    if (triggerMode == PR_BUTTON_TRIGGER)
+    {
+        return status;
+    }
+
+    epicsInt32 adStatus = ADStatusIdle;
+    getIntegerParam(ADStatus, &adStatus);
+
+    if (value && adStatus == ADStatusIdle)
+    {
+        status = acquireImage();
+        if (status == asynSuccess)
+        {
+            while(pxd_goneLive(UNIT, RESERVED) == PIXCI_NOT_LIVE) // wait for the camera to start acquiring
+            {
+                epicsThreadSleep(1);
+            }
+
+            setIntegerParam(ADAcquire, epicsTrue);
+            setIntegerParam(ADStatus, ADStatusAcquire);
+            setStringParam(ADStatusMessage, "Acquisition started");
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started\n");
+        }
+        else {
+            status = asynError;
+            setIntegerParam(ADStatus, ADStatusError);
+            setStringParam(ADStatusMessage, "Error starting acquisition");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error starting acquisition\n");
+        }
+        callParamCallbacks();
+    }
+    else if (!value && adStatus != ADStatusIdle)
+    {
+        setIntegerParam(ADStatus, ADStatusAborted);
+        status = acquireStop();
+        if (status == asynSuccess)
+        {
+            while(pxd_goneLive(UNIT, RESERVED) != PIXCI_NOT_LIVE) // wait for the camera to stop acquiring
+            {
+                epicsThreadSleep(1);
+            }
+
+            setIntegerParam(ADAcquire, epicsFalse);
+            setIntegerParam(ADStatus, ADStatusIdle);
+            setStringParam(ADStatusMessage, "Acquisition stopped");
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
+        }
+        else
+        {
+            status = asynError;
+            setIntegerParam(ADStatus, ADStatusError);
+            setStringParam(ADStatusMessage, "Error stopping acquisition");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error stopping acquisition\n");
+        }
+        callParamCallbacks();
+    }
+    else {
+        status = asynError;
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Unable to %s acquisition\n", value ? "start" : "stop");
+    }
+    return status;
 }
 
 asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
@@ -2065,7 +2073,7 @@ asynStatus Pixci::setTriggerMode(epicsInt32 mode)
         hexval = CLEAR_TRIGGER_MODE_BYTE; // 00000000
         break;
     default:
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d", mode);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d\n", mode);
         return asynError;
         break;
     }

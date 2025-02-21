@@ -289,6 +289,14 @@ private:
     void addToParamQue(epicsInt32 function, epicsFloat64 value);
 
     /**
+     * @brief process acquire function
+     * 
+     * @param value value to be set for acquire
+     * @return asynStatus
+     */
+    asynStatus processAcquire(epicsInt32 value);
+
+    /**
      * @brief write value to the registers of the camera using serial command, might take longer
      * time to execute. Advised to run in seperate thread.
      *
