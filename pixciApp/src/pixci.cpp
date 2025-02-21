@@ -476,6 +476,7 @@ void Pixci::paramTask()
     epicsInt32 i_val = 0;
     epicsBoolean b_val = epicsFalse;
     asynStatus status = asynSuccess;
+    epicsInt32 adStatus = ADStatusIdle;
 
     for (;;)
     {
@@ -502,12 +503,17 @@ void Pixci::paramTask()
                 getIntegerParam(ADAcquire, &acquire); // Getting the ADAcquire value.
                 getIntegerParam(ADTriggerMode, &triggerMode);
                 getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+                if (acquire == 1)
+                {
+                    acquireStop();
+                }
+                setTriggerMode(ADTriggerInternal);
+                callParamCallbacks();
                 changeVideoFormatConfig();                // Video settings have to be loaded respective of binning value.
-                acquireStop();                        // Acquire have to be stopped before calling setupAcquisition.
                 pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
-                setupAquisition();
-                setIntegerParam(ADTriggerMode, triggerMode);
                 setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+                setTriggerMode(triggerMode);
+                setupAquisition();
                 if (acquire == 1)
                 {
                     acquireImage(); // starting acquisition if acquisition was running before.
@@ -532,12 +538,16 @@ void Pixci::paramTask()
                 getIntegerParam(ADAcquire, &acquire);
                 getIntegerParam(ADTriggerMode, &triggerMode);
                 getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+                if (acquire == 1)
+                {
+                    acquireStop();
+                }
+                callParamCallbacks();
                 changeVideoFormatConfig();
-                acquireStop();
                 pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / i_val, 0, 0);
-                setupAquisition();
-                setIntegerParam(ADTriggerMode, triggerMode);
                 setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+                setTriggerMode(triggerMode);
+                setupAquisition();
                 if (acquire == 1)
                 {
                     acquireImage();
