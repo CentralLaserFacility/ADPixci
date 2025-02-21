@@ -277,3 +277,34 @@ record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
 {
    field(EGU, "ms")
 }
+
+
+################################################################################
+# Records to disable settings records while acquiring
+#
+record(dfanout, "$(P)$(R)DisableAcquireSettingsWhileAcquiring") {
+   field(DOL, "$(P)$(R)Acquire CP")
+   field(OUTA, "$(P)$(R)AcquireTime.DISP")
+   field(OUTB, "$(P)$(R)AcquirePeriod.DISP")
+   field(OMSL, "closed_loop")
+}
+
+record(dfanout, "$(P)$(R)DisableAOISettingsWhileAcquiring") {
+   field(DOL, "$(P)$(R)Acquire CP")
+   field(OUTA, "$(P)$(R)BinX.DISP")
+   field(OUTB, "$(P)$(R)BinY.DISP")
+   field(OUTC, "$(P)$(R)SizeX.DISP")
+   field(OUTD, "$(P)$(R)SizeY.DISP")
+   field(OUTE, "$(P)$(R)MinX.DISP")
+   field(OUTF, "$(P)$(R)MinY.DISP")
+   field(OMSL, "closed_loop")
+}
+
+record(dfanout, "$(P)$(R)DisableTriggerSettingsWhileAcquiring") {
+   field(DOL, "$(P)$(R)Acquire CP")
+   field(OUTA, "$(P)$(R)TriggerMode.DISP")
+   field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
+   field(OUTC, "$(P)$(R)ShutterOpenDelay.DISP")
+   field(OUTD, "$(P)$(R)ShutterCloseDelay.DISP")
+   field(OMSL, "closed_loop")
+}
