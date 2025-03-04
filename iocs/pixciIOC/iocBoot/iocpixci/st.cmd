@@ -23,7 +23,8 @@ epicsEnvSet("NCHANS", "512")
 # The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 epicsEnvSet("CAMERA_MODEL","4710")
-epicsEnvSet("RAPTOR_SETTINGS_FILE","$(ADPIXCI)/videoSettings/Raptor_Eagle_XV_$(CAMERA_MODEL).fmt")
+# the video format file to load initially
+epicsEnvSet("RAPTOR_SETTINGS_FILE","$(ADPIXCI)/fmt/Raptor_Eagle_XV_$(CAMERA_MODEL).fmt")
 
 
 #pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)

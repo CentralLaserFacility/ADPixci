@@ -12,7 +12,10 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 
 #DB += xxx.template
-DB += Pixci.template
+DB += $(patsubst ../%, %, $(wildcard ../*.template))
+DB += $(patsubst ../%, %, $(wildcard ../*.req))
+DB += $(patsubst ../%, %, $(wildcard ../*.substitutions))
+
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add
 # <anyname>_template = <templatename>
