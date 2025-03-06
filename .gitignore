@@ -11,6 +11,9 @@ cdCommands
 dllPath.bat
 auto_settings.sav*
 configure/*.local
+cfg
+fmt
+!pixciApp/src/fmt
 O.*/
 *~
 *.swp

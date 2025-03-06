@@ -1,0 +1,6 @@
+override INSTALLS_FMT := $(patsubst ../fmt/%/bin_1x1.fmt, $(INSTALL_FMT)/%.fmt, $(wildcard ../fmt/*/bin_1x1.fmt))
+
+$(INSTALL_FMT)/%.fmt: ../fmt/%/bin_1x1.fmt
+	@echo "Installing FMT file: $@"
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	@if exist "$<" ( copy /Y $(subst /,\,$<) $(subst /,\,$@) ) else ( echo "Error: Source file $< not found!" && exit 1 )
