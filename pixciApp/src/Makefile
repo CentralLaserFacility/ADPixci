@@ -18,8 +18,8 @@ endif
 
 DBD += pixciSupport.dbd
 
-# Add fmt directory to the build if not already included
-FMT += $(patsubst ../%, %, $(wildcard ../fmt/*/bin_1x1.fmt))
+# Install .fmt files
+FMT += $(patsubst ../fmt/%/bin_1x1.fmt, %.fmt, $(wildcard ../fmt/*/bin_1x1.fmt))
 
 include $(ADCORE)/ADApp/commonLibraryMakefile
 
