@@ -191,8 +191,7 @@ static void paramTaskC(void *drvPvt);
  * @brief Configuration command for pixci driver; creates a new pixci object.
  * @param See the pixci.h
  */
-extern "C" epicsInt32 pixciConfig(const char *portName,
-                           epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile)
+extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
 {
     new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     return (asynSuccess);
@@ -206,7 +205,7 @@ auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus)
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile)
+Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
     : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
     epicsInt32 connectionStatusCode = 0;
@@ -227,7 +226,8 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
 
-    setIntegerParam(ADModel, cameraModel);
+    setStringParam(ADModel, cameraModel);
+    
 
     /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
      * returns value <0 if any error occured
@@ -865,10 +865,10 @@ void Pixci::changeVideoFormatConfig()
 {
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
-    epicsInt32 cameraModel = 0;
+    std::string cameraModel = "";
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
-    getIntegerParam(ADModel, &cameraModel);
+    getStringParam(ADModel, cameraModel);
     if(cameraModel == DETECTOR_1K)
     {
         if(binX == PR_BIN_1 && binY == PR_BIN_1)
@@ -1438,7 +1438,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
 {
     epicsInt8 hexval = 0;
     epicsInt8 reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
-    epicsInt32 cameraModel = 0;
+    std::string cameraModel = "";
 
     /* Assigning corresponding Hex value to send*/
     switch (val)
@@ -1465,7 +1465,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
         hexval = 0x3F;
         break;
     case 2048:
-        getIntegerParam(ADModel, &cameraModel);
+        getStringParam(ADModel, cameraModel);
         if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) { 
             hexval = static_cast<epicsInt8>(0x80);
             break;
@@ -2259,13 +2259,13 @@ void Pixci::report(FILE *fp, epicsInt32 details)
 /* Code for iocsh registration */
 
 /* pixciConfig parameters from st.cmd */
-static const iocshArg pixciConfigArg0 = {"Port name", iocshArgString};
+static const iocshArg pixciConfigArg0 = {"portName", iocshArgString};
 static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
 static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
 static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
 static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"camera model", iocshArgInt};
-static const iocshArg pixciConfigArg6 = {"camera Format", iocshArgString};
+static const iocshArg pixciConfigArg5 = {"cameraModel", iocshArgString};
+static const iocshArg pixciConfigArg6 = {"formatFile", iocshArgString};
 static const iocshArg *const pixciConfigArgs[] = {&pixciConfigArg0,
                                                   &pixciConfigArg1,
                                                   &pixciConfigArg2,
@@ -2277,7 +2277,7 @@ static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
     pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
-                args[4].ival, args[5].ival, args[6].sval);
+                args[4].ival, args[5].sval, args[6].sval);
 }
 
 static void pixciRegister(void)
