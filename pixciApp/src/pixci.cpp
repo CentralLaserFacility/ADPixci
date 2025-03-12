@@ -226,9 +226,8 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree);
     createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
-    createParam(CameraModelString, asynParamInt32, &PR_CameraModel);
 
-    setIntegerParam(PR_CameraModel, cameraModel);
+    setIntegerParam(ADModel, cameraModel);
 
     /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
      * returns value <0 if any error occured
@@ -869,7 +868,7 @@ void Pixci::changeVideoFormatConfig()
     epicsInt32 cameraModel = 0;
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
-    getIntegerParam(PR_CameraModel, &cameraModel);
+    getIntegerParam(ADModel, &cameraModel);
     if(cameraModel == DETECTOR_1K)
     {
         if(binX == PR_BIN_1 && binY == PR_BIN_1)
@@ -1466,7 +1465,7 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
         hexval = 0x3F;
         break;
     case 2048:
-        getIntegerParam(PR_CameraModel, &cameraModel);
+        getIntegerParam(ADModel, &cameraModel);
         if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) { 
             hexval = static_cast<epicsInt8>(0x80);
             break;

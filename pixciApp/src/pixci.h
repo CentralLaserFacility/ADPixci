@@ -22,7 +22,6 @@ constexpr const char *ADCCalibrationZeroDegreeString = "PR_ADC_CALIBRATION_ZERO_
 constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORTY_DEGREE";
 constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
 constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
-constexpr const char *CameraModelString = "PR_CAMERA_MODEL";
 
 constexpr const epicsInt32 DETECTOR_1K = 4710; // 1056 x 1027 active pixels
 constexpr const epicsInt32 DETECTOR_2K = 4240; // 2048 x 2048 active pixels
@@ -186,7 +185,6 @@ protected:
     epicsInt32 PR_DACCalibrationZeroDegree;
     epicsInt32 PR_DACCalibrationFortyDegree;
     epicsInt32 PR_TriggerPolarity;
-    epicsInt32 PR_CameraModel;
 
 #define FIRST_PIXCI_PARAM PR_SoftTrigger
 
