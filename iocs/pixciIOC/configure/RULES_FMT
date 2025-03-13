@@ -1,0 +1,5 @@
+#RULES_FMT
+$(INSTALL_FMT)/%.fmt: $(ADPIXCI)/fmt/%.fmt
+	@echo "Installing FMT file: $@"
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	@if exist "$<" ( copy /Y $(subst /,\,$<) $(subst /,\,$@) ) else ( echo "Error: Source file $< not found!" && exit 1 )
