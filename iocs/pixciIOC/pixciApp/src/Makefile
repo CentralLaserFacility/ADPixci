@@ -6,7 +6,7 @@ include $(TOP)/configure/CONFIG
 #=============================
 # Build the IOC application
 PROD_NAME = pixci
-PROD_IOC = pixci
+PROD_IOC = $(PROD_NAME)
 
 # <name>.dbd will be created from <name>Include.dbd
 DBD += $(PROD_NAME).dbd
