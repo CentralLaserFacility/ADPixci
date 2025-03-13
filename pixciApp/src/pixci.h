@@ -22,15 +22,14 @@ constexpr const char *ADCCalibrationZeroDegreeString = "PR_ADC_CALIBRATION_ZERO_
 constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORTY_DEGREE";
 constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
 constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
-constexpr const char *CameraModelString = "PR_CAMERA_MODEL";
 
-constexpr const epicsInt32 DETECTOR_1K = 4710; // 1056 x 1027 active pixels
-constexpr const epicsInt32 DETECTOR_2K = 4240; // 2048 x 2048 active pixels
+constexpr const char *DETECTOR_1K = "4710"; // 1056 x 1027 active pixels
+constexpr const char *DETECTOR_2K = "4240"; // 2048 x 2048 active pixels
 
 constexpr const epicsInt32 PIXCI_NO_ERROR =  0; // Errors are defined as integers below zero.
 
-constexpr const char* FORMAT = "";      // Video format configuration name.
-constexpr const char* DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
+constexpr const char *FORMAT = "";      // Video format configuration name.
+constexpr const char *DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
 constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming, eb1 model only have 1 unit.
 constexpr const epicsInt32 RESERVED  = 0;
 constexpr const epicsFloat64 BAUDRATE = 115200;
@@ -139,7 +138,7 @@ public:
      * @param cameraModel Select camera model, supported values are 4240 and 4710. Default value is 4710
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, epicsInt32 cameraModel, const char *formatFile);
+    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, const char *cameraModel, const char *formatFile);
 
     /* These are the methods that we override from ADDriver */
     /**
@@ -186,7 +185,6 @@ protected:
     epicsInt32 PR_DACCalibrationZeroDegree;
     epicsInt32 PR_DACCalibrationFortyDegree;
     epicsInt32 PR_TriggerPolarity;
-    epicsInt32 PR_CameraModel;
 
 #define FIRST_PIXCI_PARAM PR_SoftTrigger
 

@@ -217,13 +217,6 @@ record(stringin, "$(P)$(R)BuildDate_RBV")
    field(SCAN, "I/O Intr")
 }
 
-record(ai, "$(P)$(R)CameraModel")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CAMERA_MODEL")
-   field(SCAN, "I/O Intr")
-}
-
 ################################################################################
 # Override ADCore records for acquire settings
 #
