@@ -1,3 +1,5 @@
+#RULES_FMT
+
 override INSTALLS_FMT := $(FMT:%=$(INSTALL_FMT)/%)
 
 $(INSTALL_FMT)/%.fmt: ../fmt/%/bin_1x1.fmt
