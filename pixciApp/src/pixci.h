@@ -10,18 +10,6 @@
 /* AreaDetector headers */
 #include "ADDriver.h"
 
-/* Pixci headers
- source: http://www.epixinc.com/products/xclib.htm
- XCLW64 .dll and .lib files should be included for windows-64 OS
- XCLIBNT .dll and .lib files should be inlcuded for win32 OS
- xclib_x86_64 .so and .a files should be included for linux_x86_64 OS
- xclib_i386 .so and .a files should be included for linux_x86 OS
-*/
-extern "C"
-{
-#include "xcliball.h"
-}
-
 /* For windows */
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 #include <windows.h>
