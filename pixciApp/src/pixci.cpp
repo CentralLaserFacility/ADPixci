@@ -14,13 +14,8 @@
 */
 extern "C"
 {
-#include "ADPixci\include\xcliball.h"
+#include "xcliball.h"
 }
-
-/* For windows */
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-#include <windows.h>
-#endif
 
 /* Epics headers */
 #include <epicsEvent.h>

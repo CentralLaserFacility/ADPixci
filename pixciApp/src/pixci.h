@@ -9,6 +9,12 @@
 
 /* AreaDetector headers */
 #include "ADDriver.h"
+
+/* For windows */
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#include <windows.h>
+#endif
+
 #include <cstdio>
 
 constexpr const char *driverName = "Pixci";
