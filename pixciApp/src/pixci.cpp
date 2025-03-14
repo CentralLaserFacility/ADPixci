@@ -2072,7 +2072,6 @@ void Pixci::updateTemperaturePcb(epicsBoolean callBackFlag)
 
 asynStatus Pixci::updateManufacturersData(epicsBoolean callBackFlag)
 {
-    using std::string;
     using std::to_string;
 
     char inputMsg[20] = {};
@@ -2096,7 +2095,7 @@ asynStatus Pixci::updateManufacturersData(epicsBoolean callBackFlag)
     };
 
     epicsInt16 serialNumber = 0;
-    string buildDate = "";
+    std::string buildDate = "";
     epicsInt16 adcCountZeroDegree = 0;
     epicsInt16 adcCountFortyDegree = 0;
     epicsInt16 dacCountZeroDegree = 0;
