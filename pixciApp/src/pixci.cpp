@@ -3,10 +3,7 @@
  *
  */
 
-/* For windows */
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-#include <windows.h>
-#endif
+#include "pixci.h"
 
 /* Pixci headers
  source: http://www.epixinc.com/products/xclib.htm
@@ -17,9 +14,13 @@
 */
 extern "C"
 {
-#include "xcliball.h"
+#include "ADPixci\include\xcliball.h"
 }
-#include "pixci.h"
+
+/* For windows */
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#include <windows.h>
+#endif
 
 /* Epics headers */
 #include <epicsEvent.h>
@@ -31,7 +32,9 @@ extern "C"
 #include <epicsExport.h>
 #include <epicsMessageQueue.h>
 
-using namespace std;
+#include <algorithm>
+#include <string>
+#include <cstdio>
 
 // Set video resolution and video offset.
 // Set capture resolution to same.
@@ -52,11 +55,11 @@ using namespace std;
 #if !defined(PIXCI_LITE)
 _cDcl(_dllpxlib, _cfunfcc, epicsInt32)
     pxd_setVideoResolution(
-        epicsInt32 unitmap, // usual
-        epicsInt32 xdim,    // pixels per line
-        epicsInt32 ydim,    // pixels per column (per field)
-        epicsInt32 hoffset, // video hoffset
-        epicsInt32 voffset  // video voffset
+        epicsInt32 unitmap,     // usual
+        epicsInt32 xdim,        // pixels per line
+        epicsInt32 ydim,        // pixels per column (per field)
+        epicsInt32 hoffset,     // video hoffset
+        epicsInt32 voffset      // video voffset
     )
 {
     epicsInt32 r = 0, r1 = 0;
@@ -66,11 +69,11 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32)
 #if USEINTERNALAPI
     if (liblog_active)
         liblog_aasrbz("pxd_setVideoResolution", "", "D*",
-                      &unitmap, (size_t)sizeof(unitmap),
-                      &xdim, (size_t)sizeof(xdim),
-                      &ydim, (size_t)sizeof(ydim),
-                      &hoffset, (size_t)sizeof(hoffset),
-                      &voffset, (size_t)sizeof(voffset),
+                      &unitmap, static_cast<size_t>(sizeof(unitmap)),
+                      &xdim, static_cast<size_t>(sizeof(xdim)),
+                      &ydim, static_cast<size_t>(sizeof(ydim)),
+                      &hoffset, static_cast<size_t>(sizeof(hoffset)),
+                      &voffset, static_cast<size_t>(sizeof(voffset)),
                       NULL);
 #endif
     if (!(xc = pxd_xclibEscape(0, 0, 0)))
@@ -124,7 +127,7 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32)
     }
 #else
     {
-#if USEINTERNALAPI // using internal API
+#if USEINTERNALAPI  // using internal API
         xclib_DeclareVidStateStructs2(vidstate, pxdstatep->devinfo[0].s.model);
         xclib_InitVidStateStructs2(vidstate, pxdstatep->devinfo[0].s.model);
 #else
@@ -175,7 +178,7 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32)
 #endif
 }
 
-#endif // !defined(PIXCI_LITE)
+#endif  // !defined(PIXCI_LITE)
 
 /*
  * @brief C Function prototypes to tie in with EPICS
@@ -191,21 +194,23 @@ static void paramTaskC(void *drvPvt);
  * @brief Configuration command for pixci driver; creates a new pixci object.
  * @param See the pixci.h
  */
-extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
+extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
+    epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
 {
     new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     return (asynSuccess);
 }
 
-auto setStatIfHigher = [](asynStatus &status, asynStatus returnedStatus)
+auto setStatIfHigher = [](asynStatus *status, const asynStatus returnedStatus)
 {
-    status = (status > returnedStatus) ? status : returnedStatus;
+    *status = (*status > returnedStatus) ? *status : returnedStatus;
 };
 
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
  */
-Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
+Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+    const char *cameraModel, const char *formatFile)
     : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
     epicsInt32 connectionStatusCode = 0;
@@ -227,14 +232,13 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
 
     setStringParam(ADModel, cameraModel);
-    
 
     /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
      * returns value <0 if any error occured
      * pxd_mesgErrorCode(int code) will return description of the error occured
      */
-    connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, FORMAT, formatFile);
-    
+    connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, NULL, formatFile);
+
     if (connectionStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -259,20 +263,22 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
     g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
     asynStatus status = asynSuccess;
-    status = setStringParam(ADManufacturer, "Raptor Photonics");
+    setStatIfHigher(&status, setStringParam(ADManufacturer, "Raptor Photonics"));
 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 
     /* Create the thread that does data acquisition */
     if (connectionStatusCode >= PIXCI_NO_ERROR && serialConnection >= PIXCI_NO_ERROR)
     {
-        epicsThreadCreate("acquireTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium), (EPICSTHREADFUNC)acquireTaskC, this);
-        epicsThreadCreate("paramTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium), (EPICSTHREADFUNC)paramTaskC, this);
+        epicsThreadCreate("acquireTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium),
+                        (EPICSTHREADFUNC)acquireTaskC, this);
+        epicsThreadCreate("paramTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium),
+                        (EPICSTHREADFUNC)paramTaskC, this);
     }
 
     // Updating all the PVs related to the status of device and the manufacturers data
-    setStatIfHigher(status, updateStatus());
-    setStatIfHigher(status, updateIntialPVs());
+    setStatIfHigher(&status, updateStatus());
+    setStatIfHigher(&status, updateIntialPVs());
     if (status == asynError)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
@@ -282,7 +288,6 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
 
 Pixci::~Pixci()
 {
-
     /* Closing connection to frame grabber */
     epicsInt32 disconnectStatusCode = PIXCI_NO_ERROR;
     /*pxd_PIXCIclose() disconnect the driver from the device.
@@ -306,9 +311,9 @@ Pixci::~Pixci()
 
 asynStatus Pixci::setupAquisition()
 {
-    epicsInt32 binX = 0; 
-    epicsInt32 binY = 0; 
-    epicsInt32 RoiSizeX = 0; 
+    epicsInt32 binX = 0;
+    epicsInt32 binY = 0;
+    epicsInt32 RoiSizeX = 0;
     epicsInt32 RoiSizeY = 0;
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
@@ -341,10 +346,9 @@ asynStatus Pixci::setupAquisition()
 
 asynStatus Pixci::acquireImage()
 {
-
     /* TODO: implement all acquisition method like trigger, ringbuffer etc */
     static const char *functionName = "acquireImage";
-    pxbuffer_t buffer = 1L; // Image frame buffer
+    pxbuffer_t buffer = 1L;     // Image frame buffer
     /* live capture the image into frame buffer */
     epicsInt32 error = pxd_goLive(UNIT, buffer);
     if (error < PIXCI_NO_ERROR)
@@ -382,7 +386,7 @@ asynStatus Pixci::acquireStop()
 
 static void acquireTaskC(void *drvPvt)
 {
-    Pixci *pPvt = (Pixci *)drvPvt;
+    Pixci *pPvt = reinterpret_cast<Pixci *>(drvPvt);
     pPvt->acquireTask();
 }
 
@@ -429,7 +433,8 @@ void Pixci::acquireTask()
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer
             pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, (ushort *)pImage->pData, dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
+            pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, reinterpret_cast<ushort *>(pImage->pData),
+                        dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
             // pxd_readushort (unitmap, framebuf, ulx, uly, lrx, lry, membuf, cnt, colorspace);
 
             /* uniqueId and timeStamp must be implemented for standard ADDriver. */
@@ -463,7 +468,7 @@ void Pixci::acquireTask()
 
 static void paramTaskC(void *drvPvt)
 {
-    Pixci *pPvt = (Pixci *)drvPvt;
+    Pixci *pPvt = reinterpret_cast<Pixci *>(drvPvt);
     pPvt->paramTask();
 }
 
@@ -486,7 +491,7 @@ void Pixci::paramTask()
         if (function == ADBinX)
         {
             epicsInt32 sizeX = 0;
-            epicsInt32 sizeY = 0; 
+            epicsInt32 sizeY = 0;
             epicsInt32 binY = 0;
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
@@ -497,8 +502,8 @@ void Pixci::paramTask()
                 epicsInt32 acquire = 0;
                 epicsInt32 triggerMode;
                 epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
-                setIntegerParam(ADBinX, i_val); // Updating the binX value.
-                getIntegerParam(ADAcquire, &acquire); // Getting the ADAcquire value.
+                setIntegerParam(ADBinX, i_val);     // Updating the binX value.
+                getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
                 getIntegerParam(ADTriggerMode, &triggerMode);
                 getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
                 if (acquire == 1)
@@ -506,21 +511,21 @@ void Pixci::paramTask()
                     acquireStop();
                 }
                 callParamCallbacks();
-                changeVideoFormatConfig();                // Video settings have to be loaded respective of binning value.
+                changeVideoFormatConfig();  // Video settings have to be loaded respective of binning value.
                 pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
                 setIntegerParam(PR_TriggerPolarity, triggerPolarity);
                 setTriggerMode(triggerMode);
                 setupAquisition();
                 if (acquire == 1)
                 {
-                    acquireImage(); // starting acquisition if acquisition was running before.
+                    acquireImage();     // starting acquisition if acquisition was running before.
                 }
             }
         }
         else if (function == ADBinY)
         {
             epicsInt32 sizeX = 0;
-            epicsInt32 sizeY = 0; 
+            epicsInt32 sizeY = 0;
             epicsInt32 binX = 0;
             getIntegerParam(ADSizeX, &sizeX);
             getIntegerParam(ADSizeY, &sizeY);
@@ -588,17 +593,7 @@ void Pixci::paramTask()
         }
         else if (function == PR_SoftTrigger)
         {
-            /* if trigger mode is button trigger then, do the soft trigger else print error */
-            epicsInt32 triggerMode = PR_INTERNAL_ITR;
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if (triggerMode == PR_BUTTON_TRIGGER)
-            {
-                status = Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
-            }
-            else
-            {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
-            }
+            status = sendSoftTrigger();
         }
         else if (function == PR_UpdateStatus)
         {
@@ -616,7 +611,7 @@ void Pixci::paramTask()
                 status = setFrameRate(1 / d_val);
                 if (status == asynSuccess)
                 {
-                    epicsFloat64 readBackFrameRate= getFrameRate();
+                    epicsFloat64 readBackFrameRate = getFrameRate();
                     if (readBackFrameRate > 0)
                     {
                         setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
@@ -664,7 +659,7 @@ void Pixci::paramTask()
                 status = setExposure(d_val);
                 if (status == asynSuccess)
                 {
-                    epicsFloat64 readBackAcquireTime = getExposure(); 
+                    epicsFloat64 readBackAcquireTime = getExposure();
                     if (readBackAcquireTime > 0)
                     {
                         setDoubleParam(ADAcquireTime, readBackAcquireTime);
@@ -775,7 +770,6 @@ void Pixci::paramTask()
             setupAquisition();
             if (acquire == 1)
             {
-
                 acquireImage();
             }
         }
@@ -869,219 +863,219 @@ void Pixci::changeVideoFormatConfig()
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
     getStringParam(ADModel, cameraModel);
-    if(cameraModel == DETECTOR_1K)
+    if (cameraModel == DETECTOR_1K)
     {
-        if(binX == PR_BIN_1 && binY == PR_BIN_1)
+        if (binX == PR_BIN_1 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_1x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_1x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_1x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_1x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_1x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_1x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_2x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_2x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_2x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_2x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_2x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_2x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_4x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_4x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_4x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_4x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_4x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_4x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_8x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_8x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_8x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_8x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_8x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_8x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_16x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_16x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_16x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_16x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_16x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_16x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_32x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_32x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_32x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_32x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_32x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4710\bin_32x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
@@ -1091,255 +1085,255 @@ void Pixci::changeVideoFormatConfig()
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value");
         }
     }
-    else if(cameraModel == DETECTOR_2K)
+    else if (cameraModel == DETECTOR_2K)
     {
-        if(binX == PR_BIN_1 && binY == PR_BIN_1)
+        if (binX == PR_BIN_1 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_1 && binY == PR_BIN_FVB)
+        else if (binX == PR_BIN_1 && binY == PR_BIN_FVB)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_1xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_FVB)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_FVB)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_2 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_2 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_2xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_4 && binY == PR_BIN_FVB)
+        else if (binX == PR_BIN_4 && binY == PR_BIN_FVB)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_4xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_8 && binY == PR_BIN_FVB)
+        else if (binX == PR_BIN_8 && binY == PR_BIN_FVB)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_8xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_16 && binY == PR_BIN_FVB)
+        else if (binX == PR_BIN_16 && binY == PR_BIN_FVB)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_16xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_1)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_1)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32x1.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_2)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_2)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32x2.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_4)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_4)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32x4.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_8)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_8)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32x8.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_16)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_16)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32x16.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_32)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_32)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32x32.fmt"
             pxd_videoFormatAsIncludedInit(0);
             pxd_videoFormatAsIncluded(0);
         }
-        else if(binX == PR_BIN_32 && binY == PR_BIN_FVB)
+        else if (binX == PR_BIN_32 && binY == PR_BIN_FVB)
         {
             #include "fmt\Raptor_Eagle_XV_4240\bin_32xFVB.fmt"
             pxd_videoFormatAsIncludedInit(0);
@@ -1374,7 +1368,8 @@ void Pixci::uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
     cval[4] = (epicsInt8)((lval & 0x00000000FF));
 }
 
-epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn, epicsInt32 serialInBufferSize)
+epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
+    epicsInt32 serialInBufferSize)
 {
     epicsInt32 count = 0;
     epicsInt8 bufOut[50] = {};
@@ -1466,10 +1461,10 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
         break;
     case 2048:
         getStringParam(ADModel, cameraModel);
-        if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) { 
+        if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) {
             hexval = static_cast<epicsInt8>(0x80);
             break;
-        }   
+        }
     default:
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d", val);
         return asynError;
@@ -1512,7 +1507,7 @@ epicsFloat64 Pixci::getFrameRate()
 
 epicsFloat64 Pixci::convertAdcCountToCentigrade(epicsInt16 adcCount)
 {
-    return (ADC_M * adcCount) + ADC_C; // temperature in centigrade
+    return (ADC_M * adcCount) + ADC_C;  // temperature in centigrade
 }
 
 epicsUInt16 Pixci::convertCentigradeToDacCount(epicsFloat64 temperature)
@@ -1522,7 +1517,7 @@ epicsUInt16 Pixci::convertCentigradeToDacCount(epicsFloat64 temperature)
 
 epicsFloat64 Pixci::convertDacCountToCentigrade(epicsInt16 dacCount)
 {
-    return (DAC_M * dacCount) + DAC_C; // temperature in centigrade
+    return (DAC_M * dacCount) + DAC_C;  // temperature in centigrade
 }
 
 epicsFloat64 Pixci::getTemperatureActual()
@@ -1590,30 +1585,30 @@ asynStatus Pixci::toggleTec(epicsBoolean enableTec)
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     if (enableTec)
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | 0x01); // setting first bit = 1
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | 0x01);  // setting first bit = 1
     else
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01)); // setting first bit = 0
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01));   // setting first bit = 0
 }
 
 epicsBoolean Pixci::isTecEnabled()
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
-    return static_cast<epicsBoolean>((fpgaStatus & 0x01) != 0); // check the first bit is not 0
+    return static_cast<epicsBoolean>((fpgaStatus & 0x01) != 0);     // check the first bit is not 0
 }
 
 asynStatus Pixci::toggleGain(epicsBoolean enableGain)
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     if (enableGain)
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | (1 << 7)); // setting last bit = 1
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | (1 << 7));  // setting last bit = 1
     else
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7)); // setting last bit = 0
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7));     // setting last bit = 0
 }
 
 epicsBoolean Pixci::isGainEnabled()
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
-    return static_cast<epicsBoolean>((fpgaStatus & (1 << 7)) != 0); // check the last bit is not 0
+    return static_cast<epicsBoolean>((fpgaStatus & (1 << 7)) != 0);     // check the last bit is not 0
 }
 
 epicsUInt8 Pixci::getSystemStatus()
@@ -1631,7 +1626,7 @@ epicsUInt8 Pixci::getSystemStatus()
     }
 
     // TODO: Need proper error handling, same is for reading serial register as else where
-    return cval; // cval will be 0x00 if there is no success
+    return cval;    // cval will be 0x00 if there is no success
 }
 
 asynStatus Pixci::setSystemStatus(epicsInt8 val)
@@ -1661,15 +1656,15 @@ asynStatus Pixci::toggleFpgaComms(epicsBoolean enableFpgaComms)
 {
     epicsUInt8 systemStatus = getSystemStatus();
     if (enableFpgaComms)
-        return setSystemStatus(systemStatus | 0x01); // setting first bit = 1
+        return setSystemStatus(systemStatus | 0x01);    // setting first bit = 1
     else
-        return setSystemStatus(systemStatus & ~(0x01)); // setting first bit = 0
+        return setSystemStatus(systemStatus & ~(0x01));     // setting first bit = 0
 }
 
 epicsBoolean Pixci::isFpgaCommsEnabled()
 {
     epicsUInt8 systemStatus = getSystemStatus();
-    return static_cast<epicsBoolean>((systemStatus & 0x01) != 0); // check the first bit is not 0
+    return static_cast<epicsBoolean>((systemStatus & 0x01) != 0);   // check the first bit is not 0
 }
 
 asynStatus Pixci::setExposure(epicsFloat64 exposureTime)
@@ -1774,7 +1769,6 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
                 callParamCallbacks();
             }
         }
-
         // Stop acquisition
         /* TODO: adstatus != ADStatusIdle has to be checked */
         if (!value)
@@ -1801,7 +1795,6 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
                 callParamCallbacks();
             }
         }
-
     } /* set  value for default parameters */
     else if (function == ADBinX)
     {
@@ -1876,15 +1869,17 @@ asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     epicsInt32 function = pasynUser->reason;
     static const char *functionName = "writeFloat64";
 
-    if (function == ADGain || function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature || function == ADShutterOpenDelay || function == ADShutterCloseDelay)
+    if (function == ADGain || function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature ||
+        function == ADShutterOpenDelay || function == ADShutterCloseDelay)
     {
         addToParamQue(function, value);
         return asynSuccess;
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function(%d) with value: %f\n", functionName, function, value);
-        return asynError; 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function(%d) with value: %f\n",
+            functionName, function, value);
+        return asynError;
     }
 }
 
@@ -1908,10 +1903,10 @@ asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epics
 
     /* template of message to write value to registers */
     char bufout[] = {
-        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
-        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
-        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]), 
-        Register, val, 
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        Register, val,
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -1935,16 +1930,16 @@ asynStatus Pixci::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
     char first_bufout[] = {
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]), 
-        Register, 
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        Register,
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]), 
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]), 
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]), 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -1965,16 +1960,16 @@ asynStatus Pixci::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, e
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
     char first_bufout[] = {
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]), 
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]), 
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]), 
-        Register1, Register2, 
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        Register1, Register2,
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]), 
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]), 
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]), 
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -1996,20 +1991,20 @@ asynStatus Pixci::setTriggerMode(epicsInt32 mode)
     switch (mode)
     {
     case PR_INTERNAL_ITR:
-        hexval = INTERNAL_ITR_BYTE; // 00000100
+        hexval = INTERNAL_ITR_BYTE;     // 00000100
         break;
     case PR_INTERNAL_FFR:
-        hexval = INTERNAL_FFR_BYTE; // 00000110
+        hexval = INTERNAL_FFR_BYTE;     // 00000110
         break;
     case PR_EXTERNAL:
-        { // brackets so that trigger polarity goes out of scope after this case
+        {   // brackets so that trigger polarity goes out of scope after this case
             epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
             getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
             hexval = (triggerPolarity == PR_EXT_FALLING_EDGE) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
         }
         break;
     case PR_BUTTON_TRIGGER:
-        hexval = CLEAR_TRIGGER_MODE_BYTE; // 00000000
+        hexval = CLEAR_TRIGGER_MODE_BYTE;   // 00000000
         break;
     default:
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d", mode);
@@ -2019,40 +2014,58 @@ asynStatus Pixci::setTriggerMode(epicsInt32 mode)
     return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
 }
 
+asynStatus Pixci::sendSoftTrigger() {
+    /* if trigger mode is button trigger then, do the soft trigger else print error */
+    epicsInt32 triggerMode = PR_INTERNAL_ITR;
+    getIntegerParam(ADTriggerMode, &triggerMode);
+    if (triggerMode == PR_BUTTON_TRIGGER)
+    {
+        return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
+    }
+    else
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+        return asynError;
+    }
+}
+
 // PV Updating Functions
 void Pixci::updateADTemperatureActual(epicsBoolean callBackFlag)
 {
-    setDoubleParam(ADTemperatureActual, getTemperatureActual()); // setting the Actual Temperature PV
+    setDoubleParam(ADTemperatureActual, getTemperatureActual());    // setting the Actual Temperature PV
     if (callBackFlag)
         callParamCallbacks();
 }
 
 void Pixci::updateTemperaturePcb(epicsBoolean callBackFlag)
 {
-    setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()); // setting the PCB Temperature PV
+    setDoubleParam(PR_TemperaturePcb, getTemperaturePcb());     // setting the PCB Temperature PV
     if (callBackFlag)
         callParamCallbacks();
 }
 
 asynStatus Pixci::updateManufacturersData(epicsBoolean callBackFlag)
 {
+    using std::string;
+    using std::to_string;
+
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
     char first_bufout[] = {
-         static_cast<char>(GET_MISC_DATA_BYTES[0]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[1]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[2]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[3]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[4]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[5]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[6]), 
-         static_cast<char>(GET_MISC_DATA_BYTES[7]), 
+         static_cast<char>(GET_MISC_DATA_BYTES[0]),
+         static_cast<char>(GET_MISC_DATA_BYTES[1]),
+         static_cast<char>(GET_MISC_DATA_BYTES[2]),
+         static_cast<char>(GET_MISC_DATA_BYTES[3]),
+         static_cast<char>(GET_MISC_DATA_BYTES[4]),
+         static_cast<char>(GET_MISC_DATA_BYTES[5]),
+         static_cast<char>(GET_MISC_DATA_BYTES[6]),
+         static_cast<char>(GET_MISC_DATA_BYTES[7]),
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-         static_cast<char>(MANUFACTURER_DATA_BYTES[0]), 
-         static_cast<char>(MANUFACTURER_DATA_BYTES[1]), 
-         static_cast<char>(MANUFACTURER_DATA_BYTES[2]), 
+         static_cast<char>(MANUFACTURER_DATA_BYTES[0]),
+         static_cast<char>(MANUFACTURER_DATA_BYTES[1]),
+         static_cast<char>(MANUFACTURER_DATA_BYTES[2]),
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -2073,12 +2086,13 @@ asynStatus Pixci::updateManufacturersData(epicsBoolean callBackFlag)
 
     if (inputMsg[18] == SUCCESS_MESSAGE)
     {
-
         serialNumber += (epicsInt16)(epicsUInt8)inputMsg[0];
         serialNumber += (epicsInt16)(epicsUInt8)(inputMsg[1]) << 8;
         setStringParam(ADSerialNumber, to_string(serialNumber));
 
-        buildDate = to_string((epicsInt16)(epicsUInt8)inputMsg[2]) + "/" + to_string((epicsInt16)(epicsUInt8)inputMsg[3]) + "/" + to_string((epicsInt16)(epicsUInt8)inputMsg[4]);
+        buildDate = to_string((epicsInt16)(epicsUInt8)inputMsg[2]) + "/"
+                + to_string((epicsInt16)(epicsUInt8)inputMsg[3]) + "/"
+                + to_string((epicsInt16)(epicsUInt8)inputMsg[4]);
         setStringParam(PR_BuildDate, buildDate);
 
         adcCountZeroDegree += (epicsInt16)(epicsUInt8)inputMsg[10];
@@ -2115,7 +2129,7 @@ asynStatus Pixci::updateStatus()
 {
     asynStatus status = asynSuccess;
     // TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
-    setStatIfHigher(status, updateManufacturersData()); // TODO: Implement Error Message
+    setStatIfHigher(&status, updateManufacturersData());    // TODO: Implement Error Message
     updateADTemperatureActual();
     updateTemperaturePcb(epicsTrue);
     return status;
@@ -2128,17 +2142,17 @@ asynStatus Pixci::updateIntialPVs()
     epicsFloat64 acquireFrameRate = getFrameRate();
     asynStatus status = asynSuccess;
 
-    setStatIfHigher(status, setIntegerParam(ADMaxSizeX, sizeX));
-    setStatIfHigher(status, setIntegerParam(ADMaxSizeY, sizeY));
-    setStatIfHigher(status, setIntegerParam(ADSizeX, sizeX));
-    setStatIfHigher(status, setIntegerParam(ADSizeY, sizeY));
-    setStatIfHigher(status, setDoubleParam(ADAcquireTime, getExposure()));
+    setStatIfHigher(&status, setIntegerParam(ADMaxSizeX, sizeX));
+    setStatIfHigher(&status, setIntegerParam(ADMaxSizeY, sizeY));
+    setStatIfHigher(&status, setIntegerParam(ADSizeX, sizeX));
+    setStatIfHigher(&status, setIntegerParam(ADSizeY, sizeY));
+    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, getExposure()));
     if (acquireFrameRate > 0)
     {
-        setStatIfHigher(status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
+        setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
 
-    setStatIfHigher(status, callParamCallbacks());
+    setStatIfHigher(&status, callParamCallbacks());
     return status;
 }
 

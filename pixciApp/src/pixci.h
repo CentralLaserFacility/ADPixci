@@ -4,8 +4,12 @@
  *  This driver will be using XCLIB Programming Library for PIXCI ® Frame Grabbers
  */
 
+#ifndef PIXCIAPP_SRC_PIXCI_H_
+#define PIXCIAPP_SRC_PIXCI_H_
+
 /* AreaDetector headers */
 #include "ADDriver.h"
+#include <cstdio>
 
 constexpr const char *driverName = "Pixci";
 
@@ -23,14 +27,13 @@ constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORT
 constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
 constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
 
-constexpr const char *DETECTOR_1K = "4710"; // 1056 x 1027 active pixels
-constexpr const char *DETECTOR_2K = "4240"; // 2048 x 2048 active pixels
+constexpr const char *DETECTOR_1K = "4710";  // 1056 x 1027 active pixels
+constexpr const char *DETECTOR_2K = "4240";  // 2048 x 2048 active pixels
 
-constexpr const epicsInt32 PIXCI_NO_ERROR =  0; // Errors are defined as integers below zero.
+constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
 
-constexpr const char *FORMAT = "";      // Video format configuration name.
-constexpr const char *DRIVERPARMS = ""; // Default , user '-QU 0' for not using interrupts.
-constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming, eb1 model only have 1 unit.
+constexpr const char *DRIVERPARMS = "";     // Use '-QU 0' for no interrupts.
+constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming
 constexpr const epicsInt32 RESERVED  = 0;
 constexpr const epicsFloat64 BAUDRATE = 115200;
 
@@ -85,12 +88,11 @@ constexpr const epicsUInt8 ROI_Y_OFFSET_BYTES[2] = {0xBA, 0xBB};
 
 
 /* Trigger modes of Raptor Eagle-XV" */
-/*ITR mode will be used to capture a continuous sequence of images.
- The camera will immediately trigger the start of a new integration period
- when the previous image readouthas completed.
-
- In FFR mode, the camera will generate an internal trigger signal at a user programmable frame rate.
-*/
+/* ITR mode will be used to capture a continuous sequence of images.
+ * The camera will immediately trigger the start of a new integration period
+ * when the previous image readouthas completed.
+ * In FFR mode, the camera will generate an internal trigger signal at a user programmable frame rate.
+ */
 typedef enum
 {
     PR_INTERNAL_ITR,
@@ -123,8 +125,7 @@ typedef enum
  */
 class Pixci : public ADDriver
 {
-
-public:
+ public:
     /**
      * @brief Pixci object
      *
@@ -138,7 +139,8 @@ public:
      * @param cameraModel Select camera model, supported values are 4240 and 4710. Default value is 4710
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize, const char *cameraModel, const char *formatFile);
+    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+        const char *cameraModel, const char *formatFile);
 
     /* These are the methods that we override from ADDriver */
     /**
@@ -154,13 +156,12 @@ public:
 
     /** Reports on the properties of the attribute.
      * @param[in] fp File pointer for the report output.
-     * @param[in] details Level of report details desired; currently does nothing
+     * @param[in] details Level of detail desired; currently not implemented.
      */
     void report(FILE *fp, epicsInt32 details);
 
     /**
-     * @brief thread that waits for signal from frame grabber during live capture
-     *
+     * @brief Thread that waits for signal from frame grabber during live capture
      */
     void acquireTask(void);
 
@@ -171,7 +172,7 @@ public:
 
     ~Pixci();
 
-protected:
+ protected:
     epicsInt32 PR_SoftTrigger;
     epicsInt32 PR_UpdateTemperature;
     epicsInt32 PR_TemperaturePcb;
@@ -188,12 +189,12 @@ protected:
 
 #define FIRST_PIXCI_PARAM PR_SoftTrigger
 
-private:
-    epicsFloat32 ADC_M; // ADC Slope
-    epicsFloat32 ADC_C; // ADC Offset
-    epicsFloat32 DAC_M; // DAC Slope
-    epicsFloat32 DAC_C; // DAC Offset
-    
+ private:
+    epicsFloat32 ADC_M;     // ADC Slope
+    epicsFloat32 ADC_C;     // ADC Offset
+    epicsFloat32 DAC_M;     // DAC Slope
+    epicsFloat32 DAC_C;     // DAC Offset
+
     /* Event handler for acquire task */
     HANDLE g_hEvent;
 
@@ -205,14 +206,6 @@ private:
      * @brief Stops live capturing.
      */
     asynStatus acquireStop(void);
-    /**
-     * @brief write serial command to the camera connected.
-     *
-     * @param unit
-     * @param serialOut serial command to be send to the camera
-     * @return asynStatus
-     */
-    asynStatus writeSerial(epicsInt32 unit, epicsInt8 *serialOut, epicsInt32 msgSize);
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -224,7 +217,8 @@ private:
      * @param serialInBufferSize size of input message buffer
      * @return int size of input message, return < 0 if there is an error
      */
-    epicsInt32 writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn, epicsInt32 serialInBufferSize);
+    epicsInt32 writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
+        epicsInt32 serialInBufferSize);
 
     /**
      * @brief load initial settings parameters
@@ -236,7 +230,6 @@ private:
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
-     *
      */
     void changeVideoFormatConfig();
 
@@ -637,3 +630,4 @@ private:
 
     asynStatus updateIntialPVs();
 };
+#endif  // PIXCIAPP_SRC_PIXCI_H_
