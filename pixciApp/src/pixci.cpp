@@ -5,6 +5,21 @@
 
 #include "pixci.h"
 
+/* For windows */
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#include <windows.h>
+#endif
+
+/* Epics headers */
+#include <iocsh.h>
+#include <epicsEvent.h>
+#include <epicsTime.h>
+#include <epicsThread.h>
+#include <epicsString.h>
+#include <epicsExit.h>
+#include <epicsExport.h>
+#include <epicsMessageQueue.h>
+
 #include <algorithm>
 #include <string>
 #include <cstdio>
