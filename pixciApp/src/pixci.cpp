@@ -263,7 +263,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
      * returns value <0 if any error occured
      * pxd_mesgErrorCode(int code) will return description of the error occured
      */
-    connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, NULL, formatFile);
+    connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, nullptr, formatFile);
 
     if (connectionStatusCode < PIXCI_NO_ERROR)
     {
@@ -1405,13 +1405,13 @@ epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 m
     epicsInt32 inMsgwaitFlag = 0;
 
     /* checking if any message packer left to read, and clear the buffer by reading it */
-    if (pxd_serialRead(unit, RESERVED, NULL, 0) > 0)
+    if (pxd_serialRead(unit, RESERVED, nullptr, 0) > 0)
     {
         count = pxd_serialRead(unit, 0, serialIn, serialInBufferSize);
     }
 
     /* wait if any message is in the send que*/
-    while (pxd_serialWrite(unit, RESERVED, NULL, 0) < msgOutSize && outMsgwait < 50)
+    while (pxd_serialWrite(unit, RESERVED, nullptr, 0) < msgOutSize && outMsgwait < 50)
     {
         outMsgwait++;
         Sleep(10);
@@ -1440,11 +1440,11 @@ epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 m
     else
     {
         /*waiting for the reply */
-        inMsgwaitFlag = pxd_serialRead(unit, 0, NULL, 0);
+        inMsgwaitFlag = pxd_serialRead(unit, 0, nullptr, 0);
         while (inMsgwaitFlag < 1 && inMsgwait < 20)
         {
             inMsgwait++;
-            inMsgwaitFlag = pxd_serialRead(unit, 0, NULL, 0);
+            inMsgwaitFlag = pxd_serialRead(unit, 0, nullptr, 0);
             Sleep(10);
         }
         inMsgwait = 0;
