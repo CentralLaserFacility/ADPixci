@@ -17,4 +17,4 @@ fmt
 O.*/
 *~
 *.swp
-.vscode/**
+.vs*
