@@ -1,9 +1,8 @@
 /**
- * @brief This is a driver for PIXCI frame grabber from epix, inc.
- *  Developed for Eagle XV CCD from Raptor photonics
- *  This driver will be using XCLIB Programming Library for PIXCI ® Frame Grabbers
+ * @brief This is a driver for EPIX inc. PIXCI camera link frame grabbers
+ *  This driver uses the PIXCI ® XCLIB Programming Library.
  * 
- * @copyright Copyright (c) 2023, UKRI STFC Central Laser Facility
+ * @copyright Copyright (c) 2025, UKRI STFC Central Laser Facility
  * 
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
@@ -227,10 +226,7 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
     return (asynSuccess);
 }
 
-auto setStatIfHigher = [](asynStatus *status, const asynStatus returnedStatus)
-{
-    *status = (*status > returnedStatus) ? *status : returnedStatus;
-};
+
 
 /*
  * @brief Default constructor to create a new Pixci::Pixci object
@@ -245,17 +241,8 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
     createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity);
     createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature);
-    createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePcb);
-    createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec);
-    createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain);
-    createParam(ToggleFPGACommsString, asynParamInt32, &PR_ToggleFpgaComms);
-
     createParam(UpdateStatusString, asynParamInt32, &PR_UpdateStatus);
     createParam(BuildDateString, asynParamOctet, &PR_BuildDate);
-    createParam(ADCCalibrationZeroDegreeString, asynParamInt32, &PR_ADCCalibrationZeroDegree);
-    createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree);
-    createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
-    createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
 
     setStringParam(ADModel, cameraModel);
 
@@ -498,6 +485,350 @@ static void paramTaskC(void *drvPvt)
     pPvt->paramTask();
 }
 
+void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
+{
+    asynStatus status = asynSuccess;
+    if (function == ADBinX)
+    {
+        epicsInt32 sizeX = 0;
+        epicsInt32 sizeY = 0;
+        epicsInt32 binY = 0;
+        getIntegerParam(ADSizeX, &sizeX);
+        getIntegerParam(ADSizeY, &sizeY);
+        getIntegerParam(ADBinY, &binY);
+        status = Pixci::setBin(i_val, BIN_AXIS_X);
+        if (status == asynSuccess)
+        {
+            epicsInt32 acquire = 0;
+            epicsInt32 triggerMode;
+            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
+            setIntegerParam(ADBinX, i_val);     // Updating the binX value.
+            getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+            if (acquire == 1)
+            {
+                acquireStop();
+            }
+            callParamCallbacks();
+            changeVideoFormatConfig();  // Video settings have to be loaded respective of binning value.
+            pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
+            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+            setTriggerMode(triggerMode);
+            setupAquisition();
+            if (acquire == 1)
+            {
+                acquireImage();     // starting acquisition if acquisition was running before.
+            }
+        }
+    }
+    else if (function == ADBinY)
+    {
+        epicsInt32 sizeX = 0;
+        epicsInt32 sizeY = 0;
+        epicsInt32 binX = 0;
+        getIntegerParam(ADSizeX, &sizeX);
+        getIntegerParam(ADSizeY, &sizeY);
+        getIntegerParam(ADBinX, &binX);
+        status = Pixci::setBin(i_val, BIN_AXIS_Y);
+        if (status == asynSuccess)
+        {
+            epicsInt32 acquire = 0;
+            epicsInt32 triggerMode = ADTriggerInternal;
+            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
+            setIntegerParam(ADBinY, i_val);
+            getIntegerParam(ADAcquire, &acquire);
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+            if (acquire == 1)
+            {
+                acquireStop();
+            }
+            callParamCallbacks();
+            changeVideoFormatConfig();
+            pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / i_val, 0, 0);
+            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+            setTriggerMode(triggerMode);
+            setupAquisition();
+            if (acquire == 1)
+            {
+                acquireImage();
+            }
+        }
+    }
+    else if (function == ADTriggerMode)
+    {
+        epicsInt32 acquisitionStatus = asynSuccess;
+        epicsInt32 previousTriggerMode = PR_INTERNAL_ITR;
+        status = setTriggerMode(i_val);
+        if (status == asynSuccess)
+        {
+            if (i_val == PR_BUTTON_TRIGGER)
+            {
+                /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
+                called. For that acquireImage() function is called.
+                */
+                status = acquireImage();
+            }
+            else
+            {
+                /* When changes the acquiremode from button triggered to any another trigger mode,
+                    we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
+                    Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
+                */
+                getIntegerParam(ADTriggerMode, &previousTriggerMode);
+                if (previousTriggerMode == PR_BUTTON_TRIGGER)
+                {
+                    getIntegerParam(ADAcquire, &acquisitionStatus);
+
+                    if (acquisitionStatus == 0)
+                    {
+                        /* acquisiton is stopped if ADAcquire is on stop state*/
+                        acquireStop();
+                    }
+                }
+            }
+            setIntegerParam(ADTriggerMode, i_val);
+        }
+    }
+    else if (function == PR_SoftTrigger)
+    {
+        status = sendSoftTrigger();
+    }
+    else if (function == PR_UpdateStatus)
+    {
+        status = updateStatus();
+    }
+    else if (function == PR_UpdateTemperature)
+    {
+        updateADTemperatureActual();
+        updateTemperaturePcb(epicsTrue);
+    }
+    else if (function == ADAcquirePeriod)
+    {
+        if (d_val != 0.0)
+        {
+            status = setFrameRate(1 / d_val);
+            if (status == asynSuccess)
+            {
+                epicsFloat64 readBackFrameRate = getFrameRate();
+                if (readBackFrameRate > 0)
+                {
+                    setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
+                }
+            }
+        }
+    }
+    else if (function == ADTemperature)
+    {
+        status = setTecTemperature(d_val);
+        if (status == asynSuccess)
+        {
+            epicsFloat64 tecTemperature = getTecTemperature();
+            setDoubleParam(ADTemperature, tecTemperature);
+        }
+    }
+    else if (function == ADAcquireTime)
+    {
+        if (d_val != 0.0)
+        {
+            status = setExposure(d_val);
+            if (status == asynSuccess)
+            {
+                epicsFloat64 readBackAcquireTime = getExposure();
+                if (readBackAcquireTime > 0)
+                {
+                    setDoubleParam(ADAcquireTime, readBackAcquireTime);
+                }
+            }
+        }
+    }
+    else if (function == ADMinX)
+    {
+        epicsInt32 maxSizeX = 0;
+        epicsInt32 sizeX = 0;
+        epicsInt32 sizeY = 0;
+        epicsInt32 binX = 0;
+        epicsInt32 binY = 0;
+        epicsInt32 acquire = 0;
+        getIntegerParam(ADMaxSizeX, &maxSizeX);
+        getIntegerParam(ADSizeX, &sizeX);
+        getIntegerParam(ADSizeY, &sizeY);
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
+        getIntegerParam(ADAcquire, &acquire);
+        epicsInt32 minX = (i_val > maxSizeX) ? maxSizeX : i_val;
+        if ((sizeX + minX) > maxSizeX)
+        {
+            sizeX = maxSizeX - minX;
+        }
+        acquireStop();
+
+        status = setRoiSizeX(sizeX);
+        status = setRoiOffsetX(minX);
+        sizeX = getRoiSizeX();
+        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        setIntegerParam(ADSizeX, sizeX);
+        setIntegerParam(ADMinX, getRoiOffsetX());
+        setupAquisition();
+
+        if (acquire == 1)
+        {
+            acquireImage();
+        }
+    }
+    else if (function == ADMinY)
+    {
+        epicsInt32 maxSizeY = 0;
+        epicsInt32 sizeX = 0;
+        epicsInt32 sizeY = 0;
+        epicsInt32 binX = 0;
+        epicsInt32 binY = 0;
+        epicsInt32 acquire = 0;
+        getIntegerParam(ADMaxSizeY, &maxSizeY);
+        getIntegerParam(ADSizeX, &sizeX);
+        getIntegerParam(ADSizeY, &sizeY);
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
+        getIntegerParam(ADAcquire, &acquire);
+        epicsInt32 minY = (i_val > maxSizeY) ? maxSizeY : i_val;
+        if ((sizeY + minY) > maxSizeY)
+        {
+            sizeY = maxSizeY - minY;
+        }
+        acquireStop();
+
+        // status = setRoiSizeX(sizeX);
+        // status = setRoiOffsetX(minX);
+        status = setRoiSizeY(sizeY);
+        status = setRoiOffsetY(minY);
+        sizeY = getRoiSizeY();
+        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        setIntegerParam(ADSizeY, sizeY);
+        setIntegerParam(ADMinY, getRoiOffsetY());
+
+        setupAquisition();
+        if (acquire == 1)
+        {
+            acquireImage();
+        }
+    }
+    else if (function == ADSizeX)
+    {
+        epicsInt32 maxSizeX = 0;
+        epicsInt32 minX = 0;
+        epicsInt32 sizeY = 0;
+        epicsInt32 binX = 0;
+        epicsInt32 binY = 0;
+        epicsInt32 acquire = 0;
+        getIntegerParam(ADMaxSizeX, &maxSizeX);
+        getIntegerParam(ADMinX, &minX);
+        getIntegerParam(ADSizeY, &sizeY);
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
+        getIntegerParam(ADAcquire, &acquire);
+        epicsInt32 sizeX = (i_val > maxSizeX) ? maxSizeX : i_val;
+
+        if ((sizeX + minX) > maxSizeX)
+        {
+            minX = maxSizeX - sizeX;
+        }
+        acquireStop();
+
+        status = setRoiSizeX(sizeX);
+        status = setRoiOffsetX(minX);
+        sizeX = getRoiSizeX();
+        // status = setRoiSizeY(sizeY);
+        // status = setRoiOffsetY(minY);
+        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        setIntegerParam(ADMinX, getRoiOffsetX());
+        setIntegerParam(ADSizeX, sizeX);
+        setupAquisition();
+        if (acquire == 1)
+        {
+            acquireImage();
+        }
+    }
+    else if (function == ADSizeY)
+    {
+        epicsInt32 maxSizeY = 0;
+        epicsInt32 minY = 0;
+        epicsInt32 sizeX = 0;
+        epicsInt32 binX = 0;
+        epicsInt32 binY = 0;
+        epicsInt32 acquire = 0;
+        getIntegerParam(ADMaxSizeY, &maxSizeY);
+        getIntegerParam(ADMinY, &minY);
+        getIntegerParam(ADSizeX, &sizeX);
+        getIntegerParam(ADBinX, &binX);
+        getIntegerParam(ADBinY, &binY);
+        getIntegerParam(ADAcquire, &acquire);
+        epicsInt32 sizeY = (i_val > maxSizeY) ? maxSizeY : i_val;
+
+        if ((sizeY + minY) > maxSizeY)
+        {
+            minY = maxSizeY - sizeY;
+        }
+        acquireStop();
+
+        // status == setRoiSizeX(sizeX);
+        // status = setRoiOffsetX(minX);
+        status = setRoiSizeY(sizeY);
+        status = setRoiOffsetY(minY);
+        sizeY = getRoiSizeY();
+        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        setIntegerParam(ADMinY, getRoiOffsetY());
+        setIntegerParam(ADSizeY, sizeY);
+        setupAquisition();
+        if (acquire == 1)
+        {
+            acquireImage();
+        }
+    }
+    else if (function == PR_TriggerPolarity)
+    {
+        epicsInt32 triggerMode = PR_INTERNAL_ITR;
+        if (i_val == PR_EXT_RISING_EDGE)
+        {
+            setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+        }
+        else if (i_val == PR_EXT_FALLING_EDGE)
+        {
+            setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+        }
+        callParamCallbacks();
+        getIntegerParam(ADTriggerMode, &triggerMode);
+        if (triggerMode == PR_EXTERNAL)
+        {
+            setTriggerMode(PR_EXTERNAL);
+        }
+    }
+    else if (function == ADShutterOpenDelay)
+    {
+        status = setShutterOpenDelay(d_val);
+        if (status == asynSuccess)
+        {
+            epicsFloat64 openDelay = getShutterOpenDelay();
+            setDoubleParam(ADShutterOpenDelay, openDelay);
+        }
+        else {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter open delay\n");
+        }
+    }
+    else if (function == ADShutterCloseDelay)
+    {
+        status = setShutterCloseDelay(d_val);
+        if (status == asynSuccess)
+        {
+            epicsFloat64 closeDelay = getShutterCloseDelay();
+            setDoubleParam(ADShutterCloseDelay, closeDelay);
+        }
+        else {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter close delay\n");
+        }
+    }
+}
+
 void Pixci::paramTask()
 {
     epicsFloat64 functionAndVal[2] = {};
@@ -514,369 +845,7 @@ void Pixci::paramTask()
         b_val = static_cast<epicsBoolean>(functionAndVal[1]);
         i_val = static_cast<epicsInt32>(functionAndVal[1]);
         d_val = functionAndVal[1];
-        if (function == ADBinX)
-        {
-            epicsInt32 sizeX = 0;
-            epicsInt32 sizeY = 0;
-            epicsInt32 binY = 0;
-            getIntegerParam(ADSizeX, &sizeX);
-            getIntegerParam(ADSizeY, &sizeY);
-            getIntegerParam(ADBinY, &binY);
-            status = Pixci::setBin(i_val, BIN_AXIS_X);
-            if (status == asynSuccess)
-            {
-                epicsInt32 acquire = 0;
-                epicsInt32 triggerMode;
-                epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
-                setIntegerParam(ADBinX, i_val);     // Updating the binX value.
-                getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
-                getIntegerParam(ADTriggerMode, &triggerMode);
-                getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-                if (acquire == 1)
-                {
-                    acquireStop();
-                }
-                callParamCallbacks();
-                changeVideoFormatConfig();  // Video settings have to be loaded respective of binning value.
-                pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
-                setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-                setTriggerMode(triggerMode);
-                setupAquisition();
-                if (acquire == 1)
-                {
-                    acquireImage();     // starting acquisition if acquisition was running before.
-                }
-            }
-        }
-        else if (function == ADBinY)
-        {
-            epicsInt32 sizeX = 0;
-            epicsInt32 sizeY = 0;
-            epicsInt32 binX = 0;
-            getIntegerParam(ADSizeX, &sizeX);
-            getIntegerParam(ADSizeY, &sizeY);
-            getIntegerParam(ADBinX, &binX);
-            status = Pixci::setBin(i_val, BIN_AXIS_Y);
-            if (status == asynSuccess)
-            {
-                epicsInt32 acquire = 0;
-                epicsInt32 triggerMode = ADTriggerInternal;
-                epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
-                setIntegerParam(ADBinY, i_val);
-                getIntegerParam(ADAcquire, &acquire);
-                getIntegerParam(ADTriggerMode, &triggerMode);
-                getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-                if (acquire == 1)
-                {
-                    acquireStop();
-                }
-                callParamCallbacks();
-                changeVideoFormatConfig();
-                pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / i_val, 0, 0);
-                setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-                setTriggerMode(triggerMode);
-                setupAquisition();
-                if (acquire == 1)
-                {
-                    acquireImage();
-                }
-            }
-        }
-        else if (function == ADTriggerMode)
-        {
-            epicsInt32 acquisitionStatus = asynSuccess;
-            epicsInt32 previousTriggerMode = PR_INTERNAL_ITR;
-            status = setTriggerMode(i_val);
-            if (status == asynSuccess)
-            {
-                if (i_val == PR_BUTTON_TRIGGER)
-                {
-                    /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
-                    called. For that acquireImage() function is called.
-                    */
-                    status = acquireImage();
-                }
-                else
-                {
-                    /* When changes the acquiremode from button triggered to any another trigger mode,
-                        we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
-                        Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
-                    */
-                    getIntegerParam(ADTriggerMode, &previousTriggerMode);
-                    if (previousTriggerMode == PR_BUTTON_TRIGGER)
-                    {
-                        getIntegerParam(ADAcquire, &acquisitionStatus);
-
-                        if (acquisitionStatus == 0)
-                        {
-                            /* acquisiton is stopped if ADAcquire is on stop state*/
-                            acquireStop();
-                        }
-                    }
-                }
-                setIntegerParam(ADTriggerMode, i_val);
-            }
-        }
-        else if (function == PR_SoftTrigger)
-        {
-            status = sendSoftTrigger();
-        }
-        else if (function == PR_UpdateStatus)
-        {
-            status = updateStatus();
-        }
-        else if (function == PR_UpdateTemperature)
-        {
-            updateADTemperatureActual();
-            updateTemperaturePcb(epicsTrue);
-        }
-        else if (function == ADAcquirePeriod)
-        {
-            if (d_val != 0.0)
-            {
-                status = setFrameRate(1 / d_val);
-                if (status == asynSuccess)
-                {
-                    epicsFloat64 readBackFrameRate = getFrameRate();
-                    if (readBackFrameRate > 0)
-                    {
-                        setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
-                    }
-                }
-            }
-        }
-        else if (function == ADTemperature)
-        {
-            status = setTecTemperature(d_val);
-            if (status == asynSuccess)
-            {
-                epicsFloat64 tecTemperature = getTecTemperature();
-                setDoubleParam(ADTemperature, tecTemperature);
-            }
-        }
-        else if (function == PR_ToggleTec)
-        {
-            status = toggleTec(b_val);
-            if (status == asynSuccess)
-            {
-                setIntegerParam(PR_ToggleTec, isTecEnabled());
-            }
-        }
-        else if (function == PR_ToggleGain)
-        {
-            status = toggleGain(b_val);
-            if (status == asynSuccess)
-            {
-                setIntegerParam(PR_ToggleGain, isGainEnabled());
-            }
-        }
-        else if (function == PR_ToggleFpgaComms)
-        {
-            status = toggleFpgaComms(b_val);
-            if (status == asynSuccess)
-            {
-                setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
-            }
-        }
-        else if (function == ADAcquireTime)
-        {
-            if (d_val != 0.0)
-            {
-                status = setExposure(d_val);
-                if (status == asynSuccess)
-                {
-                    epicsFloat64 readBackAcquireTime = getExposure();
-                    if (readBackAcquireTime > 0)
-                    {
-                        setDoubleParam(ADAcquireTime, readBackAcquireTime);
-                    }
-                }
-            }
-        }
-        else if (function == ADMinX)
-        {
-            epicsInt32 maxSizeX = 0;
-            epicsInt32 sizeX = 0;
-            epicsInt32 sizeY = 0;
-            epicsInt32 binX = 0;
-            epicsInt32 binY = 0;
-            epicsInt32 acquire = 0;
-            getIntegerParam(ADMaxSizeX, &maxSizeX);
-            getIntegerParam(ADSizeX, &sizeX);
-            getIntegerParam(ADSizeY, &sizeY);
-            getIntegerParam(ADBinX, &binX);
-            getIntegerParam(ADBinY, &binY);
-            getIntegerParam(ADAcquire, &acquire);
-            epicsInt32 minX = (i_val > maxSizeX) ? maxSizeX : i_val;
-            if ((sizeX + minX) > maxSizeX)
-            {
-                sizeX = maxSizeX - minX;
-            }
-            acquireStop();
-
-            status = setRoiSizeX(sizeX);
-            status = setRoiOffsetX(minX);
-            sizeX = getRoiSizeX();
-            pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
-            setIntegerParam(ADSizeX, sizeX);
-            setIntegerParam(ADMinX, getRoiOffsetX());
-            setupAquisition();
-
-            if (acquire == 1)
-            {
-                acquireImage();
-            }
-        }
-        else if (function == ADMinY)
-        {
-            epicsInt32 maxSizeY = 0;
-            epicsInt32 sizeX = 0;
-            epicsInt32 sizeY = 0;
-            epicsInt32 binX = 0;
-            epicsInt32 binY = 0;
-            epicsInt32 acquire = 0;
-            getIntegerParam(ADMaxSizeY, &maxSizeY);
-            getIntegerParam(ADSizeX, &sizeX);
-            getIntegerParam(ADSizeY, &sizeY);
-            getIntegerParam(ADBinX, &binX);
-            getIntegerParam(ADBinY, &binY);
-            getIntegerParam(ADAcquire, &acquire);
-            epicsInt32 minY = (i_val > maxSizeY) ? maxSizeY : i_val;
-            if ((sizeY + minY) > maxSizeY)
-            {
-                sizeY = maxSizeY - minY;
-            }
-            acquireStop();
-
-            // status = setRoiSizeX(sizeX);
-            // status = setRoiOffsetX(minX);
-            status = setRoiSizeY(sizeY);
-            status = setRoiOffsetY(minY);
-            sizeY = getRoiSizeY();
-            pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
-            setIntegerParam(ADSizeY, sizeY);
-            setIntegerParam(ADMinY, getRoiOffsetY());
-
-            setupAquisition();
-            if (acquire == 1)
-            {
-                acquireImage();
-            }
-        }
-        else if (function == ADSizeX)
-        {
-            epicsInt32 maxSizeX = 0;
-            epicsInt32 minX = 0;
-            epicsInt32 sizeY = 0;
-            epicsInt32 binX = 0;
-            epicsInt32 binY = 0;
-            epicsInt32 acquire = 0;
-            getIntegerParam(ADMaxSizeX, &maxSizeX);
-            getIntegerParam(ADMinX, &minX);
-            getIntegerParam(ADSizeY, &sizeY);
-            getIntegerParam(ADBinX, &binX);
-            getIntegerParam(ADBinY, &binY);
-            getIntegerParam(ADAcquire, &acquire);
-            epicsInt32 sizeX = (i_val > maxSizeX) ? maxSizeX : i_val;
-
-            if ((sizeX + minX) > maxSizeX)
-            {
-                minX = maxSizeX - sizeX;
-            }
-            acquireStop();
-
-            status = setRoiSizeX(sizeX);
-            status = setRoiOffsetX(minX);
-            sizeX = getRoiSizeX();
-            // status = setRoiSizeY(sizeY);
-            // status = setRoiOffsetY(minY);
-            pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
-            setIntegerParam(ADMinX, getRoiOffsetX());
-            setIntegerParam(ADSizeX, sizeX);
-            setupAquisition();
-            if (acquire == 1)
-            {
-                acquireImage();
-            }
-        }
-        else if (function == ADSizeY)
-        {
-            epicsInt32 maxSizeY = 0;
-            epicsInt32 minY = 0;
-            epicsInt32 sizeX = 0;
-            epicsInt32 binX = 0;
-            epicsInt32 binY = 0;
-            epicsInt32 acquire = 0;
-            getIntegerParam(ADMaxSizeY, &maxSizeY);
-            getIntegerParam(ADMinY, &minY);
-            getIntegerParam(ADSizeX, &sizeX);
-            getIntegerParam(ADBinX, &binX);
-            getIntegerParam(ADBinY, &binY);
-            getIntegerParam(ADAcquire, &acquire);
-            epicsInt32 sizeY = (i_val > maxSizeY) ? maxSizeY : i_val;
-
-            if ((sizeY + minY) > maxSizeY)
-            {
-                minY = maxSizeY - sizeY;
-            }
-            acquireStop();
-
-            // status == setRoiSizeX(sizeX);
-            // status = setRoiOffsetX(minX);
-            status = setRoiSizeY(sizeY);
-            status = setRoiOffsetY(minY);
-            sizeY = getRoiSizeY();
-            pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
-            setIntegerParam(ADMinY, getRoiOffsetY());
-            setIntegerParam(ADSizeY, sizeY);
-            setupAquisition();
-            if (acquire == 1)
-            {
-                acquireImage();
-            }
-        }
-        else if (function == PR_TriggerPolarity)
-        {
-            epicsInt32 triggerMode = PR_INTERNAL_ITR;
-            if (i_val == PR_EXT_RISING_EDGE)
-            {
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
-            }
-            else if (i_val == PR_EXT_FALLING_EDGE)
-            {
-                setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
-            }
-            callParamCallbacks();
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if (triggerMode == PR_EXTERNAL)
-            {
-                setTriggerMode(PR_EXTERNAL);
-            }
-        }
-        else if (function == ADShutterOpenDelay)
-        {
-            status = setShutterOpenDelay(d_val);
-            if (status == asynSuccess)
-            {
-                epicsFloat64 openDelay = getShutterOpenDelay();
-                setDoubleParam(ADShutterOpenDelay, openDelay);
-            }
-            else {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter open delay\n");
-            }
-        }
-        else if (function == ADShutterCloseDelay)
-        {
-            status = setShutterCloseDelay(d_val);
-            if (status == asynSuccess)
-            {
-                epicsFloat64 closeDelay = getShutterCloseDelay();
-                setDoubleParam(ADShutterCloseDelay, closeDelay);
-            }
-            else {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter close delay\n");
-            }
-        }
+        this->handleParamTask(function, d_val, i_val, b_val);
         callParamCallbacks();
     }
 }
@@ -1464,28 +1433,25 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
     /* Assigning corresponding Hex value to send*/
     switch (val)
     {
-    case 1:
+    case PR_BIN_1:
         hexval = 0x00;
         break;
-    case 2:
+    case PR_BIN_2:
         hexval = 0x01;
         break;
-    case 4:
+    case PR_BIN_4:
         hexval = 0x03;
         break;
-    case 8:
+    case PR_BIN_8:
         hexval = 0x07;
         break;
-    case 16:
+    case PR_BIN_16:
         hexval = 0x0F;
         break;
-    case 32:
+    case PR_BIN_32:
         hexval = 0x1F;
         break;
-    case 64:
-        hexval = 0x3F;
-        break;
-    case 2048:
+    case PR_BIN_FVB:
         getStringParam(ADModel, cameraModel);
         if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) {
             hexval = static_cast<epicsInt8>(0x80);
@@ -1498,269 +1464,6 @@ asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
     }
 
     return Pixci::writeSerialRegister(UNIT, reg, hexval);
-}
-
-asynStatus Pixci::setFrameRate(epicsFloat64 frameRate)
-{
-    epicsInt8 frameRateHexVal[5] = {0, 0, 0, 0, 0};
-    epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
-    uInt64ToInt8(frameRateCount, frameRateHexVal);
-
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]);
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]);
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[2], frameRateHexVal[2]);
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[3], frameRateHexVal[3]);
-    return writeSerialRegister(UNIT, FRAME_RATE_BYTES[4], frameRateHexVal[4]);
-}
-
-epicsFloat64 Pixci::getFrameRate()
-{
-    epicsInt8 cval[5] = {0, 0, 0, 0, 0};
-    epicsFloat64 frameRate = 0.0;
-    readSerialRegister(FRAME_RATE_BYTES[0], &cval[0]);
-    readSerialRegister(FRAME_RATE_BYTES[1], &cval[1]);
-    readSerialRegister(FRAME_RATE_BYTES[2], &cval[2]);
-    readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]);
-    readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]);
-
-    epicsUInt64 frameRateCount = int8ToUInt64(cval);
-    if (frameRateCount > 0)
-    {
-        frameRate = 40e6 / epicsFloat64(frameRateCount);
-    }
-    return frameRate;
-}
-
-epicsFloat64 Pixci::convertAdcCountToCentigrade(epicsInt16 adcCount)
-{
-    return (ADC_M * adcCount) + ADC_C;  // temperature in centigrade
-}
-
-epicsUInt16 Pixci::convertCentigradeToDacCount(epicsFloat64 temperature)
-{
-    return static_cast<epicsUInt16>((temperature - DAC_C) / DAC_M);
-}
-
-epicsFloat64 Pixci::convertDacCountToCentigrade(epicsInt16 dacCount)
-{
-    return (DAC_M * dacCount) + DAC_C;  // temperature in centigrade
-}
-
-epicsFloat64 Pixci::getTemperatureActual()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]);
-    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]);
-
-    epicsInt16 adcCount = 0;
-    adcCount += (epicsInt16)(epicsUInt8)cval[1];
-    adcCount += ((epicsInt16)(epicsUInt8)cval[0]) << 8;
-
-    return convertAdcCountToCentigrade(adcCount);
-}
-
-epicsFloat64 Pixci::getTemperaturePcb()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(PCB_TEMPERATURE_BYTES[0], PCB_TEMPERATURE_BYTES[1], &cval[1]);
-    readSerialRegister(PCB_TEMPERATURE_BYTES[2], PCB_TEMPERATURE_BYTES[3], &cval[0]);
-
-    epicsInt16 lval = 0;
-    lval += (epicsInt16)(epicsUInt8)cval[0];
-    lval += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
-    return lval / 16.0;
-}
-
-epicsFloat64 Pixci::getTecTemperature()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(TEC_TEMPERATURE_BYTES[0], &cval[1]);
-    readSerialRegister(TEC_TEMPERATURE_BYTES[1], &cval[0]);
-
-    epicsInt16 lval = 0;
-    lval += (epicsInt16)(epicsUInt8)cval[0];
-    lval += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
-
-    return convertDacCountToCentigrade(lval);
-}
-
-asynStatus Pixci::setTecTemperature(epicsFloat64 temperature)
-{
-    epicsUInt16 dacCount = convertCentigradeToDacCount(temperature);
-
-    epicsInt8 cval[2] = {0, 0};
-    cval[0] = (epicsInt8)((dacCount & 0x0F00) >> 8);
-    cval[1] = (epicsInt8)((dacCount & 0x00FF));
-
-    writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]);
-}
-
-epicsUInt8 Pixci::getFpgaStatus()
-{
-    epicsInt8 cval = 0;
-    readSerialRegister(FPGA_STATUS_BYTE, &cval);
-    // TODO: implement proper error handling
-    return (epicsUInt8)cval;
-}
-
-asynStatus Pixci::toggleTec(epicsBoolean enableTec)
-{
-    epicsUInt8 fpgaStatus = getFpgaStatus();
-    if (enableTec)
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | 0x01);  // setting first bit = 1
-    else
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01));   // setting first bit = 0
-}
-
-epicsBoolean Pixci::isTecEnabled()
-{
-    epicsUInt8 fpgaStatus = getFpgaStatus();
-    return static_cast<epicsBoolean>((fpgaStatus & 0x01) != 0);     // check the first bit is not 0
-}
-
-asynStatus Pixci::toggleGain(epicsBoolean enableGain)
-{
-    epicsUInt8 fpgaStatus = getFpgaStatus();
-    if (enableGain)
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | (1 << 7));  // setting last bit = 1
-    else
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7));     // setting last bit = 0
-}
-
-epicsBoolean Pixci::isGainEnabled()
-{
-    epicsUInt8 fpgaStatus = getFpgaStatus();
-    return static_cast<epicsBoolean>((fpgaStatus & (1 << 7)) != 0);     // check the last bit is not 0
-}
-
-epicsUInt8 Pixci::getSystemStatus()
-{
-    epicsUInt8 cval = 0;
-    char inputMsg[2] = {};
-    char first_bufout[] = {GET_SYSTEM_STATUS_BYTE, END_OF_TRANSMISSION_BYTE};
-
-    /*writing to serial connection*/
-    epicsInt32 inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
-
-    if (inputMsg[1] == SUCCESS_MESSAGE)
-    {
-        cval = inputMsg[0];
-    }
-
-    // TODO: Need proper error handling, same is for reading serial register as else where
-    return cval;    // cval will be 0x00 if there is no success
-}
-
-asynStatus Pixci::setSystemStatus(epicsInt8 val)
-{
-    char inputMsg[1] = {};
-
-    /* template of message to write value to registers */
-    char bufout[] = {SET_SYSTEM_STATUS_BYTE, val, END_OF_TRANSMISSION_BYTE};
-
-    /*writing to serial connection*/
-    epicsInt32 inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
-
-    if (inSize < PIXCI_NO_ERROR)
-    {
-        return asynError;
-    }
-
-    if (inputMsg[0] == SUCCESS_MESSAGE)
-    {
-        return asynSuccess;
-    }
-
-    return asynError;
-}
-
-asynStatus Pixci::toggleFpgaComms(epicsBoolean enableFpgaComms)
-{
-    epicsUInt8 systemStatus = getSystemStatus();
-    if (enableFpgaComms)
-        return setSystemStatus(systemStatus | 0x01);    // setting first bit = 1
-    else
-        return setSystemStatus(systemStatus & ~(0x01));     // setting first bit = 0
-}
-
-epicsBoolean Pixci::isFpgaCommsEnabled()
-{
-    epicsUInt8 systemStatus = getSystemStatus();
-    return static_cast<epicsBoolean>((systemStatus & 0x01) != 0);   // check the first bit is not 0
-}
-
-asynStatus Pixci::setExposure(epicsFloat64 exposureTime)
-{
-    epicsInt8 exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
-    epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
-    uInt64ToInt8(exposureTimeCount, exposureTimeHexVal);
-
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]);
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[2], exposureTimeHexVal[2]);
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[3], exposureTimeHexVal[3]);
-    return writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]);
-}
-
-epicsFloat64 Pixci::getExposure()
-{
-    epicsInt8 cval[5] = {0, 0, 0, 0, 0};
-    epicsFloat64 exposureTime = 0.0;
-    readSerialRegister(EXPOSURE_BYTES[0], &cval[0]);
-    readSerialRegister(EXPOSURE_BYTES[1], &cval[1]);
-    readSerialRegister(EXPOSURE_BYTES[2], &cval[2]);
-    readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
-    readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
-
-    epicsUInt64 exposureTimeCount = int8ToUInt64(cval);
-    if (exposureTimeCount > 0)
-    {
-        exposureTime = (static_cast<epicsFloat64>(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
-    }
-    return exposureTime;
-}
-
-epicsUInt8 Pixci::convertDelayTimeToHex(epicsFloat64 delayTime) {
-    epicsFloat64 scaled = delayTime * MILLISECOND_PER_COUNT;
-    epicsInt32 rounded = static_cast<epicsInt32>(std::round(scaled));
-    epicsUInt8 hexVal = static_cast<epicsUInt8>(rounded);
-    return hexVal;
-}
-
-epicsFloat64 Pixci::convertHexToDelayTime(epicsUInt8 hexVal) {
-    epicsFloat64 hexAsDouble = static_cast<epicsFloat64>(hexVal);
-    epicsFloat64 delayTime = hexAsDouble / MILLISECOND_PER_COUNT;
-    return delayTime;
-}
-
-asynStatus Pixci::setShutterOpenDelay(epicsFloat64 delayTime)
-{
-    epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
-    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
-}
-
-epicsFloat64 Pixci::getShutterOpenDelay()
-{
-    epicsInt8 hexVal = 0;
-    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
-    return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
-}
-
-asynStatus Pixci::setShutterCloseDelay(epicsFloat64 delayTime)
-{
-    epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
-    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
-}
-
-epicsFloat64 Pixci::getShutterCloseDelay()
-{
-    epicsInt8 hexVal = 0;
-    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
-    return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
 }
 
 asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
@@ -1850,18 +1553,6 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     {
         addToParamQue(function, value);
     }
-    else if (function == PR_ToggleTec)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_ToggleGain)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_ToggleFpgaComms)
-    {
-        addToParamQue(function, value);
-    }
     else if (function == ADMinX)
     {
         addToParamQue(function, value);
@@ -1887,7 +1578,7 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         status = ADDriver::writeInt32(pasynUser, value);
     }
 
-    return asynSuccess;
+    return status;
 }
 
 asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
@@ -1921,94 +1612,6 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
     /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
-}
-
-asynStatus Pixci::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
-{
-    char inputMsg[20] = {};
-
-    /* template of message to write value to registers */
-    char bufout[] = {
-        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
-        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
-        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
-        Register, val,
-        END_OF_TRANSMISSION_BYTE
-    };
-
-    /*writing to serial connection*/
-    epicsInt32 inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
-
-    if (inSize < PIXCI_NO_ERROR)
-    {
-        return asynError;
-    }
-
-    if (inputMsg[0] == SUCCESS_MESSAGE)
-    {
-        return asynSuccess;
-    }
-    return asynError;
-}
-
-asynStatus Pixci::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
-{
-    char inputMsg[20] = {};
-    epicsInt32 inSize = 0;
-    char first_bufout[] = {
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
-        Register,
-        END_OF_TRANSMISSION_BYTE
-    };
-    char last_bufout[] = {
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
-        END_OF_TRANSMISSION_BYTE
-    };
-
-    /*writing to serial connection*/
-    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
-    inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
-
-    *val = inputMsg[0];
-    if (inputMsg[1] == SUCCESS_MESSAGE)
-    {
-        return asynSuccess;
-    }
-    return asynError;
-}
-
-asynStatus Pixci::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val)
-{
-    char inputMsg[20] = {};
-    epicsInt32 inSize = 0;
-    char first_bufout[] = {
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
-        Register1, Register2,
-        END_OF_TRANSMISSION_BYTE
-    };
-    char last_bufout[] = {
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
-        END_OF_TRANSMISSION_BYTE
-    };
-
-    /*writing to serial connection*/
-    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
-    inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
-
-    *val = inputMsg[0];
-    if (inputMsg[1] == SUCCESS_MESSAGE)
-    {
-        return asynSuccess;
-    }
-    return asynError;
 }
 
 asynStatus Pixci::setTriggerMode(epicsInt32 mode)
@@ -2056,107 +1659,20 @@ asynStatus Pixci::sendSoftTrigger() {
 }
 
 // PV Updating Functions
-void Pixci::updateADTemperatureActual(epicsBoolean callBackFlag)
+asynStatus Pixci::updateADTemperatureActual(epicsBoolean callBackFlag)
 {
-    setDoubleParam(ADTemperatureActual, getTemperatureActual());    // setting the Actual Temperature PV
+    asynStatus status = asynSuccess;
+    setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, getTemperatureActual()));    // setting the Actual Temperature PV
     if (callBackFlag)
-        callParamCallbacks();
-}
-
-void Pixci::updateTemperaturePcb(epicsBoolean callBackFlag)
-{
-    setDoubleParam(PR_TemperaturePcb, getTemperaturePcb());     // setting the PCB Temperature PV
-    if (callBackFlag)
-        callParamCallbacks();
-}
-
-asynStatus Pixci::updateManufacturersData(epicsBoolean callBackFlag)
-{
-    using std::to_string;
-
-    char inputMsg[20] = {};
-    epicsInt32 inSize = 0;
-    char first_bufout[] = {
-         static_cast<char>(GET_MISC_DATA_BYTES[0]),
-         static_cast<char>(GET_MISC_DATA_BYTES[1]),
-         static_cast<char>(GET_MISC_DATA_BYTES[2]),
-         static_cast<char>(GET_MISC_DATA_BYTES[3]),
-         static_cast<char>(GET_MISC_DATA_BYTES[4]),
-         static_cast<char>(GET_MISC_DATA_BYTES[5]),
-         static_cast<char>(GET_MISC_DATA_BYTES[6]),
-         static_cast<char>(GET_MISC_DATA_BYTES[7]),
-        END_OF_TRANSMISSION_BYTE
-    };
-    char last_bufout[] = {
-         static_cast<char>(MANUFACTURER_DATA_BYTES[0]),
-         static_cast<char>(MANUFACTURER_DATA_BYTES[1]),
-         static_cast<char>(MANUFACTURER_DATA_BYTES[2]),
-        END_OF_TRANSMISSION_BYTE
-    };
-
-    epicsInt16 serialNumber = 0;
-    std::string buildDate = "";
-    epicsInt16 adcCountZeroDegree = 0;
-    epicsInt16 adcCountFortyDegree = 0;
-    epicsInt16 dacCountZeroDegree = 0;
-    epicsInt16 dacCountFortyDegree = 0;
-
-    toggleFpgaComms(epicsTrue);
-
-    /*writing to serial connection*/
-    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
-    inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
-
-    toggleFpgaComms(epicsFalse);
-
-    if (inputMsg[18] == SUCCESS_MESSAGE)
-    {
-        serialNumber += (epicsInt16)(epicsUInt8)inputMsg[0];
-        serialNumber += (epicsInt16)(epicsUInt8)(inputMsg[1]) << 8;
-        setStringParam(ADSerialNumber, to_string(serialNumber));
-
-        buildDate = to_string((epicsInt16)(epicsUInt8)inputMsg[2]) + "/"
-                + to_string((epicsInt16)(epicsUInt8)inputMsg[3]) + "/"
-                + to_string((epicsInt16)(epicsUInt8)inputMsg[4]);
-        setStringParam(PR_BuildDate, buildDate);
-
-        adcCountZeroDegree += (epicsInt16)(epicsUInt8)inputMsg[10];
-        adcCountZeroDegree += (epicsInt16)(epicsUInt8)(inputMsg[11]) << 8;
-        setIntegerParam(PR_ADCCalibrationZeroDegree, adcCountZeroDegree);
-
-        adcCountFortyDegree += (epicsInt16)(epicsUInt8)inputMsg[12];
-        adcCountFortyDegree += (epicsInt16)(epicsUInt8)(inputMsg[13]) << 8;
-        setIntegerParam(PR_ADCCalibrationFortyDegree, adcCountFortyDegree);
-
-        dacCountZeroDegree += (epicsInt16)(epicsUInt8)inputMsg[14];
-        dacCountZeroDegree += (epicsInt16)(epicsUInt8)(inputMsg[15]) << 8;
-        setIntegerParam(PR_DACCalibrationZeroDegree, dacCountZeroDegree);
-
-        dacCountFortyDegree += (epicsInt16)(epicsUInt8)inputMsg[16];
-        dacCountFortyDegree += (epicsInt16)(epicsUInt8)(inputMsg[17]) << 8;
-        setIntegerParam(PR_DACCalibrationFortyDegree, dacCountFortyDegree);
-
-        ADC_M = 40.0f / (adcCountFortyDegree - adcCountZeroDegree);
-        ADC_C = 40.0f - (ADC_M * adcCountFortyDegree);
-
-        DAC_M = 40.0f / (dacCountFortyDegree - dacCountZeroDegree);
-        DAC_C = 40.0f - (DAC_M * dacCountFortyDegree);
-
-        if (callBackFlag)
-            callParamCallbacks();
-        return asynSuccess;
-    }
-
-    return asynError;
+        setStatIfHigher(&status, callParamCallbacks());
+    return status;
 }
 
 asynStatus Pixci::updateStatus()
 {
     asynStatus status = asynSuccess;
     // TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
-    setStatIfHigher(&status, updateManufacturersData());    // TODO: Implement Error Message
-    updateADTemperatureActual();
-    updateTemperaturePcb(epicsTrue);
+    setStatIfHigher(&status, updateADTemperatureActual());
     return status;
 }
 
@@ -2164,117 +1680,15 @@ asynStatus Pixci::updateIntialPVs()
 {
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
-    epicsFloat64 acquireFrameRate = getFrameRate();
     asynStatus status = asynSuccess;
 
     setStatIfHigher(&status, setIntegerParam(ADMaxSizeX, sizeX));
     setStatIfHigher(&status, setIntegerParam(ADMaxSizeY, sizeY));
     setStatIfHigher(&status, setIntegerParam(ADSizeX, sizeX));
     setStatIfHigher(&status, setIntegerParam(ADSizeY, sizeY));
-    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, getExposure()));
-    if (acquireFrameRate > 0)
-    {
-        setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
-    }
 
     setStatIfHigher(&status, callParamCallbacks());
     return status;
-}
-
-asynStatus Pixci::setRoiSizeX(epicsInt32 RoisizeX)
-{
-    epicsInt8 cval[2] = {0, 0};
-    cval[0] = (epicsInt8)((RoisizeX & 0x0F00) >> 8);
-    cval[1] = (epicsInt8)((RoisizeX & 0x00FF));
-
-    writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]);
-}
-
-asynStatus Pixci::setRoiSizeY(epicsInt32 RoisizeY)
-{
-    epicsInt8 cval[2] = {0, 0};
-    cval[0] = (epicsInt8)((RoisizeY & 0x0F00) >> 8);
-    cval[1] = (epicsInt8)((RoisizeY & 0x00FF));
-
-    writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]);
-}
-
-asynStatus Pixci::setRoiOffsetX(epicsInt32 RoiOffsetX)
-{
-    epicsInt8 cval[2] = {0, 0};
-    cval[0] = (epicsInt8)((RoiOffsetX & 0x0F00) >> 8);
-    cval[1] = (epicsInt8)((RoiOffsetX & 0x00FF));
-
-    writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]);
-}
-
-asynStatus Pixci::setRoiOffsetY(epicsInt32 RoiOffsetY)
-{
-    epicsInt8 cval[2] = {0, 0};
-    cval[0] = (epicsInt8)((RoiOffsetY & 0x0F00) >> 8);
-    cval[1] = (epicsInt8)((RoiOffsetY & 0x00FF));
-
-    writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]);
-}
-
-epicsInt32 Pixci::getRoiSizeX()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_X_SIZE_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_X_SIZE_BYTES[1], &cval[0]);
-
-    epicsInt16 ival = 0;
-    ival += (epicsInt16)(epicsUInt8)cval[0];
-    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
-
-    return ival;
-}
-
-epicsInt32 Pixci::getRoiSizeY()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_Y_SIZE_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_Y_SIZE_BYTES[1], &cval[0]);
-
-    epicsInt16 ival = 0;
-    ival += (epicsInt16)(epicsUInt8)cval[0];
-    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
-
-    return ival;
-}
-
-epicsInt32 Pixci::getRoiOffsetX()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_X_OFFSET_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_X_OFFSET_BYTES[1], &cval[0]);
-
-    epicsInt16 ival = 0;
-    ival += (epicsInt16)(epicsUInt8)cval[0];
-    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
-
-    return ival;
-}
-
-epicsInt32 Pixci::getRoiOffsetY()
-{
-    epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_Y_OFFSET_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_Y_OFFSET_BYTES[1], &cval[0]);
-
-    epicsInt16 ival = 0;
-    ival += (epicsInt16)(epicsUInt8)cval[0];
-    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
-
-    return ival;
 }
 
 void Pixci::report(FILE *fp, epicsInt32 details)

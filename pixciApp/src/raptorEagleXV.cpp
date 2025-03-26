@@ -1,0 +1,660 @@
+/**
+ * @brief This is a driver for EPIX inc. PIXCI camera link frame grabbers
+ *  This driver uses the PIXCI ® XCLIB Programming Library.
+ *  This class defines specific instructions for Raptor Photonics Eagle XV II 
+ *  X-ray CCD cameras.
+ * 
+ * @copyright Copyright (c) 2025, UKRI STFC Central Laser Facility
+ * 
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ * 
+ *  1. Redistributions of source code must retain the above copyright notice, this
+ *  list of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *  3. Neither the name of the copyright holder nor the names of its
+ *  contributors may be used to endorse or promote products derived from
+ *  this software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "raptorEagleXV.h"
+
+RaptorEagleXV::RaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+    const char *cameraModel, const char *formatFile)
+    : Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
+{
+    createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePcb);
+    createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec);
+    createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain);
+    createParam(ToggleFPGACommsString, asynParamInt32, &PR_ToggleFpgaComms);
+    createParam(ADCCalibrationZeroDegreeString, asynParamInt32, &PR_ADCCalibrationZeroDegree);
+    createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree);
+    createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
+    createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
+}
+
+asynStatus RaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
+{
+    char inputMsg[20] = {};
+
+    /* template of message to write value to registers */
+    char bufout[] = {
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        Register, val,
+        END_OF_TRANSMISSION_BYTE
+    };
+
+    /*writing to serial connection*/
+    epicsInt32 inSize = writeReadSerial(UNIT, bufout, 6, inputMsg, 20);
+
+    if (inSize < PIXCI_NO_ERROR)
+    {
+        return asynError;
+    }
+
+    if (inputMsg[0] == SUCCESS_MESSAGE)
+    {
+        return asynSuccess;
+    }
+    return asynError;
+}
+
+asynStatus RaptorEagleXV::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
+{
+    char inputMsg[20] = {};
+    epicsInt32 inSize = 0;
+    char first_bufout[] = {
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        Register,
+        END_OF_TRANSMISSION_BYTE
+    };
+    char last_bufout[] = {
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
+        END_OF_TRANSMISSION_BYTE
+    };
+
+    /*writing to serial connection*/
+    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+    inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+
+    *val = inputMsg[0];
+    if (inputMsg[1] == SUCCESS_MESSAGE)
+    {
+        return asynSuccess;
+    }
+    return asynError;
+}
+
+asynStatus RaptorEagleXV::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val)
+{
+    char inputMsg[20] = {};
+    epicsInt32 inSize = 0;
+    char first_bufout[] = {
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        Register1, Register2,
+        END_OF_TRANSMISSION_BYTE
+    };
+    char last_bufout[] = {
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
+         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
+        END_OF_TRANSMISSION_BYTE
+    };
+
+    /*writing to serial connection*/
+    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+    inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+
+    *val = inputMsg[0];
+    if (inputMsg[1] == SUCCESS_MESSAGE)
+    {
+        return asynSuccess;
+    }
+    return asynError;
+}
+
+epicsUInt8 RaptorEagleXV::getSystemStatus()
+{
+    epicsUInt8 cval = 0;
+    char inputMsg[2] = {};
+    char first_bufout[] = {GET_SYSTEM_STATUS_BYTE, END_OF_TRANSMISSION_BYTE};
+
+    /*writing to serial connection*/
+    epicsInt32 inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 2);
+
+    if (inputMsg[1] == SUCCESS_MESSAGE)
+    {
+        cval = inputMsg[0];
+    }
+
+    // TODO: Need proper error handling, same is for reading serial register as else where
+    return cval;    // cval will be 0x00 if there is no success
+}
+
+asynStatus RaptorEagleXV::setSystemStatus(epicsInt8 val)
+{
+    char inputMsg[1] = {};
+
+    /* template of message to write value to registers */
+    char bufout[] = {SET_SYSTEM_STATUS_BYTE, val, END_OF_TRANSMISSION_BYTE};
+
+    /*writing to serial connection*/
+    epicsInt32 inSize = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 1);
+
+    if (inSize < PIXCI_NO_ERROR)
+    {
+        return asynError;
+    }
+
+    if (inputMsg[0] == SUCCESS_MESSAGE)
+    {
+        return asynSuccess;
+    }
+
+    return asynError;
+}
+
+asynStatus RaptorEagleXV::setFrameRate(epicsFloat64 frameRate)
+{
+    epicsInt8 frameRateHexVal[5] = {0, 0, 0, 0, 0};
+    epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
+    uInt64ToInt8(frameRateCount, frameRateHexVal);
+
+    writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]);
+    writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]);
+    writeSerialRegister(UNIT, FRAME_RATE_BYTES[2], frameRateHexVal[2]);
+    writeSerialRegister(UNIT, FRAME_RATE_BYTES[3], frameRateHexVal[3]);
+    return writeSerialRegister(UNIT, FRAME_RATE_BYTES[4], frameRateHexVal[4]);
+}
+
+epicsFloat64 RaptorEagleXV::getFrameRate()
+{
+    epicsInt8 cval[5] = {0, 0, 0, 0, 0};
+    epicsFloat64 frameRate = 0.0;
+    readSerialRegister(FRAME_RATE_BYTES[0], &cval[0]);
+    readSerialRegister(FRAME_RATE_BYTES[1], &cval[1]);
+    readSerialRegister(FRAME_RATE_BYTES[2], &cval[2]);
+    readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]);
+    readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]);
+
+    epicsUInt64 frameRateCount = int8ToUInt64(cval);
+    if (frameRateCount > 0)
+    {
+        frameRate = 40e6 / epicsFloat64(frameRateCount);
+    }
+    return frameRate;
+}
+
+epicsFloat64 RaptorEagleXV::convertAdcCountToCentigrade(epicsInt16 adcCount)
+{
+    return (ADC_M * adcCount) + ADC_C;  // temperature in centigrade
+}
+
+epicsUInt16 RaptorEagleXV::convertCentigradeToDacCount(epicsFloat64 temperature)
+{
+    return static_cast<epicsUInt16>((temperature - DAC_C) / DAC_M);
+}
+
+epicsFloat64 RaptorEagleXV::convertDacCountToCentigrade(epicsInt16 dacCount)
+{
+    return (DAC_M * dacCount) + DAC_C;  // temperature in centigrade
+}
+
+epicsFloat64 RaptorEagleXV::getTemperatureActual()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]);
+    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]);
+
+    epicsInt16 adcCount = 0;
+    adcCount += (epicsInt16)(epicsUInt8)cval[1];
+    adcCount += ((epicsInt16)(epicsUInt8)cval[0]) << 8;
+
+    return convertAdcCountToCentigrade(adcCount);
+}
+
+epicsFloat64 RaptorEagleXV::getTemperaturePcb()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(PCB_TEMPERATURE_BYTES[0], PCB_TEMPERATURE_BYTES[1], &cval[1]);
+    readSerialRegister(PCB_TEMPERATURE_BYTES[2], PCB_TEMPERATURE_BYTES[3], &cval[0]);
+
+    epicsInt16 lval = 0;
+    lval += (epicsInt16)(epicsUInt8)cval[0];
+    lval += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
+    return lval / 16.0;
+}
+
+epicsFloat64 RaptorEagleXV::getTecTemperature()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(TEC_TEMPERATURE_BYTES[0], &cval[1]);
+    readSerialRegister(TEC_TEMPERATURE_BYTES[1], &cval[0]);
+
+    epicsInt16 lval = 0;
+    lval += (epicsInt16)(epicsUInt8)cval[0];
+    lval += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
+
+    return convertDacCountToCentigrade(lval);
+}
+
+asynStatus RaptorEagleXV::setTecTemperature(epicsFloat64 temperature)
+{
+    epicsUInt16 dacCount = convertCentigradeToDacCount(temperature);
+
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((dacCount & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((dacCount & 0x00FF));
+
+    writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]);
+}
+
+epicsUInt8 RaptorEagleXV::getFpgaStatus()
+{
+    epicsInt8 cval = 0;
+    readSerialRegister(FPGA_STATUS_BYTE, &cval);
+    // TODO: implement proper error handling
+    return (epicsUInt8)cval;
+}
+
+asynStatus RaptorEagleXV::toggleFpgaComms(epicsBoolean enableFpgaComms)
+{
+    epicsUInt8 systemStatus = getSystemStatus();
+    if (enableFpgaComms)
+        return setSystemStatus(systemStatus | 0x01);    // setting first bit = 1
+    else
+        return setSystemStatus(systemStatus & ~(0x01));     // setting first bit = 0
+}
+
+epicsBoolean RaptorEagleXV::isFpgaCommsEnabled()
+{
+    epicsUInt8 systemStatus = getSystemStatus();
+    return static_cast<epicsBoolean>((systemStatus & 0x01) != 0);   // check the first bit is not 0
+}
+
+
+asynStatus RaptorEagleXV::toggleTec(epicsBoolean enableTec)
+{
+    epicsUInt8 fpgaStatus = getFpgaStatus();
+    if (enableTec)
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | 0x01);  // setting first bit = 1
+    else
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01));   // setting first bit = 0
+}
+
+epicsBoolean RaptorEagleXV::isTecEnabled()
+{
+    epicsUInt8 fpgaStatus = getFpgaStatus();
+    return static_cast<epicsBoolean>((fpgaStatus & 0x01) != 0);     // check the first bit is not 0
+}
+
+asynStatus RaptorEagleXV::toggleGain(epicsBoolean enableGain)
+{
+    epicsUInt8 fpgaStatus = getFpgaStatus();
+    if (enableGain)
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | (1 << 7));  // setting last bit = 1
+    else
+        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7));     // setting last bit = 0
+}
+
+epicsBoolean RaptorEagleXV::isGainEnabled()
+{
+    epicsUInt8 fpgaStatus = getFpgaStatus();
+    return static_cast<epicsBoolean>((fpgaStatus & (1 << 7)) != 0);     // check the last bit is not 0
+}
+
+asynStatus RaptorEagleXV::setExposure(epicsFloat64 exposureTime)
+{
+    epicsInt8 exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
+    epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
+    uInt64ToInt8(exposureTimeCount, exposureTimeHexVal);
+
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[2], exposureTimeHexVal[2]);
+    writeSerialRegister(UNIT, EXPOSURE_BYTES[3], exposureTimeHexVal[3]);
+    return writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]);
+}
+
+epicsFloat64 RaptorEagleXV::getExposure()
+{
+    epicsInt8 cval[5] = {0, 0, 0, 0, 0};
+    epicsFloat64 exposureTime = 0.0;
+    readSerialRegister(EXPOSURE_BYTES[0], &cval[0]);
+    readSerialRegister(EXPOSURE_BYTES[1], &cval[1]);
+    readSerialRegister(EXPOSURE_BYTES[2], &cval[2]);
+    readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
+    readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
+
+    epicsUInt64 exposureTimeCount = int8ToUInt64(cval);
+    if (exposureTimeCount > 0)
+    {
+        exposureTime = (static_cast<epicsFloat64>(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
+    }
+    return exposureTime;
+}
+
+epicsUInt8 RaptorEagleXV::convertDelayTimeToHex(epicsFloat64 delayTime) {
+    epicsFloat64 scaled = delayTime * MILLISECOND_PER_COUNT;
+    epicsInt32 rounded = static_cast<epicsInt32>(std::round(scaled));
+    epicsUInt8 hexVal = static_cast<epicsUInt8>(rounded);
+    return hexVal;
+}
+
+epicsFloat64 RaptorEagleXV::convertHexToDelayTime(epicsUInt8 hexVal) {
+    epicsFloat64 hexAsDouble = static_cast<epicsFloat64>(hexVal);
+    epicsFloat64 delayTime = hexAsDouble / MILLISECOND_PER_COUNT;
+    return delayTime;
+}
+
+asynStatus RaptorEagleXV::setShutterOpenDelay(epicsFloat64 delayTime)
+{
+    epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
+}
+
+epicsFloat64 RaptorEagleXV::getShutterOpenDelay()
+{
+    epicsInt8 hexVal = 0;
+    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
+    return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
+}
+
+asynStatus RaptorEagleXV::setShutterCloseDelay(epicsFloat64 delayTime)
+{
+    epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
+    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
+}
+
+epicsFloat64 RaptorEagleXV::getShutterCloseDelay()
+{
+    epicsInt8 hexVal = 0;
+    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
+    return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
+}
+
+asynStatus RaptorEagleXV::updateTemperaturePcb(epicsBoolean callBackFlag)
+{
+    asynStatus status = asynSuccess;
+    setStatIfHigher(&status, setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()));
+    if (callBackFlag)
+        setStatIfHigher(&status, callParamCallbacks());
+    return status;
+}
+
+asynStatus RaptorEagleXV::updateManufacturersData(epicsBoolean callBackFlag)
+{
+    using std::to_string;
+
+    char inputMsg[20] = {};
+    epicsInt32 inSize = 0;
+    char first_bufout[] = {
+         static_cast<char>(GET_MISC_DATA_BYTES[0]),
+         static_cast<char>(GET_MISC_DATA_BYTES[1]),
+         static_cast<char>(GET_MISC_DATA_BYTES[2]),
+         static_cast<char>(GET_MISC_DATA_BYTES[3]),
+         static_cast<char>(GET_MISC_DATA_BYTES[4]),
+         static_cast<char>(GET_MISC_DATA_BYTES[5]),
+         static_cast<char>(GET_MISC_DATA_BYTES[6]),
+         static_cast<char>(GET_MISC_DATA_BYTES[7]),
+        END_OF_TRANSMISSION_BYTE
+    };
+    char last_bufout[] = {
+         static_cast<char>(MANUFACTURER_DATA_BYTES[0]),
+         static_cast<char>(MANUFACTURER_DATA_BYTES[1]),
+         static_cast<char>(MANUFACTURER_DATA_BYTES[2]),
+        END_OF_TRANSMISSION_BYTE
+    };
+
+    epicsInt16 serialNumber = 0;
+    std::string buildDate = "";
+    epicsInt16 adcCountZeroDegree = 0;
+    epicsInt16 adcCountFortyDegree = 0;
+    epicsInt16 dacCountZeroDegree = 0;
+    epicsInt16 dacCountFortyDegree = 0;
+
+    toggleFpgaComms(epicsTrue);
+
+    /*writing to serial connection*/
+    inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
+    inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
+
+    toggleFpgaComms(epicsFalse);
+
+    if (inputMsg[18] == SUCCESS_MESSAGE)
+    {
+        serialNumber += (epicsInt16)(epicsUInt8)inputMsg[0];
+        serialNumber += (epicsInt16)(epicsUInt8)(inputMsg[1]) << 8;
+        setStringParam(ADSerialNumber, to_string(serialNumber));
+
+        buildDate = to_string((epicsInt16)(epicsUInt8)inputMsg[2]) + "/"
+                + to_string((epicsInt16)(epicsUInt8)inputMsg[3]) + "/"
+                + to_string((epicsInt16)(epicsUInt8)inputMsg[4]);
+        setStringParam(PR_BuildDate, buildDate);
+
+        adcCountZeroDegree += (epicsInt16)(epicsUInt8)inputMsg[10];
+        adcCountZeroDegree += (epicsInt16)(epicsUInt8)(inputMsg[11]) << 8;
+        setIntegerParam(PR_ADCCalibrationZeroDegree, adcCountZeroDegree);
+
+        adcCountFortyDegree += (epicsInt16)(epicsUInt8)inputMsg[12];
+        adcCountFortyDegree += (epicsInt16)(epicsUInt8)(inputMsg[13]) << 8;
+        setIntegerParam(PR_ADCCalibrationFortyDegree, adcCountFortyDegree);
+
+        dacCountZeroDegree += (epicsInt16)(epicsUInt8)inputMsg[14];
+        dacCountZeroDegree += (epicsInt16)(epicsUInt8)(inputMsg[15]) << 8;
+        setIntegerParam(PR_DACCalibrationZeroDegree, dacCountZeroDegree);
+
+        dacCountFortyDegree += (epicsInt16)(epicsUInt8)inputMsg[16];
+        dacCountFortyDegree += (epicsInt16)(epicsUInt8)(inputMsg[17]) << 8;
+        setIntegerParam(PR_DACCalibrationFortyDegree, dacCountFortyDegree);
+
+        ADC_M = 40.0f / (adcCountFortyDegree - adcCountZeroDegree);
+        ADC_C = 40.0f - (ADC_M * adcCountFortyDegree);
+
+        DAC_M = 40.0f / (dacCountFortyDegree - dacCountZeroDegree);
+        DAC_C = 40.0f - (DAC_M * dacCountFortyDegree);
+
+        if (callBackFlag)
+            callParamCallbacks();
+        return asynSuccess;
+    }
+
+    return asynError;
+}
+
+asynStatus RaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
+{
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoisizeX & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoisizeX & 0x00FF));
+
+    writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]);
+}
+
+asynStatus RaptorEagleXV::setRoiSizeY(epicsInt32 RoisizeY)
+{
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoisizeY & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoisizeY & 0x00FF));
+
+    writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]);
+}
+
+asynStatus RaptorEagleXV::setRoiOffsetX(epicsInt32 RoiOffsetX)
+{
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoiOffsetX & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoiOffsetX & 0x00FF));
+
+    writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]);
+}
+
+asynStatus RaptorEagleXV::setRoiOffsetY(epicsInt32 RoiOffsetY)
+{
+    epicsInt8 cval[2] = {0, 0};
+    cval[0] = (epicsInt8)((RoiOffsetY & 0x0F00) >> 8);
+    cval[1] = (epicsInt8)((RoiOffsetY & 0x00FF));
+
+    writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]);
+    return writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]);
+}
+
+epicsInt32 RaptorEagleXV::getRoiSizeX()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(ROI_X_SIZE_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_X_SIZE_BYTES[1], &cval[0]);
+
+    epicsInt16 ival = 0;
+    ival += (epicsInt16)(epicsUInt8)cval[0];
+    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
+
+    return ival;
+}
+
+epicsInt32 RaptorEagleXV::getRoiSizeY()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(ROI_Y_SIZE_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_Y_SIZE_BYTES[1], &cval[0]);
+
+    epicsInt16 ival = 0;
+    ival += (epicsInt16)(epicsUInt8)cval[0];
+    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
+
+    return ival;
+}
+
+epicsInt32 RaptorEagleXV::getRoiOffsetX()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(ROI_X_OFFSET_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_X_OFFSET_BYTES[1], &cval[0]);
+
+    epicsInt16 ival = 0;
+    ival += (epicsInt16)(epicsUInt8)cval[0];
+    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
+
+    return ival;
+}
+
+epicsInt32 RaptorEagleXV::getRoiOffsetY()
+{
+    epicsInt8 cval[2] = {0, 0};
+
+    readSerialRegister(ROI_Y_OFFSET_BYTES[0], &cval[1]);
+    readSerialRegister(ROI_Y_OFFSET_BYTES[1], &cval[0]);
+
+    epicsInt16 ival = 0;
+    ival += (epicsInt16)(epicsUInt8)cval[0];
+    ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
+
+    return ival;
+}
+
+asynStatus RaptorEagleXV::updateStatus()
+{
+    asynStatus status = asynSuccess;
+    setStatIfHigher(&status, updateManufacturersData());
+    setStatIfHigher(&status, updateTemperaturePcb(epicsTrue));
+    setStatIfHigher(&status, Pixci::updateStatus());
+    return status;
+}
+
+asynStatus RaptorEagleXV::updateIntialPVs(){
+    asynStatus status = asynSuccess;
+    epicsFloat64 acquireFrameRate = getFrameRate();
+
+    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, getExposure()));
+    if (acquireFrameRate > 0)
+    {
+        setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
+    }
+
+    Pixci::updateIntialPVs();
+    return status;
+}
+
+asynStatus RaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
+{
+    epicsInt32 function = pasynUser->reason;
+
+    asynStatus status = asynSuccess;
+    if (function == PR_ToggleTec)
+    {
+        addToParamQue(function, value);
+    }
+    else if (function == PR_ToggleGain)
+    {
+        addToParamQue(function, value);
+    }
+    else if (function == PR_ToggleFpgaComms)
+    {
+        addToParamQue(function, value);
+    } else {
+        setStatIfHigher(&status, Pixci::writeInt32(pasynUser, value));
+    }
+
+    return status;
+}
+
+void RaptorEagleXV::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val){
+    asynStatus status = asynSuccess;
+    if (function == PR_ToggleTec)
+    {
+        status = toggleTec(b_val);
+        if (status == asynSuccess)
+        {
+            setIntegerParam(PR_ToggleTec, isTecEnabled());
+        }
+    }
+    else if (function == PR_ToggleGain)
+    {
+        status = toggleGain(b_val);
+        if (status == asynSuccess)
+        {
+            setIntegerParam(PR_ToggleGain, isGainEnabled());
+        }
+    }
+    else if (function == PR_ToggleFpgaComms)
+    {
+        status = toggleFpgaComms(b_val);
+        if (status == asynSuccess)
+        {
+            setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
+        }
+    } else {
+        Pixci::paramTask();
+    }
+}
