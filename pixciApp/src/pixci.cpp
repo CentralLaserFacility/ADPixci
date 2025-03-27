@@ -48,13 +48,10 @@ extern "C"
 #endif
 
 /* Epics headers */
-#include <iocsh.h>
 #include <epicsEvent.h>
 #include <epicsTime.h>
-#include <epicsThread.h>
 #include <epicsString.h>
 #include <epicsExit.h>
-#include <epicsExport.h>
 #include <epicsMessageQueue.h>
 
 #include <algorithm>
@@ -225,27 +222,6 @@ static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
     cval[4] = (epicsInt8)((lval & 0x00000000FF));
 }
 
-// TODO: move these C functions and pixci config stuff into its own file, so that the epics interface is cleaner
-/**
- * @brief C Function prototypes to tie in with EPICS
- * run acquire task
- * @param drvPvt
- */
-static void acquireTaskC(void *drvPvt);
-
-// static void serialTaskC(void *drvPvt);
-static void paramTaskC(void *drvPvt);
-
-/** 
- * @brief Configuration command for pixci driver; creates a new pixci object.
- * @param See the pixci.h
- */
-extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
-    epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
-{
-    new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
-    return (asynSuccess);
-}
 
 /**
  * @brief Default constructor to create a new Pixci::Pixci object
@@ -416,12 +392,6 @@ asynStatus Pixci::acquireStop()
     }
 }
 
-static void acquireTaskC(void *drvPvt)
-{
-    Pixci *pPvt = reinterpret_cast<Pixci *>(drvPvt);
-    pPvt->acquireTask();
-}
-
 /**
  * @brief Acquistion task for live image capturing.
  * Event will be notified whenever a field has been captured by pxd_goSnapor, pxd_goLive.
@@ -495,12 +465,6 @@ void Pixci::acquireTask()
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
         callParamCallbacks();
     }
-}
-
-static void paramTaskC(void *drvPvt)
-{
-    Pixci *pPvt = reinterpret_cast<Pixci *>(drvPvt);
-    pPvt->paramTask();
 }
 
 void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
@@ -1529,38 +1493,4 @@ void Pixci::report(FILE *fp, epicsInt32 details)
     }
     /* Invoke the base class method */
     ADDriver::report(fp, details);
-}
-
-/* Code for iocsh registration */
-
-/* pixciConfig parameters from st.cmd */
-static const iocshArg pixciConfigArg0 = {"portName", iocshArgString};
-static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
-static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
-static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
-static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"cameraModel", iocshArgString};
-static const iocshArg pixciConfigArg6 = {"formatFile", iocshArgString};
-static const iocshArg *const pixciConfigArgs[] = {&pixciConfigArg0,
-                                                  &pixciConfigArg1,
-                                                  &pixciConfigArg2,
-                                                  &pixciConfigArg3,
-                                                  &pixciConfigArg4,
-                                                  &pixciConfigArg5,
-                                                  &pixciConfigArg6};
-static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
-static void configpixciCallFunc(const iocshArgBuf *args)
-{
-    pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
-                args[4].ival, args[5].sval, args[6].sval);
-}
-
-static void pixciRegister(void)
-{
-    iocshRegister(&configpixci, configpixciCallFunc);
-}
-
-extern "C"
-{
-    epicsExportRegistrar(pixciRegister);
 }
