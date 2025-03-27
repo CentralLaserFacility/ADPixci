@@ -4,10 +4,6 @@
 #include "pixciMain.h"
 #include <epicsThread.h>
 
-/** 
- * @brief Configuration command for pixci driver; creates a new pixci object.
- * @param See the pixci.h
- */
 extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
 {
@@ -33,22 +29,6 @@ static void paramTaskC(void *drvPvt)
     pPvt->paramTask();
 }
 
-/* pixciConfig parameters from st.cmd */
-static const iocshArg pixciConfigArg0 = {"portName", iocshArgString};
-static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
-static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
-static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
-static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
-static const iocshArg pixciConfigArg5 = {"cameraModel", iocshArgString};
-static const iocshArg pixciConfigArg6 = {"formatFile", iocshArgString};
-static const iocshArg *const pixciConfigArgs[] = {&pixciConfigArg0,
-                                                  &pixciConfigArg1,
-                                                  &pixciConfigArg2,
-                                                  &pixciConfigArg3,
-                                                  &pixciConfigArg4,
-                                                  &pixciConfigArg5,
-                                                  &pixciConfigArg6};
-static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
 static void configpixciCallFunc(const iocshArgBuf *args)
 {
     pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
@@ -58,6 +38,22 @@ static void configpixciCallFunc(const iocshArgBuf *args)
 /* Code for iocsh registration */
 static void pixciRegister(void)
 {
+    /* pixciConfig parameters from st.cmd */
+    static const iocshArg pixciConfigArg0 = {"portName", iocshArgString};
+    static const iocshArg pixciConfigArg1 = {"maxBuffers", iocshArgInt};
+    static const iocshArg pixciConfigArg2 = {"maxMemory", iocshArgInt};
+    static const iocshArg pixciConfigArg3 = {"priority", iocshArgInt};
+    static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
+    static const iocshArg pixciConfigArg5 = {"cameraModel", iocshArgString};
+    static const iocshArg pixciConfigArg6 = {"formatFile", iocshArgString};
+    static const iocshArg *const pixciConfigArgs[] = {&pixciConfigArg0,
+        &pixciConfigArg1,
+        &pixciConfigArg2,
+        &pixciConfigArg3,
+        &pixciConfigArg4,
+        &pixciConfigArg5,
+        &pixciConfigArg6};
+    static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
     iocshRegister(&configpixci, configpixciCallFunc);
 }
 
