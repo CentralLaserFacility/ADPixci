@@ -91,21 +91,8 @@ class RaptorEagleXV : public Pixci
     RaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
         const char *cameraModel, const char *formatFile);
 
-    /* Trigger modes of Raptor Eagle-XV */
-    /* ITR mode will be used to capture a continuous sequence of images.
-    * The camera will immediately trigger the start of a new integration period
-    * when the previous image readouthas completed.
-    * In FFR mode, the camera will generate an internal trigger signal at a user programmable frame rate.
-    */
-    typedef enum
-    {
-        PR_INTERNAL_ITR,
-        PR_INTERNAL_FFR,
-        PR_EXTERNAL,
-        PR_BUTTON_TRIGGER
-    } PRTriggerMode_t;
-
-    typedef enum
+    /* Binning Options */
+    typedef enum PR_BinningOptions_t
     {
         PR_BIN_1 = 1,
         PR_BIN_2 = 2,
@@ -114,7 +101,30 @@ class RaptorEagleXV : public Pixci
         PR_BIN_16 = 16,
         PR_BIN_32 = 32,
         PR_BIN_FVB = 2048,
-    } PR_BinningOptions_t;
+    };
+
+
+    /* Trigger modes of Raptor Eagle-XV */
+    /* ITR mode will be used to capture a continuous sequence of images.
+    * The camera will immediately trigger the start of a new integration period
+    * when the previous image readouthas completed.
+    * In FFR mode, the camera will generate an internal trigger signal at a user programmable frame rate.
+    */
+    typedef enum PRTriggerMode_t
+    {
+        PR_INTERNAL_ITR,
+        PR_INTERNAL_FFR,
+        PR_EXTERNAL,
+        PR_BUTTON_TRIGGER
+    };
+
+    /* Trigger Polarity */
+    typedef enum PR_TriggerPolarity_t
+    {
+        PR_EXT_RISING_EDGE,
+        PR_EXT_FALLING_EDGE
+    };
+    
 
  protected:
     epicsInt32 PR_TemperaturePcb;
@@ -349,36 +359,6 @@ class RaptorEagleXV : public Pixci
      * @return epicsFloat64 delay time in ms
      */
     epicsFloat64 convertHexToDelayTime(epicsUInt8 hexVal);
-
-    /**
-     * @brief Set the shutter open delay (ms)
-     * 
-     * @param delayTime delay time in ms
-     * @return asynStatus
-     */
-    asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
-
-    /**
-     * @brief Get the shutter open delay (ms)
-     * 
-     * @return epicsFloat64 delay time in ms
-     */
-    epicsFloat64 getShutterOpenDelay();
-
-    /**
-     * @brief Set the shutter close delay (ms)
-     * 
-     * @param delayTime delay time in ms
-     * @return asynStatus
-     */
-    asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
-
-    /**
-     * @brief Get the shutter close delay (ms)
-     * 
-     * @return epicsFloat64 delay time in ms
-     */
-    epicsFloat64 getShutterCloseDelay();
     
     /**
      * @brief update the PV TemperaturePCB
@@ -394,6 +374,8 @@ class RaptorEagleXV : public Pixci
      * @param callBackFlag Flag for calling the callParamCallbacks function
      */
     asynStatus updateManufacturersData(epicsBoolean callBackFlag = epicsFalse);
+
+    /*****************************Functions from Pixci class that are only implemented here****************************/
 
     /**
      * @brief Set the ROI Size X
@@ -455,9 +437,78 @@ class RaptorEagleXV : public Pixci
      */
     epicsInt32 getRoiOffsetY() final;
 
+    /**
+     * @brief Set the shutter open delay (ms)
+     * 
+     * @param delayTime delay time in ms
+     * @return asynStatus
+     */
+    asynStatus setShutterOpenDelay(epicsFloat64 delayTime) final;
+
+    /**
+     * @brief Get the shutter open delay (ms)
+     * 
+     * @return epicsFloat64 delay time in ms
+     */
+    epicsFloat64 getShutterOpenDelay() final;
+
+    /**
+     * @brief Set the shutter close delay (ms)
+     * 
+     * @param delayTime delay time in ms
+     * @return asynStatus
+     */
+    asynStatus setShutterCloseDelay(epicsFloat64 delayTime) final;
+
+    /**
+     * @brief Get the shutter close delay (ms)
+     * 
+     * @return epicsFloat64 delay time in ms
+     */
+    epicsFloat64 getShutterCloseDelay() final;
+
+        /**
+     * @brief Set the Binning settings. Uses serial communication.
+     *
+     * @param val Binning value to set
+     * @param coordinate 0 for x axis and 1 for y axis.
+     * @return asynStatus
+     */
+    asynStatus setBin(epicsInt32 val, epicsBoolean coordinate) final;
+
+    /**
+     * @brief Get the Binning settings. Uses serial communication.
+     *
+     * @param coordinate 0 for x axis and 1 for y axis.
+     * @return epicsInt32
+     */
+    epicsInt32 getBin(epicsBoolean coordinate) final;
+
+    /**
+     * @brief Set the Trigger Mode for the image capturing
+     *
+     * @param mode index of the mode,
+     * 0 = internal itr mode
+     * 1 = internal ffr mode
+     * 2 = External mode
+     * 3 = Button (software trigger mode)
+     * @return asynStatus
+     */
+    asynStatus setTriggerMode(epicsInt32 mode) final;
+
+    /**
+     * @brief Send a soft trigger to the camera to capture one image.
+     *
+     * @return asynStatus
+     */
+    virtual asynStatus sendSoftTrigger() final;
+    
+
     asynStatus updateStatus() final;
 
     asynStatus updateIntialPVs() final;
+
+    /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 
     /**
      * @brief Overriden to implement custom write features
@@ -469,9 +520,13 @@ class RaptorEagleXV : public Pixci
     asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) final;
 
     /**
-     * @brief Thread that waits for parameter changes from the queue
+     * @brief handle the parameter change from the queue
+     * @param parameter the parameter that has to be changed
+     * @param d_val the value of the parameter as a double
+     * @param i_val the value of the parameter as an integer
+     * @param b_val the value of the parameter as a boolean
      */
-    void handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) final;
+    virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) final;
 };
 
 

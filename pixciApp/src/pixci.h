@@ -69,10 +69,29 @@ constexpr const epicsBoolean BIN_AXIS_Y = epicsTrue;
 constexpr const epicsUInt32 PARAM_MESSAGE_QUE_SIZE = 20;
 constexpr const epicsUInt32 PARAM_MESSAGE_SIZE = 16;
 
+/**
+ * @brief Set status if the returned status is higher
+ */
 auto setStatIfHigher = [](asynStatus *status, const asynStatus returnedStatus)
 {
     *status = (*status > returnedStatus) ? *status : returnedStatus;
 };
+
+/**
+ * @brief convert char to unsigned long long
+ *
+ * @param cval char array of size 5
+ * @return unsigned long long
+ */
+static epicsUInt64 int8ToUInt64(epicsInt8 *cval);
+
+/**
+ * @brief convert unsigned long long to char value 
+ *
+ * @param lval unsigned long long value
+ * @param cval address of char array of size 5
+ */
+static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval);
 
 /**
  * @brief Inherited from ADDriver class which has all the parameters that all areaDetector drivers should implement.
@@ -97,18 +116,6 @@ class Pixci : public ADDriver
     Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
         const char *cameraModel, const char *formatFile);
 
-    /* These are the methods that we override from ADDriver */
-    /**
-     * @brief Overriden to implement custom write features
-     *
-     * @param pasynUser
-     * @param value
-     * @return asynStatus
-     */
-    asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) override;
-
-    asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value) override;
-
     /** Reports on the properties of the attribute.
      * @param[in] fp File pointer for the report output.
      * @param[in] details Level of detail desired; currently not implemented.
@@ -120,39 +127,12 @@ class Pixci : public ADDriver
      */
     void acquireTask(void);
 
-    virtual void handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
-
     /**
      * @brief Thread that waits for parameter changes from the queue
      */
-    virtual void paramTask();
+    void paramTask();
 
     ~Pixci();
-
-    /* Trigger modes of Raptor Eagle-XV */
-    /* ITR mode will be used to capture a continuous sequence of images.
-    * The camera will immediately trigger the start of a new integration period
-    * when the previous image readouthas completed.
-    * In FFR mode, the camera will generate an internal trigger signal at a user programmable frame rate.
-    */
-    virtual typedef enum PRTriggerMode_t;
-
-    /* Trigger Polarity */
-    typedef enum
-    {
-        PR_EXT_RISING_EDGE,
-        PR_EXT_FALLING_EDGE
-    } PR_TriggerPolarity_t;
-
-    typedef enum
-    {
-        PR_BIN_1 = 1,
-        PR_BIN_2 = 2,
-        PR_BIN_4 = 4,
-        PR_BIN_8 = 8,
-        PR_BIN_16 = 16,
-        PR_BIN_32 = 32,
-    } PR_BinningOptions_t;
 
  protected:
     epicsInt32 PR_SoftTrigger;
@@ -160,6 +140,18 @@ class Pixci : public ADDriver
     epicsInt32 PR_UpdateStatus;
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_TriggerPolarity;
+
+    epicsFloat64 Baudrate;
+
+    /**
+     * @brief starts live capture image to frame buffer.
+     */
+    asynStatus acquireImage(void);
+    
+    /**
+     * @brief Stops live capturing.
+     */
+    asynStatus acquireStop(void);
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -174,6 +166,18 @@ class Pixci : public ADDriver
     epicsInt32 writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
         epicsInt32 serialInBufferSize);
 
+    /* These are the methods that we override from ADDriver */
+    /**
+     * @brief Overriden to implement custom write features
+     *
+     * @param pasynUser
+     * @param value
+     * @return asynStatus
+     */
+    virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) override;
+
+    asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value) override;
+
     /**
      * @brief add change in parameter value to the queue if it needs serial communication.
      * Serial communication takes more time. So that it is added to the queue and the change in parameters
@@ -187,20 +191,13 @@ class Pixci : public ADDriver
     void addToParamQue(epicsInt32 function, epicsFloat64 value);
 
     /**
-     * @brief convert char to unsigned long long
-     *
-     * @param cval char array of size 5
-     * @return unsigned long long
+     * @brief handle the parameter change from the queue
+     * @param parameter the parameter that has to be changed
+     * @param d_val the value of the parameter as a double
+     * @param i_val the value of the parameter as an integer
+     * @param b_val the value of the parameter as a boolean
      */
-    epicsUInt64 int8ToUInt64(epicsInt8 *cval);
-
-    /**
-     * @brief convert unsigned long long to char value 
-     *
-     * @param lval unsigned long long value
-     * @param cval address of char array of size 5
-     */
-    void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval);
+    virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
     /**
      * @brief update the status related to device
@@ -216,14 +213,8 @@ class Pixci : public ADDriver
     /* Event handler for acquire task */
     HANDLE g_hEvent;
 
-    /**
-     * @brief starts live capture image to frame buffer.
-     */
-    asynStatus acquireImage(void);
-    /**
-     * @brief Stops live capturing.
-     */
-    asynStatus acquireStop(void);
+    /* Queue for changing parameters that use serial communication. */
+    epicsMessageQueue *paramMsgQue;
 
     /**
      * @brief load initial settings parameters
@@ -266,7 +257,7 @@ class Pixci : public ADDriver
      */
     virtual asynStatus setFrameRate(epicsFloat64 frameRate);
 
-        /**
+    /**
      * @brief Get the Frame Rate from the camera
      *
      * @return double framerate
@@ -356,37 +347,66 @@ class Pixci : public ADDriver
     virtual epicsInt32 getRoiOffsetX();
 
     /**
+     * @brief Set the shutter open delay (ms)
+     * 
+     * @param delayTime delay time in ms
+     * @return asynStatus
+     */
+    virtual asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
+
+    /**
+     * @brief Get the shutter open delay (ms)
+     * 
+     * @return epicsFloat64 delay time in ms
+     */
+    virtual epicsFloat64 getShutterOpenDelay();
+
+    /**
+     * @brief Set the shutter close delay (ms)
+     * 
+     * @param delayTime delay time in ms
+     * @return asynStatus
+     */
+    virtual asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
+
+    /**
+     * @brief Get the shutter close delay (ms)
+     * 
+     * @return epicsFloat64 delay time in ms
+     */
+    virtual epicsFloat64 getShutterCloseDelay();
+
+    /**
      * @brief Set the Binning settings. Uses serial communication.
      *
      * @param val Binning value to set
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return asynStatus
      */
-    asynStatus setBin(epicsInt32 val, epicsBoolean coordinate);
+    virtual asynStatus setBin(epicsInt32 val, epicsBoolean coordinate);
 
     /**
-     * @brief queue for changing parameters that use serial communication.
+     * @brief Get the Binning settings. Uses serial communication.
+     *
+     * @param coordinate 0 for x axis and 1 for y axis.
+     * @return epicsInt32
      */
-    epicsMessageQueue *paramMsgQue;
+    virtual epicsInt32 getBin(epicsBoolean coordinate);
 
     /**
      * @brief Set the Trigger Mode for the image capturing
      *
-     * @param mode index of the mode,
-     * 0 = internal itr mode
-     * 1 = internal ffr mode
-     * 2 = External mode
-     * 3 = Button (software trigger mode)
+     * @param mode index of the mode
      * @return asynStatus
      */
-    asynStatus setTriggerMode(epicsInt32 mode);
+    virtual asynStatus setTriggerMode(epicsInt32 mode);
 
     /**
      * @brief Send a soft trigger to the camera to capture one image.
      *
      * @return asynStatus
      */
-    asynStatus sendSoftTrigger();
+    virtual asynStatus sendSoftTrigger();
 
     // PV Updating Functions
 

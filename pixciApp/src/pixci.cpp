@@ -205,7 +205,28 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32)
 
 #endif  // !defined(PIXCI_LITE)
 
-/*
+static epicsUInt64 int8ToUInt64(epicsInt8 *cval)
+{
+    epicsUInt64 lval = 0;
+    lval += (epicsUInt64)(epicsUInt8)cval[4];
+    lval += ((epicsUInt64)(epicsUInt8)cval[3]) << 8;
+    lval += ((epicsUInt64)(epicsUInt8)cval[2]) << 16;
+    lval += ((epicsUInt64)(epicsUInt8)cval[1]) << 24;
+    lval += ((epicsUInt64)(epicsUInt8)cval[0]) << 32;
+    return lval;
+}
+
+static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
+{
+    cval[0] = (epicsInt8)((lval & 0xFF00000000) >> 32);
+    cval[1] = (epicsInt8)((lval & 0x00FF000000) >> 24);
+    cval[2] = (epicsInt8)((lval & 0x0000FF0000) >> 16);
+    cval[3] = (epicsInt8)((lval & 0x000000FF00) >> 8);
+    cval[4] = (epicsInt8)((lval & 0x00000000FF));
+}
+
+// TODO: move these C functions and pixci config stuff into its own file, so that the epics interface is cleaner
+/**
  * @brief C Function prototypes to tie in with EPICS
  * run acquire task
  * @param drvPvt
@@ -215,7 +236,7 @@ static void acquireTaskC(void *drvPvt);
 // static void serialTaskC(void *drvPvt);
 static void paramTaskC(void *drvPvt);
 
-/*
+/** 
  * @brief Configuration command for pixci driver; creates a new pixci object.
  * @param See the pixci.h
  */
@@ -226,9 +247,7 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
     return (asynSuccess);
 }
 
-
-
-/*
+/**
  * @brief Default constructor to create a new Pixci::Pixci object
  */
 Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
@@ -263,7 +282,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "%s Camera connected;",
                   driverName);
-        serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
+        serialConnection = pxd_serialConfigure(UNIT, RESERVED, Baudrate, 8, 0, 1, RESERVED, RESERVED, RESERVED);
         if (serialConnection < PIXCI_NO_ERROR)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -409,7 +428,6 @@ static void acquireTaskC(void *drvPvt)
  */
 void Pixci::acquireTask()
 {
-    /* TODO: need to implement in a seperate file */
     NDArray *pImage = this->pArrays[0];
     pxbuffer_t buf = 1L;
     NDDataType_t dataType = NDUInt16;
@@ -485,10 +503,10 @@ static void paramTaskC(void *drvPvt)
     pPvt->paramTask();
 }
 
-void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
+void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
-    if (function == ADBinX)
+    if (parameter == ADBinX)
     {
         epicsInt32 sizeX = 0;
         epicsInt32 sizeY = 0;
@@ -496,7 +514,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
         getIntegerParam(ADSizeX, &sizeX);
         getIntegerParam(ADSizeY, &sizeY);
         getIntegerParam(ADBinY, &binY);
-        status = Pixci::setBin(i_val, BIN_AXIS_X);
+        status = this->setBin(i_val, BIN_AXIS_X);
         if (status == asynSuccess)
         {
             epicsInt32 acquire = 0;
@@ -511,6 +529,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
                 acquireStop();
             }
             callParamCallbacks();
+            // TODO: take this out into its own Pixci function, and move the rest of this if block to raptorEagleXV, same for the ADBinY param task
             changeVideoFormatConfig();  // Video settings have to be loaded respective of binning value.
             pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
             setIntegerParam(PR_TriggerPolarity, triggerPolarity);
@@ -522,7 +541,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             }
         }
     }
-    else if (function == ADBinY)
+    else if (parameter == ADBinY)
     {
         epicsInt32 sizeX = 0;
         epicsInt32 sizeY = 0;
@@ -530,7 +549,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
         getIntegerParam(ADSizeX, &sizeX);
         getIntegerParam(ADSizeY, &sizeY);
         getIntegerParam(ADBinX, &binX);
-        status = Pixci::setBin(i_val, BIN_AXIS_Y);
+        status = this->setBin(i_val, BIN_AXIS_Y);
         if (status == asynSuccess)
         {
             epicsInt32 acquire = 0;
@@ -556,55 +575,21 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             }
         }
     }
-    else if (function == ADTriggerMode)
-    {
-        epicsInt32 acquisitionStatus = asynSuccess;
-        epicsInt32 previousTriggerMode = PR_INTERNAL_ITR;
-        status = setTriggerMode(i_val);
-        if (status == asynSuccess)
-        {
-            if (i_val == PR_BUTTON_TRIGGER)
-            {
-                /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
-                called. For that acquireImage() function is called.
-                */
-                status = acquireImage();
-            }
-            else
-            {
-                /* When changes the acquiremode from button triggered to any another trigger mode,
-                    we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
-                    Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
-                */
-                getIntegerParam(ADTriggerMode, &previousTriggerMode);
-                if (previousTriggerMode == PR_BUTTON_TRIGGER)
-                {
-                    getIntegerParam(ADAcquire, &acquisitionStatus);
-
-                    if (acquisitionStatus == 0)
-                    {
-                        /* acquisiton is stopped if ADAcquire is on stop state*/
-                        acquireStop();
-                    }
-                }
-            }
-            setIntegerParam(ADTriggerMode, i_val);
-        }
-    }
-    else if (function == PR_SoftTrigger)
+    else if (parameter == PR_SoftTrigger)
     {
         status = sendSoftTrigger();
     }
-    else if (function == PR_UpdateStatus)
+    else if (parameter == PR_UpdateStatus)
     {
         status = updateStatus();
     }
-    else if (function == PR_UpdateTemperature)
+    else if (parameter == PR_UpdateTemperature)
     {
+        // TODO: decide which temperature should use the ad default one and sort these out
         updateADTemperatureActual();
         updateTemperaturePcb(epicsTrue);
     }
-    else if (function == ADAcquirePeriod)
+    else if (parameter == ADAcquirePeriod)
     {
         if (d_val != 0.0)
         {
@@ -619,7 +604,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             }
         }
     }
-    else if (function == ADTemperature)
+    else if (parameter == ADTemperature)
     {
         status = setTecTemperature(d_val);
         if (status == asynSuccess)
@@ -628,7 +613,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             setDoubleParam(ADTemperature, tecTemperature);
         }
     }
-    else if (function == ADAcquireTime)
+    else if (parameter == ADAcquireTime)
     {
         if (d_val != 0.0)
         {
@@ -643,7 +628,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             }
         }
     }
-    else if (function == ADMinX)
+    else if (parameter == ADMinX)
     {
         epicsInt32 maxSizeX = 0;
         epicsInt32 sizeX = 0;
@@ -677,7 +662,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             acquireImage();
         }
     }
-    else if (function == ADMinY)
+    else if (parameter == ADMinY)
     {
         epicsInt32 maxSizeY = 0;
         epicsInt32 sizeX = 0;
@@ -713,7 +698,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             acquireImage();
         }
     }
-    else if (function == ADSizeX)
+    else if (parameter == ADSizeX)
     {
         epicsInt32 maxSizeX = 0;
         epicsInt32 minX = 0;
@@ -749,7 +734,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             acquireImage();
         }
     }
-    else if (function == ADSizeY)
+    else if (parameter == ADSizeY)
     {
         epicsInt32 maxSizeY = 0;
         epicsInt32 minY = 0;
@@ -785,25 +770,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             acquireImage();
         }
     }
-    else if (function == PR_TriggerPolarity)
-    {
-        epicsInt32 triggerMode = PR_INTERNAL_ITR;
-        if (i_val == PR_EXT_RISING_EDGE)
-        {
-            setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
-        }
-        else if (i_val == PR_EXT_FALLING_EDGE)
-        {
-            setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
-        }
-        callParamCallbacks();
-        getIntegerParam(ADTriggerMode, &triggerMode);
-        if (triggerMode == PR_EXTERNAL)
-        {
-            setTriggerMode(PR_EXTERNAL);
-        }
-    }
-    else if (function == ADShutterOpenDelay)
+    else if (parameter == ADShutterOpenDelay)
     {
         status = setShutterOpenDelay(d_val);
         if (status == asynSuccess)
@@ -815,7 +782,7 @@ void Pixci::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter open delay\n");
         }
     }
-    else if (function == ADShutterCloseDelay)
+    else if (parameter == ADShutterCloseDelay)
     {
         status = setShutterCloseDelay(d_val);
         if (status == asynSuccess)
@@ -850,6 +817,7 @@ void Pixci::paramTask()
     }
 }
 
+// TODO: this is scary and needs some thought
 void Pixci::changeVideoFormatConfig()
 {
     epicsInt32 binX = 0;
@@ -1343,26 +1311,6 @@ void Pixci::changeVideoFormatConfig()
     }
 }
 
-epicsUInt64 Pixci::int8ToUInt64(epicsInt8 *cval)
-{
-    epicsUInt64 lval = 0;
-    lval += (epicsUInt64)(epicsUInt8)cval[4];
-    lval += ((epicsUInt64)(epicsUInt8)cval[3]) << 8;
-    lval += ((epicsUInt64)(epicsUInt8)cval[2]) << 16;
-    lval += ((epicsUInt64)(epicsUInt8)cval[1]) << 24;
-    lval += ((epicsUInt64)(epicsUInt8)cval[0]) << 32;
-    return lval;
-}
-
-void Pixci::uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
-{
-    cval[0] = (epicsInt8)((lval & 0xFF00000000) >> 32);
-    cval[1] = (epicsInt8)((lval & 0x00FF000000) >> 24);
-    cval[2] = (epicsInt8)((lval & 0x0000FF0000) >> 16);
-    cval[3] = (epicsInt8)((lval & 0x000000FF00) >> 8);
-    cval[4] = (epicsInt8)((lval & 0x00000000FF));
-}
-
 epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
     epicsInt32 serialInBufferSize)
 {
@@ -1424,48 +1372,6 @@ epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 m
     return count;
 }
 
-asynStatus Pixci::setBin(epicsInt32 val, epicsBoolean coordinate)
-{
-    epicsInt8 hexval = 0;
-    epicsInt8 reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
-    std::string cameraModel = "";
-
-    /* Assigning corresponding Hex value to send*/
-    switch (val)
-    {
-    case PR_BIN_1:
-        hexval = 0x00;
-        break;
-    case PR_BIN_2:
-        hexval = 0x01;
-        break;
-    case PR_BIN_4:
-        hexval = 0x03;
-        break;
-    case PR_BIN_8:
-        hexval = 0x07;
-        break;
-    case PR_BIN_16:
-        hexval = 0x0F;
-        break;
-    case PR_BIN_32:
-        hexval = 0x1F;
-        break;
-    case PR_BIN_FVB:
-        getStringParam(ADModel, cameraModel);
-        if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) {
-            hexval = static_cast<epicsInt8>(0x80);
-            break;
-        }
-    default:
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d", val);
-        return asynError;
-        break;
-    }
-
-    return Pixci::writeSerialRegister(UNIT, reg, hexval);
-}
-
 asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
@@ -1485,47 +1391,7 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
-
-    if (function == ADAcquire)
-    {
-        /* TODO: adstatus == ADStatusIdle has to be checked */
-        if (value)
-        {
-            status = acquireImage();
-            if (status == asynSuccess)
-            {
-                setIntegerParam(ADAcquire, 1);
-                callParamCallbacks();
-            }
-        }
-        // Stop acquisition
-        /* TODO: adstatus != ADStatusIdle has to be checked */
-        if (!value)
-        {
-            /* In button trigger mode , acquisition should no be stoped, that will
-            affect the WaitForSingleObject. So only status is updated to STOP. once
-            the trigger mode is changed from button trigger mode, the actual implementation
-            of acquireStop() will be done.
-            */
-            epicsInt32 triggerMode = PR_INTERNAL_ITR;
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if (triggerMode == PR_BUTTON_TRIGGER)
-            {
-                status = asynSuccess;
-            }
-            else
-            {
-                status = acquireStop();
-            }
-
-            if (status == asynSuccess)
-            {
-                setIntegerParam(ADAcquire, 0);
-                callParamCallbacks();
-            }
-        }
-    } /* set  value for default parameters */
-    else if (function == ADBinX)
+    if (function == ADBinX)
     {
         addToParamQue(function, value);
     }
@@ -1612,50 +1478,6 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
     /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
-}
-
-asynStatus Pixci::setTriggerMode(epicsInt32 mode)
-{
-    epicsInt8 hexval = 0;
-    switch (mode)
-    {
-    case PR_INTERNAL_ITR:
-        hexval = INTERNAL_ITR_BYTE;     // 00000100
-        break;
-    case PR_INTERNAL_FFR:
-        hexval = INTERNAL_FFR_BYTE;     // 00000110
-        break;
-    case PR_EXTERNAL:
-        {   // brackets so that trigger polarity goes out of scope after this case
-            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
-            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            hexval = (triggerPolarity == PR_EXT_FALLING_EDGE) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
-        }
-        break;
-    case PR_BUTTON_TRIGGER:
-        hexval = CLEAR_TRIGGER_MODE_BYTE;   // 00000000
-        break;
-    default:
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d", mode);
-        return asynError;
-        break;
-    }
-    return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
-}
-
-asynStatus Pixci::sendSoftTrigger() {
-    /* if trigger mode is button trigger then, do the soft trigger else print error */
-    epicsInt32 triggerMode = PR_INTERNAL_ITR;
-    getIntegerParam(ADTriggerMode, &triggerMode);
-    if (triggerMode == PR_BUTTON_TRIGGER)
-    {
-        return Pixci::writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
-    }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
-        return asynError;
-    }
 }
 
 // PV Updating Functions

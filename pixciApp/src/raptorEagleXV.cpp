@@ -36,6 +36,8 @@ RaptorEagleXV::RaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t
     const char *cameraModel, const char *formatFile)
     : Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
 {
+    Baudrate = BAUDRATE;
+
     createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePcb);
     createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec);
     createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain);
@@ -583,6 +585,92 @@ epicsInt32 RaptorEagleXV::getRoiOffsetY()
     return ival;
 }
 
+asynStatus RaptorEagleXV::setBin(epicsInt32 val, epicsBoolean coordinate)
+{
+    epicsInt8 hexval = 0;
+    epicsInt8 reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
+    std::string cameraModel = "";
+
+    /* Assigning corresponding Hex value to send*/
+    switch (val)
+    {
+    case PR_BIN_1:
+        hexval = 0x00;
+        break;
+    case PR_BIN_2:
+        hexval = 0x01;
+        break;
+    case PR_BIN_4:
+        hexval = 0x03;
+        break;
+    case PR_BIN_8:
+        hexval = 0x07;
+        break;
+    case PR_BIN_16:
+        hexval = 0x0F;
+        break;
+    case PR_BIN_32:
+        hexval = 0x1F;
+        break;
+    case PR_BIN_FVB:
+        getStringParam(ADModel, cameraModel);
+        if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) {
+            hexval = static_cast<epicsInt8>(0x80);
+            break;
+        }
+    default:
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid binning value %d", val);
+        return asynError;
+        break;
+    }
+
+    return writeSerialRegister(UNIT, reg, hexval);
+}
+
+asynStatus RaptorEagleXV::setTriggerMode(epicsInt32 mode)
+{
+    epicsInt8 hexval = 0;
+    switch (mode)
+    {
+    case PR_INTERNAL_ITR:
+        hexval = INTERNAL_ITR_BYTE;     // 00000100
+        break;
+    case PR_INTERNAL_FFR:
+        hexval = INTERNAL_FFR_BYTE;     // 00000110
+        break;
+    case PR_EXTERNAL:
+        {   // brackets so that trigger polarity goes out of scope after this case
+            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
+            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+            hexval = (triggerPolarity == PR_EXT_FALLING_EDGE) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
+        }
+        break;
+    case PR_BUTTON_TRIGGER:
+        hexval = CLEAR_TRIGGER_MODE_BYTE;   // 00000000
+        break;
+    default:
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "invalid trigger mode value %d", mode);
+        return asynError;
+        break;
+    }
+    return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
+}
+
+asynStatus RaptorEagleXV::sendSoftTrigger() {
+    /* if trigger mode is button trigger then, do the soft trigger else print error */
+    epicsInt32 triggerMode = PR_INTERNAL_ITR;
+    getIntegerParam(ADTriggerMode, &triggerMode);
+    if (triggerMode == PR_BUTTON_TRIGGER)
+    {
+        return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
+    }
+    else
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+        return asynError;
+    }
+}
+
 asynStatus RaptorEagleXV::updateStatus()
 {
     asynStatus status = asynSuccess;
@@ -611,7 +699,46 @@ asynStatus RaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     epicsInt32 function = pasynUser->reason;
 
     asynStatus status = asynSuccess;
-    if (function == PR_ToggleTec)
+    if (function == ADAcquire)
+    {
+        /* TODO: adstatus == ADStatusIdle has to be checked */
+        if (value)
+        {
+            status = acquireImage();
+            if (status == asynSuccess)
+            {
+                setIntegerParam(ADAcquire, 1);
+                callParamCallbacks();
+            }
+        }
+        // Stop acquisition
+        /* TODO: adstatus != ADStatusIdle has to be checked */
+        if (!value)
+        {
+            /* In button trigger mode , acquisition should no be stoped, that will
+            affect the WaitForSingleObject. So only status is updated to STOP. once
+            the trigger mode is changed from button trigger mode, the actual implementation
+            of acquireStop() will be done.
+            */
+            epicsInt32 triggerMode = PR_INTERNAL_ITR;
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            if (triggerMode == PR_BUTTON_TRIGGER)
+            {
+                status = asynSuccess;
+            }
+            else
+            {
+                status = acquireStop();
+            }
+
+            if (status == asynSuccess)
+            {
+                setIntegerParam(ADAcquire, 0);
+                callParamCallbacks();
+            }
+        }
+    } /* set  value for default parameters */
+    else if (function == PR_ToggleTec)
     {
         addToParamQue(function, value);
     }
@@ -629,9 +756,9 @@ asynStatus RaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     return status;
 }
 
-void RaptorEagleXV::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val){
+void RaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) {
     asynStatus status = asynSuccess;
-    if (function == PR_ToggleTec)
+    if (parameter == PR_ToggleTec)
     {
         status = toggleTec(b_val);
         if (status == asynSuccess)
@@ -639,7 +766,7 @@ void RaptorEagleXV::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epi
             setIntegerParam(PR_ToggleTec, isTecEnabled());
         }
     }
-    else if (function == PR_ToggleGain)
+    else if (parameter == PR_ToggleGain)
     {
         status = toggleGain(b_val);
         if (status == asynSuccess)
@@ -647,14 +774,68 @@ void RaptorEagleXV::handleParamTask(epicsInt32 function, epicsFloat64 d_val, epi
             setIntegerParam(PR_ToggleGain, isGainEnabled());
         }
     }
-    else if (function == PR_ToggleFpgaComms)
+    else if (parameter == PR_ToggleFpgaComms)
     {
         status = toggleFpgaComms(b_val);
         if (status == asynSuccess)
         {
             setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
         }
-    } else {
-        Pixci::paramTask();
+    }
+    else if (parameter == ADTriggerMode)
+    {
+        epicsInt32 acquisitionStatus = asynSuccess;
+        epicsInt32 previousTriggerMode = PR_INTERNAL_ITR;
+        status = setTriggerMode(i_val);
+        if (status == asynSuccess)
+        {
+            if (i_val == PR_BUTTON_TRIGGER)
+            {
+                /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
+                called. For that acquireImage() function is called.
+                */
+                status = acquireImage();
+            }
+            else
+            {
+                /* When changes the acquiremode from button triggered to any another trigger mode,
+                    we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
+                    Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
+                */
+                getIntegerParam(ADTriggerMode, &previousTriggerMode);
+                if (previousTriggerMode == PR_BUTTON_TRIGGER)
+                {
+                    getIntegerParam(ADAcquire, &acquisitionStatus);
+
+                    if (acquisitionStatus == 0)
+                    {
+                        /* acquisiton is stopped if ADAcquire is on stop state*/
+                        acquireStop();
+                    }
+                }
+            }
+            setIntegerParam(ADTriggerMode, i_val);
+        }
+    }
+    else if (parameter == PR_TriggerPolarity)
+    {
+        epicsInt32 triggerMode = PR_INTERNAL_ITR;
+        if (i_val == PR_EXT_RISING_EDGE)
+        {
+            setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+        }
+        else if (i_val == PR_EXT_FALLING_EDGE)
+        {
+            setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+        }
+        callParamCallbacks();
+        getIntegerParam(ADTriggerMode, &triggerMode);
+        if (triggerMode == PR_EXTERNAL)
+        {
+            setTriggerMode(PR_EXTERNAL);
+        }
+    }
+    else {
+        Pixci::handleParamTask(parameter, d_val, i_val, b_val);
     }
 }
