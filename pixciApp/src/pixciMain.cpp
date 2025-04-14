@@ -5,14 +5,25 @@
 #include "pixciMain.h"
 #include "ADRaptorEagleXV.h"
 
-#include <epicsThread.h>
+static std::string cameraModelToString(ADCameraModel_t cameraModel){
+    return cameraModelMap[cameraModel];
+}
 
 extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
 {
 
-    ADPixci* drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
-    
+    ADPixci* drvPvt = nullptr;
+
+    if (cameraModel == cameraModelToString(RaptorEagleXV_4710) || cameraModel == cameraModelToString(RaptorEagleXV_4240))
+    {
+        drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
+    }
+    else
+    {
+        printf("Invalid camera model specified. Supported models are RaptorEagleXV_1K and RaptorEagleXV_2K.\n");
+        return asynError;
+    }
 
     epicsThreadCreate("acquireTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium),
     (EPICSTHREADFUNC)acquireTaskC, drvPvt);

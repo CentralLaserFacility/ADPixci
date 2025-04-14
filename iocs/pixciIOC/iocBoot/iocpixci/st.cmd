@@ -25,7 +25,7 @@ epicsEnvSet("RAPTOR_SETTINGS_FILE","fmt/Raptor_Eagle_XV_$(CAMERA_MODEL).fmt")
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
 #pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)
-pixciConfig("$(PORT)", 0,  0, 0, 0, $(CAMERA_MODEL), $(RAPTOR_SETTINGS_FILE))
+pixciConfig("$(PORT)", 0,  0, 0, 0, "RaptorEagleXV_$(CAMERA_MODEL)", $(RAPTOR_SETTINGS_FILE))
 
 ## Load record instances
 dbLoadRecords("$(ADPIXCI)/db/Pixci.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
