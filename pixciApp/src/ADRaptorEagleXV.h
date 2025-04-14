@@ -33,9 +33,9 @@
 #ifndef PIXCIAPP_SRC_RAPTOREAGLEXV_H_
 #define PIXCIAPP_SRC_RAPTOREAGLEXV_H_
 
-#include "pixci.h"
+#include "ADPixci.h"
 
-constexpr const char *driverName = "RaptorEagleXV";
+constexpr const char *driverName = "ADRaptorEagleXV";
 
 constexpr const char *DETECTOR_1K = "4710";  // 1056 x 1027 active pixels
 constexpr const char *DETECTOR_2K = "4240";  // 2048 x 2048 active pixels
@@ -85,10 +85,10 @@ constexpr const epicsUInt8 ROI_Y_SIZE_BYTES[2] = {0xB8, 0xB9};
 constexpr const epicsUInt8 ROI_X_OFFSET_BYTES[2] = {0xB6, 0xB7};
 constexpr const epicsUInt8 ROI_Y_OFFSET_BYTES[2] = {0xBA, 0xBB};
 
-class RaptorEagleXV : public Pixci
+class ADRaptorEagleXV : public ADPixci
 {
  public:
-    RaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+    ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
         const char *cameraModel, const char *formatFile);
 
     /* Binning Options */
@@ -153,7 +153,7 @@ class RaptorEagleXV : public Pixci
      * @param val value to be written in the register
      * @return asynStatus
      */
-    asynStatus writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val) override;
+    asynStatus writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val);
 
     /**
      * @brief read camera registers over serial communication.
@@ -162,7 +162,7 @@ class RaptorEagleXV : public Pixci
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
-    asynStatus readSerialRegister(epicsInt8 Register, epicsInt8 *val) override;
+    asynStatus readSerialRegister(epicsInt8 Register, epicsInt8 *val);
 
     /**
      * @brief read camera 2 bytes registers over serial communication
@@ -260,7 +260,6 @@ class RaptorEagleXV : public Pixci
      * @return double TEC temperature in centigrade
      */
     epicsFloat64 getTecTemperature();
-
     
     /**
      * @brief Set the TEC Temperature

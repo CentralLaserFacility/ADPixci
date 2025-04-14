@@ -1,22 +1,31 @@
-#include "pixci.h"
+#include "ADPixci.h"
+
 
 /**
  * @brief C Function prototypes to tie in with EPICS.
  * Runs acquire task
- * @param drvPvt
+ * @param drvPvt pointer to the ADPixci object
  */
 static void acquireTaskC(void *drvPvt);
 
 /**
  * @brief C Function prototypes to tie in with EPICS.
  * Runs param task
- * @param drvPvt
+ * @param drvPvt pointer to the ADPixci object
  */
 static void paramTaskC(void *drvPvt);
 
 /** 
- * @brief Configuration command for pixci driver; creates a new pixci object.
- * @param See the pixci.h
+ * @param portName The name of the asyn port driver to be created.
+ * @param maxBuffers maxBuffers The maximum number of NDArray buffer that the NDArrayPool for this
+ * driver is allowed to allocate. Set this -1 to allow an unlimited number of buffers.
+ * @param maxMemory maxMemory The maximum amount of memory that the NDArrayPool for this driver is
+ * allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
+ * @param priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynflags.
+ * @param stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
+ * @param cameraModel Select camera model. Options are from ADCameraModel_t enum.
+ * @param formatfile Video format configuration file location
+ * @return epicsInt32 status result from instantiation of the driver
  */
 extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile);

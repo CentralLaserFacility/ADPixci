@@ -41,7 +41,7 @@
 
 #include <cstdio>
 
-constexpr const char *driverName = "Pixci";
+constexpr const char *driverName = "ADPixci";
 
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
@@ -97,11 +97,11 @@ static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval);
  * @brief Inherited from ADDriver class which has all the parameters that all areaDetector drivers should implement.
  * parameters that are specific to the pixci frame grabber are also included in this class.
  */
-class Pixci : public ADDriver
+class ADPixci : public ADDriver
 {
  public:
     /**
-     * @brief Pixci object
+     * @brief ADPixci object
      *
      * @param portName The name of the asyn port driver to be created.
      * @param maxBuffers maxBuffers The maximum number of NDArray buffer that the NDArrayPool for this
@@ -110,10 +110,10 @@ class Pixci : public ADDriver
      * allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
      * @param priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynflags.
      * @param stackSize The stack size of the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
-     * @param cameraModel Select camera model, supported values are 4240 and 4710. Default value is 4710
+     * @param cameraModel Select camera model. Options are from ADCameraModel_t enum.
      * @param formatfile Video format configuration file location
      */
-    Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+    ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
         const char *cameraModel, const char *formatFile);
 
     /** Reports on the properties of the attribute.
@@ -125,14 +125,14 @@ class Pixci : public ADDriver
     /**
      * @brief Thread that waits for signal from frame grabber during live capture
      */
-    void acquireTask(void);
+    void acquireTask();
 
     /**
      * @brief Thread that waits for parameter changes from the queue
      */
     void paramTask();
 
-    ~Pixci();
+    ~ADPixci();
 
  protected:
     epicsInt32 PR_SoftTrigger;
@@ -144,14 +144,14 @@ class Pixci : public ADDriver
     epicsFloat64 Baudrate;
 
     /**
-     * @brief starts live capture image to frame buffer.
+     * @brief Starts live capture image to frame buffer.
      */
-    asynStatus acquireImage(void);
+    asynStatus aquireStart();
     
     /**
      * @brief Stops live capturing.
      */
-    asynStatus acquireStop(void);
+    asynStatus acquireStop();
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -165,18 +165,6 @@ class Pixci : public ADDriver
      */
     epicsInt32 writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
         epicsInt32 serialInBufferSize);
-
-    /* These are the methods that we override from ADDriver */
-    /**
-     * @brief Overriden to implement custom write features
-     *
-     * @param pasynUser
-     * @param value
-     * @return asynStatus
-     */
-    virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) override;
-
-    asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value) override;
 
     /**
      * @brief add change in parameter value to the queue if it needs serial communication.
@@ -207,6 +195,26 @@ class Pixci : public ADDriver
 
     virtual asynStatus updateIntialPVs();
 
+    /*****************************************Methods overridden from ADDriver*****************************************/
+    /**
+     * @brief Overriden to implement custom write features for integers
+     *
+     * @param pasynUser
+     * @param value
+     * @return asynStatus
+     */
+    asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) override;
+
+    /**
+     * @brief Overriden to implement custom write features for floats
+     *
+     * @param pasynUser
+     * @param value
+     * @return asynStatus
+     */
+    asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value) override;
+    /******************************************************************************************************************/
+
 #define FIRST_PIXCI_PARAM PR_SoftTrigger
 
  private:
@@ -230,46 +238,34 @@ class Pixci : public ADDriver
     void changeVideoFormatConfig();
 
     /**
-     * @brief write value to the registers of the camera using serial command, might take longer
-     * time to execute. Advised to run in seperate thread.
+     * @brief update the PV ADTemperatureActual
      *
-     * @param unit
-     * @param Register register number , where value has to be written
-     * @param val value to be written in the register
-     * @return asynStatus
+     * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    virtual asynStatus writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val);
+    asynStatus updateADTemperatureActual(epicsBoolean callBackFlag = epicsFalse);
 
-    /**
-     * @brief read camera registers over serial communication.
-     *
-     * @param reg register address to be read
-     * @param val returned value
-     * @return status, asynSuccess if read was successfull , else asynError
-     */
-    virtual asynStatus readSerialRegister(epicsInt8 Register, epicsInt8 *val);
-
+    /**********************************************Pure virtual functions**********************************************/
     /**
      * @brief Set the Frame Rate for Internal FFR mode
      *
      * @param frameRate
      * @return asynStatus
      */
-    virtual asynStatus setFrameRate(epicsFloat64 frameRate);
+    virtual asynStatus setFrameRate(epicsFloat64 frameRate) = 0;
 
     /**
      * @brief Get the Frame Rate from the camera
      *
      * @return double framerate
      */
-    virtual epicsFloat64 getFrameRate();
+    virtual epicsFloat64 getFrameRate() = 0;
 
     /**
      * @brief Get the Actual Temperature from the camera
      *
      * @return double actual temperature
      */
-    virtual epicsFloat64 getTemperatureActual();
+    virtual epicsFloat64 getTemperatureActual() = 0;
 
     /**
      * @brief Set the Acquire Time (exposure)
@@ -277,14 +273,14 @@ class Pixci : public ADDriver
      * @param exposureTime
      * @return asynStatus
      */
-    virtual asynStatus setExposure(epicsFloat64 exposureTime);
+    virtual asynStatus setExposure(epicsFloat64 exposureTime) = 0;
 
     /**
      * @brief Get the Aquire Time from the camera
      *
      * @return double
      */
-    virtual epicsFloat64 getExposure();
+    virtual epicsFloat64 getExposure() = 0;
 
     /**
      * @brief Set the ROI Size X
@@ -292,7 +288,7 @@ class Pixci : public ADDriver
      * @param RoisizeX
      * @return asynStatus
      */
-    virtual asynStatus setRoiSizeX(epicsInt32 RoisizeX);
+    virtual asynStatus setRoiSizeX(epicsInt32 RoisizeX) = 0;
 
     /**
      * @brief Set the ROI Size Y
@@ -300,7 +296,7 @@ class Pixci : public ADDriver
      * @param RoisizeY
      * @return asynStatus
      */
-    virtual asynStatus setRoiSizeY(epicsInt32 RoisizeY);
+    virtual asynStatus setRoiSizeY(epicsInt32 RoisizeY) = 0;
 
     /**
      * @brief Set the ROI X Offset
@@ -308,7 +304,7 @@ class Pixci : public ADDriver
      * @param RoiOffsetX
      * @return asynStatus
      */
-    virtual asynStatus setRoiOffsetX(epicsInt32 RoiOffsetX);
+    virtual asynStatus setRoiOffsetX(epicsInt32 RoiOffsetX) = 0;
 
     /**
      * @brief Set the ROI Y Offset
@@ -316,35 +312,35 @@ class Pixci : public ADDriver
      * @param RoiOffsetY
      * @return asynStatus
      */
-    virtual asynStatus setRoiOffsetY(epicsInt32 RoiOffsetY);
+    virtual asynStatus setRoiOffsetY(epicsInt32 RoiOffsetY) = 0;
 
      /**
      * @brief Get the ROI Offset Y
      *
      * @return int
      */
-    virtual epicsInt32 getRoiOffsetY();
+    virtual epicsInt32 getRoiOffsetY() = 0;
 
     /**
      * @brief Get the Roi Size X
      *
      * @return int
      */
-    virtual epicsInt32 getRoiSizeX();
+    virtual epicsInt32 getRoiSizeX() = 0;
 
     /**
      * @brief Get the ROI Size Y
      *
      * @return int
      */
-    virtual epicsInt32 getRoiSizeY();
+    virtual epicsInt32 getRoiSizeY() = 0;
 
     /**
      * @brief Get the ROI Offset X
      *
      * @return int
      */
-    virtual epicsInt32 getRoiOffsetX();
+    virtual epicsInt32 getRoiOffsetX() = 0;
 
     /**
      * @brief Set the shutter open delay (ms)
@@ -352,14 +348,14 @@ class Pixci : public ADDriver
      * @param delayTime delay time in ms
      * @return asynStatus
      */
-    virtual asynStatus setShutterOpenDelay(epicsFloat64 delayTime);
+    virtual asynStatus setShutterOpenDelay(epicsFloat64 delayTime) = 0;
 
     /**
      * @brief Get the shutter open delay (ms)
      * 
      * @return epicsFloat64 delay time in ms
      */
-    virtual epicsFloat64 getShutterOpenDelay();
+    virtual epicsFloat64 getShutterOpenDelay() = 0;
 
     /**
      * @brief Set the shutter close delay (ms)
@@ -367,14 +363,14 @@ class Pixci : public ADDriver
      * @param delayTime delay time in ms
      * @return asynStatus
      */
-    virtual asynStatus setShutterCloseDelay(epicsFloat64 delayTime);
+    virtual asynStatus setShutterCloseDelay(epicsFloat64 delayTime) = 0;
 
     /**
      * @brief Get the shutter close delay (ms)
      * 
      * @return epicsFloat64 delay time in ms
      */
-    virtual epicsFloat64 getShutterCloseDelay();
+    virtual epicsFloat64 getShutterCloseDelay() = 0;
 
     /**
      * @brief Set the Binning settings. Uses serial communication.
@@ -383,7 +379,7 @@ class Pixci : public ADDriver
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return asynStatus
      */
-    virtual asynStatus setBin(epicsInt32 val, epicsBoolean coordinate);
+    virtual asynStatus setBin(epicsInt32 val, epicsBoolean coordinate) = 0;
 
     /**
      * @brief Get the Binning settings. Uses serial communication.
@@ -391,7 +387,7 @@ class Pixci : public ADDriver
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return epicsInt32
      */
-    virtual epicsInt32 getBin(epicsBoolean coordinate);
+    virtual epicsInt32 getBin(epicsBoolean coordinate) = 0;
 
     /**
      * @brief Set the Trigger Mode for the image capturing
@@ -399,22 +395,14 @@ class Pixci : public ADDriver
      * @param mode index of the mode
      * @return asynStatus
      */
-    virtual asynStatus setTriggerMode(epicsInt32 mode);
+    virtual asynStatus setTriggerMode(epicsInt32 mode) = 0;
 
     /**
      * @brief Send a soft trigger to the camera to capture one image.
      *
      * @return asynStatus
      */
-    virtual asynStatus sendSoftTrigger();
-
-    // PV Updating Functions
-
-    /**
-     * @brief update the PV ADTemperatureActual
-     *
-     * @param callBackFlag Flag for calling the callParamCallbacks function
-     */
-    asynStatus updateADTemperatureActual(epicsBoolean callBackFlag = epicsFalse);
+    virtual asynStatus sendSoftTrigger() = 0;
+    /******************************************************************************************************************/
 };
 #endif  // PIXCIAPP_SRC_PIXCI_H_

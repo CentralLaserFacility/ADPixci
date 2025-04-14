@@ -28,9 +28,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pixci.h"
+#include "ADPixci.h"
 
-/* Pixci headers
+/* ADPixci headers
  source: http://www.epixinc.com/products/xclib.htm
  XCLW64 .dll and .lib files should be included for windows-64 OS
  XCLIBNT .dll and .lib files should be inlcuded for win32 OS
@@ -224,9 +224,9 @@ static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
 
 
 /**
- * @brief Default constructor to create a new Pixci::Pixci object
+ * @brief Default constructor to create a new ADPixci::ADPixci object
  */
-Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
     const char *cameraModel, const char *formatFile)
     : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
@@ -294,7 +294,7 @@ Pixci::Pixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epic
     }
 }
 
-Pixci::~Pixci()
+ADPixci::~ADPixci()
 {
     /* Closing connection to frame grabber */
     epicsInt32 disconnectStatusCode = PIXCI_NO_ERROR;
@@ -317,7 +317,7 @@ Pixci::~Pixci()
     }
 }
 
-asynStatus Pixci::setupAquisition()
+asynStatus ADPixci::setupAquisition()
 {
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
@@ -352,10 +352,10 @@ asynStatus Pixci::setupAquisition()
     return asynSuccess;
 }
 
-asynStatus Pixci::acquireImage()
+asynStatus ADPixci::aquireStart()
 {
     /* TODO: implement all acquisition method like trigger, ringbuffer etc */
-    static const char *functionName = "acquireImage";
+    static const char *functionName = "aquireStart";
     pxbuffer_t buffer = 1L;     // Image frame buffer
     /* live capture the image into frame buffer */
     epicsInt32 error = pxd_goLive(UNIT, buffer);
@@ -373,7 +373,7 @@ asynStatus Pixci::acquireImage()
     }
 }
 
-asynStatus Pixci::acquireStop()
+asynStatus ADPixci::acquireStop()
 {
     static const char *functionName = "acquireStop";
     /* stop the live capturing */
@@ -396,7 +396,7 @@ asynStatus Pixci::acquireStop()
  * @brief Acquistion task for live image capturing.
  * Event will be notified whenever a field has been captured by pxd_goSnapor, pxd_goLive.
  */
-void Pixci::acquireTask()
+void ADPixci::acquireTask()
 {
     NDArray *pImage = this->pArrays[0];
     pxbuffer_t buf = 1L;
@@ -467,7 +467,7 @@ void Pixci::acquireTask()
     }
 }
 
-void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
+void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
     if (parameter == ADBinX)
@@ -501,7 +501,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
             setupAquisition();
             if (acquire == 1)
             {
-                acquireImage();     // starting acquisition if acquisition was running before.
+                aquireStart();     // starting acquisition if acquisition was running before.
             }
         }
     }
@@ -535,7 +535,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
             setupAquisition();
             if (acquire == 1)
             {
-                acquireImage();
+                aquireStart();
             }
         }
     }
@@ -623,7 +623,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
 
         if (acquire == 1)
         {
-            acquireImage();
+            aquireStart();
         }
     }
     else if (parameter == ADMinY)
@@ -659,7 +659,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
         setupAquisition();
         if (acquire == 1)
         {
-            acquireImage();
+            aquireStart();
         }
     }
     else if (parameter == ADSizeX)
@@ -695,7 +695,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
         setupAquisition();
         if (acquire == 1)
         {
-            acquireImage();
+            aquireStart();
         }
     }
     else if (parameter == ADSizeY)
@@ -731,7 +731,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
         setupAquisition();
         if (acquire == 1)
         {
-            acquireImage();
+            aquireStart();
         }
     }
     else if (parameter == ADShutterOpenDelay)
@@ -760,7 +760,7 @@ void Pixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32
     }
 }
 
-void Pixci::paramTask()
+void ADPixci::paramTask()
 {
     epicsFloat64 functionAndVal[2] = {};
     epicsInt32 function = 0;
@@ -782,7 +782,7 @@ void Pixci::paramTask()
 }
 
 // TODO: this is scary and needs some thought
-void Pixci::changeVideoFormatConfig()
+void ADPixci::changeVideoFormatConfig()
 {
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
@@ -1275,7 +1275,7 @@ void Pixci::changeVideoFormatConfig()
     }
 }
 
-epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
+epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 msgOutSize, char *serialIn,
     epicsInt32 serialInBufferSize)
 {
     epicsInt32 count = 0;
@@ -1336,7 +1336,7 @@ epicsInt32 Pixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32 m
     return count;
 }
 
-asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
+asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
     asynStatus status = asynSuccess;
@@ -1411,7 +1411,7 @@ asynStatus Pixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     return status;
 }
 
-asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
+asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
     epicsInt32 function = pasynUser->reason;
     static const char *functionName = "writeFloat64";
@@ -1430,14 +1430,14 @@ asynStatus Pixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     }
 }
 
-void Pixci::addToParamQue(epicsInt32 function, epicsInt32 value)
+void ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
 {
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), static_cast<epicsFloat64>(value)};
     /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
-void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
+void ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 {
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
     /*sending buffer data to the queue */
@@ -1445,7 +1445,7 @@ void Pixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 }
 
 // PV Updating Functions
-asynStatus Pixci::updateADTemperatureActual(epicsBoolean callBackFlag)
+asynStatus ADPixci::updateADTemperatureActual(epicsBoolean callBackFlag)
 {
     asynStatus status = asynSuccess;
     setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, getTemperatureActual()));    // setting the Actual Temperature PV
@@ -1454,7 +1454,7 @@ asynStatus Pixci::updateADTemperatureActual(epicsBoolean callBackFlag)
     return status;
 }
 
-asynStatus Pixci::updateStatus()
+asynStatus ADPixci::updateStatus()
 {
     asynStatus status = asynSuccess;
     // TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
@@ -1462,7 +1462,7 @@ asynStatus Pixci::updateStatus()
     return status;
 }
 
-asynStatus Pixci::updateIntialPVs()
+asynStatus ADPixci::updateIntialPVs()
 {
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
@@ -1477,7 +1477,7 @@ asynStatus Pixci::updateIntialPVs()
     return status;
 }
 
-void Pixci::report(FILE *fp, epicsInt32 details)
+void ADPixci::report(FILE *fp, epicsInt32 details)
 {
     fprintf(fp, "Raptor detector %s\n", this->portName);
     if (details > 0)

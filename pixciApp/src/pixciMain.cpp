@@ -1,13 +1,18 @@
 #include <iocsh.h>
 #include <epicsExport.h>
+#include <epicsThread.h>
 
 #include "pixciMain.h"
+#include "ADRaptorEagleXV.h"
+
 #include <epicsThread.h>
 
 extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
 {
-    Pixci* drvPvt = new Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
+
+    ADPixci* drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
+    
 
     epicsThreadCreate("acquireTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium),
     (EPICSTHREADFUNC)acquireTaskC, drvPvt);
@@ -19,13 +24,13 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
 
 static void acquireTaskC(void *drvPvt)
 {
-    Pixci *pPvt = reinterpret_cast<Pixci *>(drvPvt);
+    ADPixci *pPvt = reinterpret_cast<ADPixci *>(drvPvt);
     pPvt->acquireTask();
 }
 
 static void paramTaskC(void *drvPvt)
 {
-    Pixci *pPvt = reinterpret_cast<Pixci *>(drvPvt);
+    ADPixci *pPvt = reinterpret_cast<ADPixci *>(drvPvt);
     pPvt->paramTask();
 }
 

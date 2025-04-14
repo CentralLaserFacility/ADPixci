@@ -30,11 +30,11 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "raptorEagleXV.h"
+#include "ADRaptorEagleXV.h"
 
-RaptorEagleXV::RaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
+ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
     const char *cameraModel, const char *formatFile)
-    : Pixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
+    : ADPixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
 {
     Baudrate = BAUDRATE;
 
@@ -48,7 +48,7 @@ RaptorEagleXV::RaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
 }
 
-asynStatus RaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
+asynStatus ADRaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
 {
     char inputMsg[20] = {};
 
@@ -76,7 +76,7 @@ asynStatus RaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Registe
     return asynError;
 }
 
-asynStatus RaptorEagleXV::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
+asynStatus ADRaptorEagleXV::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
 {
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
@@ -106,7 +106,7 @@ asynStatus RaptorEagleXV::readSerialRegister(epicsInt8 Register, epicsInt8 *val)
     return asynError;
 }
 
-asynStatus RaptorEagleXV::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val)
+asynStatus ADRaptorEagleXV::readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val)
 {
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
@@ -136,7 +136,7 @@ asynStatus RaptorEagleXV::readSerialRegister(epicsInt8 Register1, epicsInt8 Regi
     return asynError;
 }
 
-epicsUInt8 RaptorEagleXV::getSystemStatus()
+epicsUInt8 ADRaptorEagleXV::getSystemStatus()
 {
     epicsUInt8 cval = 0;
     char inputMsg[2] = {};
@@ -154,7 +154,7 @@ epicsUInt8 RaptorEagleXV::getSystemStatus()
     return cval;    // cval will be 0x00 if there is no success
 }
 
-asynStatus RaptorEagleXV::setSystemStatus(epicsInt8 val)
+asynStatus ADRaptorEagleXV::setSystemStatus(epicsInt8 val)
 {
     char inputMsg[1] = {};
 
@@ -177,7 +177,7 @@ asynStatus RaptorEagleXV::setSystemStatus(epicsInt8 val)
     return asynError;
 }
 
-asynStatus RaptorEagleXV::setFrameRate(epicsFloat64 frameRate)
+asynStatus ADRaptorEagleXV::setFrameRate(epicsFloat64 frameRate)
 {
     epicsInt8 frameRateHexVal[5] = {0, 0, 0, 0, 0};
     epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
@@ -190,7 +190,7 @@ asynStatus RaptorEagleXV::setFrameRate(epicsFloat64 frameRate)
     return writeSerialRegister(UNIT, FRAME_RATE_BYTES[4], frameRateHexVal[4]);
 }
 
-epicsFloat64 RaptorEagleXV::getFrameRate()
+epicsFloat64 ADRaptorEagleXV::getFrameRate()
 {
     epicsInt8 cval[5] = {0, 0, 0, 0, 0};
     epicsFloat64 frameRate = 0.0;
@@ -208,22 +208,22 @@ epicsFloat64 RaptorEagleXV::getFrameRate()
     return frameRate;
 }
 
-epicsFloat64 RaptorEagleXV::convertAdcCountToCentigrade(epicsInt16 adcCount)
+epicsFloat64 ADRaptorEagleXV::convertAdcCountToCentigrade(epicsInt16 adcCount)
 {
     return (ADC_M * adcCount) + ADC_C;  // temperature in centigrade
 }
 
-epicsUInt16 RaptorEagleXV::convertCentigradeToDacCount(epicsFloat64 temperature)
+epicsUInt16 ADRaptorEagleXV::convertCentigradeToDacCount(epicsFloat64 temperature)
 {
     return static_cast<epicsUInt16>((temperature - DAC_C) / DAC_M);
 }
 
-epicsFloat64 RaptorEagleXV::convertDacCountToCentigrade(epicsInt16 dacCount)
+epicsFloat64 ADRaptorEagleXV::convertDacCountToCentigrade(epicsInt16 dacCount)
 {
     return (DAC_M * dacCount) + DAC_C;  // temperature in centigrade
 }
 
-epicsFloat64 RaptorEagleXV::getTemperatureActual()
+epicsFloat64 ADRaptorEagleXV::getTemperatureActual()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -237,7 +237,7 @@ epicsFloat64 RaptorEagleXV::getTemperatureActual()
     return convertAdcCountToCentigrade(adcCount);
 }
 
-epicsFloat64 RaptorEagleXV::getTemperaturePcb()
+epicsFloat64 ADRaptorEagleXV::getTemperaturePcb()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -250,7 +250,7 @@ epicsFloat64 RaptorEagleXV::getTemperaturePcb()
     return lval / 16.0;
 }
 
-epicsFloat64 RaptorEagleXV::getTecTemperature()
+epicsFloat64 ADRaptorEagleXV::getTecTemperature()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -264,7 +264,7 @@ epicsFloat64 RaptorEagleXV::getTecTemperature()
     return convertDacCountToCentigrade(lval);
 }
 
-asynStatus RaptorEagleXV::setTecTemperature(epicsFloat64 temperature)
+asynStatus ADRaptorEagleXV::setTecTemperature(epicsFloat64 temperature)
 {
     epicsUInt16 dacCount = convertCentigradeToDacCount(temperature);
 
@@ -276,7 +276,7 @@ asynStatus RaptorEagleXV::setTecTemperature(epicsFloat64 temperature)
     return writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]);
 }
 
-epicsUInt8 RaptorEagleXV::getFpgaStatus()
+epicsUInt8 ADRaptorEagleXV::getFpgaStatus()
 {
     epicsInt8 cval = 0;
     readSerialRegister(FPGA_STATUS_BYTE, &cval);
@@ -284,7 +284,7 @@ epicsUInt8 RaptorEagleXV::getFpgaStatus()
     return (epicsUInt8)cval;
 }
 
-asynStatus RaptorEagleXV::toggleFpgaComms(epicsBoolean enableFpgaComms)
+asynStatus ADRaptorEagleXV::toggleFpgaComms(epicsBoolean enableFpgaComms)
 {
     epicsUInt8 systemStatus = getSystemStatus();
     if (enableFpgaComms)
@@ -293,14 +293,14 @@ asynStatus RaptorEagleXV::toggleFpgaComms(epicsBoolean enableFpgaComms)
         return setSystemStatus(systemStatus & ~(0x01));     // setting first bit = 0
 }
 
-epicsBoolean RaptorEagleXV::isFpgaCommsEnabled()
+epicsBoolean ADRaptorEagleXV::isFpgaCommsEnabled()
 {
     epicsUInt8 systemStatus = getSystemStatus();
     return static_cast<epicsBoolean>((systemStatus & 0x01) != 0);   // check the first bit is not 0
 }
 
 
-asynStatus RaptorEagleXV::toggleTec(epicsBoolean enableTec)
+asynStatus ADRaptorEagleXV::toggleTec(epicsBoolean enableTec)
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     if (enableTec)
@@ -309,13 +309,13 @@ asynStatus RaptorEagleXV::toggleTec(epicsBoolean enableTec)
         return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01));   // setting first bit = 0
 }
 
-epicsBoolean RaptorEagleXV::isTecEnabled()
+epicsBoolean ADRaptorEagleXV::isTecEnabled()
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     return static_cast<epicsBoolean>((fpgaStatus & 0x01) != 0);     // check the first bit is not 0
 }
 
-asynStatus RaptorEagleXV::toggleGain(epicsBoolean enableGain)
+asynStatus ADRaptorEagleXV::toggleGain(epicsBoolean enableGain)
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     if (enableGain)
@@ -324,13 +324,13 @@ asynStatus RaptorEagleXV::toggleGain(epicsBoolean enableGain)
         return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7));     // setting last bit = 0
 }
 
-epicsBoolean RaptorEagleXV::isGainEnabled()
+epicsBoolean ADRaptorEagleXV::isGainEnabled()
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     return static_cast<epicsBoolean>((fpgaStatus & (1 << 7)) != 0);     // check the last bit is not 0
 }
 
-asynStatus RaptorEagleXV::setExposure(epicsFloat64 exposureTime)
+asynStatus ADRaptorEagleXV::setExposure(epicsFloat64 exposureTime)
 {
     epicsInt8 exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
     epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
@@ -343,7 +343,7 @@ asynStatus RaptorEagleXV::setExposure(epicsFloat64 exposureTime)
     return writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]);
 }
 
-epicsFloat64 RaptorEagleXV::getExposure()
+epicsFloat64 ADRaptorEagleXV::getExposure()
 {
     epicsInt8 cval[5] = {0, 0, 0, 0, 0};
     epicsFloat64 exposureTime = 0.0;
@@ -361,46 +361,46 @@ epicsFloat64 RaptorEagleXV::getExposure()
     return exposureTime;
 }
 
-epicsUInt8 RaptorEagleXV::convertDelayTimeToHex(epicsFloat64 delayTime) {
+epicsUInt8 ADRaptorEagleXV::convertDelayTimeToHex(epicsFloat64 delayTime) {
     epicsFloat64 scaled = delayTime * MILLISECOND_PER_COUNT;
     epicsInt32 rounded = static_cast<epicsInt32>(std::round(scaled));
     epicsUInt8 hexVal = static_cast<epicsUInt8>(rounded);
     return hexVal;
 }
 
-epicsFloat64 RaptorEagleXV::convertHexToDelayTime(epicsUInt8 hexVal) {
+epicsFloat64 ADRaptorEagleXV::convertHexToDelayTime(epicsUInt8 hexVal) {
     epicsFloat64 hexAsDouble = static_cast<epicsFloat64>(hexVal);
     epicsFloat64 delayTime = hexAsDouble / MILLISECOND_PER_COUNT;
     return delayTime;
 }
 
-asynStatus RaptorEagleXV::setShutterOpenDelay(epicsFloat64 delayTime)
+asynStatus ADRaptorEagleXV::setShutterOpenDelay(epicsFloat64 delayTime)
 {
     epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
     return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
 }
 
-epicsFloat64 RaptorEagleXV::getShutterOpenDelay()
+epicsFloat64 ADRaptorEagleXV::getShutterOpenDelay()
 {
     epicsInt8 hexVal = 0;
     readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
     return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
 }
 
-asynStatus RaptorEagleXV::setShutterCloseDelay(epicsFloat64 delayTime)
+asynStatus ADRaptorEagleXV::setShutterCloseDelay(epicsFloat64 delayTime)
 {
     epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
     return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
 }
 
-epicsFloat64 RaptorEagleXV::getShutterCloseDelay()
+epicsFloat64 ADRaptorEagleXV::getShutterCloseDelay()
 {
     epicsInt8 hexVal = 0;
     readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
     return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
 }
 
-asynStatus RaptorEagleXV::updateTemperaturePcb(epicsBoolean callBackFlag)
+asynStatus ADRaptorEagleXV::updateTemperaturePcb(epicsBoolean callBackFlag)
 {
     asynStatus status = asynSuccess;
     setStatIfHigher(&status, setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()));
@@ -409,7 +409,7 @@ asynStatus RaptorEagleXV::updateTemperaturePcb(epicsBoolean callBackFlag)
     return status;
 }
 
-asynStatus RaptorEagleXV::updateManufacturersData(epicsBoolean callBackFlag)
+asynStatus ADRaptorEagleXV::updateManufacturersData(epicsBoolean callBackFlag)
 {
     using std::to_string;
 
@@ -489,7 +489,7 @@ asynStatus RaptorEagleXV::updateManufacturersData(epicsBoolean callBackFlag)
     return asynError;
 }
 
-asynStatus RaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
+asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
 {
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoisizeX & 0x0F00) >> 8);
@@ -499,7 +499,7 @@ asynStatus RaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
     return writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]);
 }
 
-asynStatus RaptorEagleXV::setRoiSizeY(epicsInt32 RoisizeY)
+asynStatus ADRaptorEagleXV::setRoiSizeY(epicsInt32 RoisizeY)
 {
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoisizeY & 0x0F00) >> 8);
@@ -509,7 +509,7 @@ asynStatus RaptorEagleXV::setRoiSizeY(epicsInt32 RoisizeY)
     return writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]);
 }
 
-asynStatus RaptorEagleXV::setRoiOffsetX(epicsInt32 RoiOffsetX)
+asynStatus ADRaptorEagleXV::setRoiOffsetX(epicsInt32 RoiOffsetX)
 {
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoiOffsetX & 0x0F00) >> 8);
@@ -519,7 +519,7 @@ asynStatus RaptorEagleXV::setRoiOffsetX(epicsInt32 RoiOffsetX)
     return writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]);
 }
 
-asynStatus RaptorEagleXV::setRoiOffsetY(epicsInt32 RoiOffsetY)
+asynStatus ADRaptorEagleXV::setRoiOffsetY(epicsInt32 RoiOffsetY)
 {
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoiOffsetY & 0x0F00) >> 8);
@@ -529,7 +529,7 @@ asynStatus RaptorEagleXV::setRoiOffsetY(epicsInt32 RoiOffsetY)
     return writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]);
 }
 
-epicsInt32 RaptorEagleXV::getRoiSizeX()
+epicsInt32 ADRaptorEagleXV::getRoiSizeX()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -543,7 +543,7 @@ epicsInt32 RaptorEagleXV::getRoiSizeX()
     return ival;
 }
 
-epicsInt32 RaptorEagleXV::getRoiSizeY()
+epicsInt32 ADRaptorEagleXV::getRoiSizeY()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -557,7 +557,7 @@ epicsInt32 RaptorEagleXV::getRoiSizeY()
     return ival;
 }
 
-epicsInt32 RaptorEagleXV::getRoiOffsetX()
+epicsInt32 ADRaptorEagleXV::getRoiOffsetX()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -571,7 +571,7 @@ epicsInt32 RaptorEagleXV::getRoiOffsetX()
     return ival;
 }
 
-epicsInt32 RaptorEagleXV::getRoiOffsetY()
+epicsInt32 ADRaptorEagleXV::getRoiOffsetY()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -585,7 +585,7 @@ epicsInt32 RaptorEagleXV::getRoiOffsetY()
     return ival;
 }
 
-asynStatus RaptorEagleXV::setBin(epicsInt32 val, epicsBoolean coordinate)
+asynStatus ADRaptorEagleXV::setBin(epicsInt32 val, epicsBoolean coordinate)
 {
     epicsInt8 hexval = 0;
     epicsInt8 reg = (coordinate == BIN_AXIS_X) ? X_BIN_BYTE : Y_BIN_BYTE;
@@ -627,7 +627,7 @@ asynStatus RaptorEagleXV::setBin(epicsInt32 val, epicsBoolean coordinate)
     return writeSerialRegister(UNIT, reg, hexval);
 }
 
-asynStatus RaptorEagleXV::setTriggerMode(epicsInt32 mode)
+asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
 {
     epicsInt8 hexval = 0;
     switch (mode)
@@ -656,7 +656,7 @@ asynStatus RaptorEagleXV::setTriggerMode(epicsInt32 mode)
     return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
 }
 
-asynStatus RaptorEagleXV::sendSoftTrigger() {
+asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     /* if trigger mode is button trigger then, do the soft trigger else print error */
     epicsInt32 triggerMode = PR_INTERNAL_ITR;
     getIntegerParam(ADTriggerMode, &triggerMode);
@@ -671,16 +671,16 @@ asynStatus RaptorEagleXV::sendSoftTrigger() {
     }
 }
 
-asynStatus RaptorEagleXV::updateStatus()
+asynStatus ADRaptorEagleXV::updateStatus()
 {
     asynStatus status = asynSuccess;
     setStatIfHigher(&status, updateManufacturersData());
     setStatIfHigher(&status, updateTemperaturePcb(epicsTrue));
-    setStatIfHigher(&status, Pixci::updateStatus());
+    setStatIfHigher(&status, ADPixci::updateStatus());
     return status;
 }
 
-asynStatus RaptorEagleXV::updateIntialPVs(){
+asynStatus ADRaptorEagleXV::updateIntialPVs(){
     asynStatus status = asynSuccess;
     epicsFloat64 acquireFrameRate = getFrameRate();
 
@@ -690,11 +690,11 @@ asynStatus RaptorEagleXV::updateIntialPVs(){
         setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
 
-    Pixci::updateIntialPVs();
+    ADPixci::updateIntialPVs();
     return status;
 }
 
-asynStatus RaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
+asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
 
@@ -704,7 +704,7 @@ asynStatus RaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
         /* TODO: adstatus == ADStatusIdle has to be checked */
         if (value)
         {
-            status = acquireImage();
+            status = aquireStart();
             if (status == asynSuccess)
             {
                 setIntegerParam(ADAcquire, 1);
@@ -750,13 +750,13 @@ asynStatus RaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     {
         addToParamQue(function, value);
     } else {
-        setStatIfHigher(&status, Pixci::writeInt32(pasynUser, value));
+        setStatIfHigher(&status, ADPixci::writeInt32(pasynUser, value));
     }
 
     return status;
 }
 
-void RaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) {
+void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) {
     asynStatus status = asynSuccess;
     if (parameter == PR_ToggleTec)
     {
@@ -792,15 +792,15 @@ void RaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             if (i_val == PR_BUTTON_TRIGGER)
             {
                 /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
-                called. For that acquireImage() function is called.
+                called. For that aquireStart() function is called.
                 */
-                status = acquireImage();
+                status = aquireStart();
             }
             else
             {
                 /* When changes the acquiremode from button triggered to any another trigger mode,
                     we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
-                    Because in button trigger mode acquireImage() is called irrespective of ADAcquire status.
+                    Because in button trigger mode aquireStart() is called irrespective of ADAcquire status.
                 */
                 getIntegerParam(ADTriggerMode, &previousTriggerMode);
                 if (previousTriggerMode == PR_BUTTON_TRIGGER)
@@ -836,6 +836,6 @@ void RaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
         }
     }
     else {
-        Pixci::handleParamTask(parameter, d_val, i_val, b_val);
+        ADPixci::handleParamTask(parameter, d_val, i_val, b_val);
     }
 }
