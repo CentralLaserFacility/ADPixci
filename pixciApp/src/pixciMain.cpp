@@ -1,13 +1,10 @@
 #include <iocsh.h>
 #include <epicsExport.h>
 #include <epicsThread.h>
+#include <epicsStdio.h>
 
 #include "pixciMain.h"
 #include "ADRaptorEagleXV.h"
-
-static std::string cameraModelToString(ADCameraModel_t cameraModel){
-    return cameraModelMap[cameraModel];
-}
 
 extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
@@ -15,13 +12,13 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
 
     ADPixci* drvPvt = nullptr;
 
-    if (cameraModel == cameraModelToString(RaptorEagleXV_4710) || cameraModel == cameraModelToString(RaptorEagleXV_4240))
+    if (cameraModel == "RaptorEagleXV_4710" || cameraModel == "RaptorEagleXV_4240")
     {
         drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     }
     else
     {
-        printf("Invalid camera model specified. Supported models are RaptorEagleXV_1K and RaptorEagleXV_2K.\n");
+        epicsStdoutPrintf("Camera model %s not supported\n", cameraModel);
         return asynError;
     }
 

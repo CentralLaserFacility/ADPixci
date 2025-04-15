@@ -37,8 +37,8 @@
 
 constexpr const char *driverName = "ADRaptorEagleXV";
 
-constexpr const char *DETECTOR_1K = "4710";  // 1056 x 1027 active pixels
-constexpr const char *DETECTOR_2K = "4240";  // 2048 x 2048 active pixels
+constexpr const char *DETECTOR_1K = "RaptorEagleXV_4710";  // 1056 x 1027 active pixels
+constexpr const char *DETECTOR_2K = "RaptorEagleXV_4240";  // 2048 x 2048 active pixels
 
 constexpr const epicsFloat64 BAUDRATE = 115200;
 constexpr const epicsFloat64 MILLISECOND_PER_COUNT = 1.6384;

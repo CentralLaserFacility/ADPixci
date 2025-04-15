@@ -1,21 +1,4 @@
 #include "ADPixci.h"
-#include <map>
-
-/**
- * @brief Types of camera models supported by the driver.
- */
-typedef enum ADCameraModel_t
-{
-    RaptorEagleXV_4710,  // 1056 x 1027 active pixels
-    RaptorEagleXV_4240,  // 2048 x 2048 active pixels
-};
-
-std::map<ADCameraModel_t, std::string> cameraModelMap = {
-    {ADCameraModel_t::RaptorEagleXV_4710, "RaptorEagleXV_4710"},
-    {ADCameraModel_t::RaptorEagleXV_4240, "RaptorEagleXV_4240"},
-};
-
-std::string cameraModelToString(ADCameraModel_t cameraModel);
 
 /**
  * @brief C Function prototypes to tie in with EPICS.
