@@ -12,7 +12,7 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
 
     ADPixci* drvPvt = nullptr;
 
-    if (cameraModel == "RaptorEagleXV_4710" || cameraModel == "RaptorEagleXV_4240")
+    if (cameraModel == RAPTOR_EAGLE_XV_4710 || cameraModel == RAPTOR_EAGLE_XV_4240)
     {
         drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
     }

@@ -614,7 +614,7 @@ asynStatus ADRaptorEagleXV::setBin(epicsInt32 val, epicsBoolean coordinate)
         break;
     case PR_BIN_FVB:
         getStringParam(ADModel, cameraModel);
-        if (coordinate == BIN_AXIS_Y && cameraModel == DETECTOR_2K) {
+        if (coordinate == BIN_AXIS_Y && cameraModel == RAPTOR_EAGLE_XV_4240) {
             hexval = static_cast<epicsInt8>(0x80);
             break;
         }
