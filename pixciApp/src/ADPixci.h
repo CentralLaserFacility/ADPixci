@@ -195,6 +195,12 @@ class ADPixci : public ADDriver
 
     virtual asynStatus updateIntialPVs();
 
+    /**
+     * @brief reload of video settings file. Change in some of the video parameters require reload of
+     * video settings in order to reflect in image.
+     */
+    virtual void changeVideoFormatConfig();
+
     /*****************************************Methods overridden from ADDriver*****************************************/
     /**
      * @brief Overriden to implement custom write features for integers
@@ -230,12 +236,6 @@ class ADPixci : public ADDriver
      * @return asynStatus asynSuccess or asynError
      */
     asynStatus setupAquisition();
-
-    /**
-     * @brief reload of video settings file. Change in some of the video parameters require reload of
-     * video settings in order to reflect in image.
-     */
-    void changeVideoFormatConfig();
 
     /**
      * @brief update the PV ADTemperatureActual

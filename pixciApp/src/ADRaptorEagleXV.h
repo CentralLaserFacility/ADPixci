@@ -524,6 +524,12 @@ class ADRaptorEagleXV : public ADPixci
      * @param b_val the value of the parameter as a boolean
      */
     virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) final;
+
+    /**
+     * @brief reload of video settings file. Change in some of the video parameters require reload of
+     * video settings in order to reflect in image.
+     */
+    void changeVideoFormatConfig() final;
 };
 
 
