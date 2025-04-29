@@ -33,9 +33,9 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
  * @brief wrapper function for pixciConfig to be called from iocsh
  * @param args arguments from iocsh
  */
-static void configpixciCallFunc(const iocshArgBuf *args);
+static void pixciConfigIocshWrapper(const iocshArgBuf *args);
 
 /**
- * @brief Register the configpixciCallFunc function with iocsh
+ * @brief Register the pixciConfigIocshWrapper function with iocsh
  */
 static void pixciRegister(void);

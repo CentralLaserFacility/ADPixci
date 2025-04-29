@@ -50,7 +50,7 @@ static void paramTaskC(void *drvPvt)
     pPvt->paramTask();
 }
 
-static void configpixciCallFunc(const iocshArgBuf *args)
+static void pixciConfigIocshWrapper(const iocshArgBuf *args)
 {
     pixciConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
                 args[4].ival, args[5].sval, args[6].sval);
@@ -67,15 +67,17 @@ static void pixciRegister(void)
     static const iocshArg pixciConfigArg4 = {"stackSize", iocshArgInt};
     static const iocshArg pixciConfigArg5 = {"cameraModel", iocshArgString};
     static const iocshArg pixciConfigArg6 = {"formatFile", iocshArgString};
-    static const iocshArg *const pixciConfigArgs[] = {&pixciConfigArg0,
+    static const iocshArg *const pixciConfigArgs[] = {
+        &pixciConfigArg0,
         &pixciConfigArg1,
         &pixciConfigArg2,
         &pixciConfigArg3,
         &pixciConfigArg4,
         &pixciConfigArg5,
-        &pixciConfigArg6};
-    static const iocshFuncDef configpixci = {"pixciConfig", 7, pixciConfigArgs};
-    iocshRegister(&configpixci, configpixciCallFunc);
+        &pixciConfigArg6
+    };
+    static const iocshFuncDef pixciIocshFuncDef = {"pixciConfig", 7, pixciConfigArgs};
+    iocshRegister(&pixciIocshFuncDef, pixciConfigIocshWrapper);
 }
 
 extern "C"
