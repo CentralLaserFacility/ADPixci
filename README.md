@@ -6,7 +6,7 @@ Uses the [XCLIB&trade; Library](https://www.epixinc.com/products/xclib.htm) to i
 ### Supported Hardware
 #### Cameras
 - [Raptor Photonics Eagle XV](https://www.raptorphotonics.com/products/eagle-xv/) 4240
-- [Raptor Photonics Eagle XV(https://www.raptorphotonics.com/products/eagle-xv/)] 4710
+- [Raptor Photonics Eagle XV](https://www.raptorphotonics.com/products/eagle-xv/) 4710
 
 #### Frame Grabbers
 - PIXCI&reg; EB1 
@@ -58,6 +58,6 @@ classDiagram
         - writeInt32() asynStatus
     }
     click ADDriver href "https://areadetector.github.io/areaDetector/ADCore/ADDriver.html" "ADDriver documentation"
-    click ADPixci href "/pixciApp/src/ADPixci.h"
-    click ADRaptorEagleXV href "/pixciApp/src/ADRaptorEagleXV.h"
+    click ADPixci href "pixciApp/src/ADPixci.h"
+    click ADRaptorEagleXV href "pixciApp/src/ADRaptorEagleXV.h"
 ```
