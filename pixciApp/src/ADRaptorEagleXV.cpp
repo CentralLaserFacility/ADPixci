@@ -644,20 +644,20 @@ asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
     epicsInt8 hexval = 0;
     switch (mode)
     {
-    case PR_INTERNAL_ITR:
+    case PRInternalITRTrigger:
         hexval = INTERNAL_ITR_BYTE;     // 00000100
         break;
-    case PR_INTERNAL_FFR:
+    case PRInternalFFRTrigger:
         hexval = INTERNAL_FFR_BYTE;     // 00000110
         break;
-    case PR_EXTERNAL:
+    case PRExternalTrigger:
         {   // brackets so that trigger polarity goes out of scope after this case
-            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
+            epicsInt32 triggerPolarity = PRExternalRisingEdge;
             getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            hexval = (triggerPolarity == PR_EXT_FALLING_EDGE) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
+            hexval = (triggerPolarity == PRExternalFallingEdge) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
         }
         break;
-    case PR_BUTTON_TRIGGER:
+    case PRSoftTrigger:
         hexval = CLEAR_TRIGGER_MODE_BYTE;   // 00000000
         break;
     default:
@@ -670,9 +670,9 @@ asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
 
 asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     /* if trigger mode is button trigger then, do the soft trigger else print error */
-    epicsInt32 triggerMode = PR_INTERNAL_ITR;
+    epicsInt32 triggerMode = PRInternalITRTrigger;
     getIntegerParam(ADTriggerMode, &triggerMode);
-    if (triggerMode == PR_BUTTON_TRIGGER)
+    if (triggerMode == PRSoftTrigger)
     {
         return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
     }
@@ -1222,9 +1222,9 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
             the trigger mode is changed from button trigger mode, the actual implementation
             of acquireStop() will be done.
             */
-            epicsInt32 triggerMode = PR_INTERNAL_ITR;
+            epicsInt32 triggerMode = PRInternalITRTrigger;
             getIntegerParam(ADTriggerMode, &triggerMode);
-            if (triggerMode == PR_BUTTON_TRIGGER)
+            if (triggerMode == PRSoftTrigger)
             {
                 status = asynSuccess;
             }
@@ -1287,11 +1287,11 @@ void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, 
     else if (parameter == ADTriggerMode)
     {
         epicsInt32 acquisitionStatus = asynSuccess;
-        epicsInt32 previousTriggerMode = PR_INTERNAL_ITR;
+        epicsInt32 previousTriggerMode = PRInternalITRTrigger;
         status = setTriggerMode(i_val);
         if (status == asynSuccess)
         {
-            if (i_val == PR_BUTTON_TRIGGER)
+            if (i_val == PRSoftTrigger)
             {
                 /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
                 called. For that aquireStart() function is called.
@@ -1305,7 +1305,7 @@ void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, 
                     Because in button trigger mode aquireStart() is called irrespective of ADAcquire status.
                 */
                 getIntegerParam(ADTriggerMode, &previousTriggerMode);
-                if (previousTriggerMode == PR_BUTTON_TRIGGER)
+                if (previousTriggerMode == PRSoftTrigger)
                 {
                     getIntegerParam(ADAcquire, &acquisitionStatus);
 
@@ -1321,20 +1321,20 @@ void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, 
     }
     else if (parameter == PR_TriggerPolarity)
     {
-        epicsInt32 triggerMode = PR_INTERNAL_ITR;
-        if (i_val == PR_EXT_RISING_EDGE)
+        epicsInt32 triggerMode = PRInternalITRTrigger;
+        if (i_val == PRExternalRisingEdge)
         {
-            setIntegerParam(PR_TriggerPolarity, PR_EXT_RISING_EDGE);
+            setIntegerParam(PR_TriggerPolarity, PRExternalRisingEdge);
         }
-        else if (i_val == PR_EXT_FALLING_EDGE)
+        else if (i_val == PRExternalFallingEdge)
         {
-            setIntegerParam(PR_TriggerPolarity, PR_EXT_FALLING_EDGE);
+            setIntegerParam(PR_TriggerPolarity, PRExternalFallingEdge);
         }
         callParamCallbacks();
         getIntegerParam(ADTriggerMode, &triggerMode);
-        if (triggerMode == PR_EXTERNAL)
+        if (triggerMode == PRExternalTrigger)
         {
-            setTriggerMode(PR_EXTERNAL);
+            setTriggerMode(PRExternalTrigger);
         }
     }
     else {

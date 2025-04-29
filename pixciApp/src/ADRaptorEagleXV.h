@@ -102,28 +102,19 @@ class ADRaptorEagleXV : public ADPixci
         PR_BIN_FVB = 2048,
     };
 
-
     /* Trigger modes of Raptor Eagle-XV */
     /* ITR mode will be used to capture a continuous sequence of images.
     * The camera will immediately trigger the start of a new integration period
     * when the previous image readouthas completed.
     * In FFR mode, the camera will generate an internal trigger signal at a user programmable frame rate.
     */
-    typedef enum PRTriggerMode_t
+    typedef enum
     {
-        PR_INTERNAL_ITR,
-        PR_INTERNAL_FFR,
-        PR_EXTERNAL,
-        PR_BUTTON_TRIGGER
-    };
-
-    /* Trigger Polarity */
-    typedef enum PR_TriggerPolarity_t
-    {
-        PR_EXT_RISING_EDGE,
-        PR_EXT_FALLING_EDGE
-    };
-    
+        PRInternalITRTrigger,
+        PRInternalFFRTrigger,
+        PRExternalTrigger,
+        PRSoftTrigger
+    } PRTriggerMode_t;
 
  protected:
     epicsInt32 PR_TemperaturePcb;

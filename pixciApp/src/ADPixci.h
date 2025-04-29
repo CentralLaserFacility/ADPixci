@@ -134,6 +134,13 @@ class ADPixci : public ADDriver
 
     ~ADPixci();
 
+    /* Trigger Polarity */
+    typedef enum
+    {
+        PRExternalRisingEdge,
+        PRExternalFallingEdge
+    } PRTriggerPolarity_t;
+
  protected:
     epicsInt32 PR_SoftTrigger;
     epicsInt32 PR_UpdateTemperature;

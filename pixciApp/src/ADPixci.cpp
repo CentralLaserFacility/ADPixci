@@ -852,51 +852,10 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
-    if (function == ADBinX)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADBinY)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADReadStatus)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADTriggerMode)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_SoftTrigger)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_UpdateStatus)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_UpdateTemperature)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADMinX)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADMinY)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADSizeX)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == ADSizeY)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_TriggerPolarity)
+    if (function == ADBinX || function == ADBinY || function == ADReadStatus || function == ADTriggerMode ||
+        function == PR_SoftTrigger || function == PR_UpdateStatus || function == PR_UpdateTemperature ||
+        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY ||
+        function == PR_TriggerPolarity) 
     {
         addToParamQue(function, value);
     }
