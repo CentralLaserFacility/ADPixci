@@ -529,7 +529,7 @@ class ADRaptorEagleXV : public ADPixci
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
      */
-    virtual void changeVideoFormatConfig() final;
+    virtual void changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY) final;
 };
 
 

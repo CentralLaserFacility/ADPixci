@@ -206,7 +206,7 @@ class ADPixci : public ADDriver
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
      */
-    virtual void changeVideoFormatConfig(epicsInt32 width, epicsInt32 height);
+    virtual void changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY);
 
     /*****************************************Methods overridden from ADDriver*****************************************/
     /**
