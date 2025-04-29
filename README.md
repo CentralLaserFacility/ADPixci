@@ -58,6 +58,4 @@ classDiagram
         - writeInt32() asynStatus
     }
     click ADDriver href "https://areadetector.github.io/areaDetector/ADCore/ADDriver.html" "ADDriver documentation"
-    click ADPixci href "pixciApp/src/ADPixci.h"
-    click ADRaptorEagleXV href "pixciApp/src/ADRaptorEagleXV.h"
 ```
