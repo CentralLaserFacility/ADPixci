@@ -251,6 +251,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                   "%s: Cannot OPEN camera: %s.",
                   driverName, pxd_mesgErrorCode(connectionStatusCode));
+        throw std::runtime_error("Failed to open camera");
     }
     else
     {
@@ -263,6 +264,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                       "%s: Cannot make serial connection: %s.",
                       driverName, pxd_mesgErrorCode(connectionStatusCode));
+            throw std::runtime_error("Failed to make serial connection");
         }
     }
 
@@ -273,15 +275,6 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     setStatIfHigher(&status, setStringParam(ADManufacturer, "Raptor Photonics"));
 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
-
-    /* Create the thread that does data acquisition */
-    if (connectionStatusCode >= PIXCI_NO_ERROR && serialConnection >= PIXCI_NO_ERROR)
-    {
-        epicsThreadCreate("acquireTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium),
-                        (EPICSTHREADFUNC)acquireTaskC, this);
-        epicsThreadCreate("paramTask", epicsThreadPriorityMedium, epicsThreadGetStackSize(epicsThreadStackMedium),
-                        (EPICSTHREADFUNC)paramTaskC, this);
-    }
 
     // Updating all the PVs related to the status of device and the manufacturers data
     setStatIfHigher(&status, updateStatus());

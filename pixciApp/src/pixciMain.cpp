@@ -14,7 +14,15 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
 
     if (cameraModel == RAPTOR_EAGLE_XV_4710 || cameraModel == RAPTOR_EAGLE_XV_4240)
     {
-        drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
+        try
+        {
+            drvPvt = new ADRaptorEagleXV(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile);
+        }
+        catch(const std::runtime_error& e)
+        {  
+            epicsStdoutPrintf("%s\n", e.what());
+            return asynError;
+        }
     }
     else
     {
