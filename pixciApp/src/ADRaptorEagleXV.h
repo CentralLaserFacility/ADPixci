@@ -381,7 +381,7 @@ class ADRaptorEagleXV : public ADPixci
      * @param RoisizeX
      * @return asynStatus
      */
-    asynStatus setRoiSizeX(epicsInt32 RoisizeX) final;
+    virtual asynStatus setRoiSizeX(epicsInt32 RoisizeX) final;
 
     /**
      * @brief Set the ROI Size Y
@@ -389,7 +389,7 @@ class ADRaptorEagleXV : public ADPixci
      * @param RoisizeY
      * @return asynStatus
      */
-    asynStatus setRoiSizeY(epicsInt32 RoisizeY) final;
+    virtual asynStatus setRoiSizeY(epicsInt32 RoisizeY) final;
 
     /**
      * @brief Set the ROI X Offset
@@ -397,7 +397,7 @@ class ADRaptorEagleXV : public ADPixci
      * @param RoiOffsetX
      * @return asynStatus
      */
-    asynStatus setRoiOffsetX(epicsInt32 RoiOffsetX) final;
+    virtual asynStatus setRoiOffsetX(epicsInt32 RoiOffsetX) final;
 
     /**
      * @brief Set the ROI Y Offset
@@ -405,35 +405,35 @@ class ADRaptorEagleXV : public ADPixci
      * @param RoiOffsetY
      * @return asynStatus
      */
-    asynStatus setRoiOffsetY(epicsInt32 RoiOffsetY) final;
+    virtual asynStatus setRoiOffsetY(epicsInt32 RoiOffsetY) final;
 
     /**
      * @brief Get the Roi Size X
      *
      * @return int
      */
-    epicsInt32 getRoiSizeX() final;
+    virtual epicsInt32 getRoiSizeX() final;
 
     /**
      * @brief Get the ROI Size Y
      *
      * @return int
      */
-    epicsInt32 getRoiSizeY() final;
+    virtual epicsInt32 getRoiSizeY() final;
 
     /**
      * @brief Get the ROI Offset X
      *
      * @return int
      */
-    epicsInt32 getRoiOffsetX() final;
+    virtual epicsInt32 getRoiOffsetX() final;
 
     /**
      * @brief Get the ROI Offset Y
      *
      * @return int
      */
-    epicsInt32 getRoiOffsetY() final;
+    virtual epicsInt32 getRoiOffsetY() final;
 
     /**
      * @brief Set the shutter open delay (ms)
@@ -441,14 +441,14 @@ class ADRaptorEagleXV : public ADPixci
      * @param delayTime delay time in ms
      * @return asynStatus
      */
-    asynStatus setShutterOpenDelay(epicsFloat64 delayTime) final;
+    virtual asynStatus setShutterOpenDelay(epicsFloat64 delayTime) final;
 
     /**
      * @brief Get the shutter open delay (ms)
      * 
      * @return epicsFloat64 delay time in ms
      */
-    epicsFloat64 getShutterOpenDelay() final;
+    virtual epicsFloat64 getShutterOpenDelay() final;
 
     /**
      * @brief Set the shutter close delay (ms)
@@ -456,23 +456,23 @@ class ADRaptorEagleXV : public ADPixci
      * @param delayTime delay time in ms
      * @return asynStatus
      */
-    asynStatus setShutterCloseDelay(epicsFloat64 delayTime) final;
+    virtual asynStatus setShutterCloseDelay(epicsFloat64 delayTime) final;
 
     /**
      * @brief Get the shutter close delay (ms)
      * 
      * @return epicsFloat64 delay time in ms
      */
-    epicsFloat64 getShutterCloseDelay() final;
+    virtual epicsFloat64 getShutterCloseDelay() final;
 
-        /**
+    /**
      * @brief Set the Binning settings. Uses serial communication.
      *
      * @param val Binning value to set
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return asynStatus
      */
-    asynStatus setBin(epicsInt32 val, epicsBoolean coordinate) final;
+    virtual asynStatus setBin(epicsInt32 val, epicsBoolean coordinate) final;
 
     /**
      * @brief Get the Binning settings. Uses serial communication.
@@ -480,7 +480,7 @@ class ADRaptorEagleXV : public ADPixci
      * @param coordinate 0 for x axis and 1 for y axis.
      * @return epicsInt32
      */
-    epicsInt32 getBin(epicsBoolean coordinate) final;
+    virtual epicsInt32 getBin(epicsBoolean coordinate) final;
 
     /**
      * @brief Set the Trigger Mode for the image capturing
@@ -492,7 +492,7 @@ class ADRaptorEagleXV : public ADPixci
      * 3 = Button (software trigger mode)
      * @return asynStatus
      */
-    asynStatus setTriggerMode(epicsInt32 mode) final;
+    virtual asynStatus setTriggerMode(epicsInt32 mode) final;
 
     /**
      * @brief Send a soft trigger to the camera to capture one image.
@@ -501,9 +501,9 @@ class ADRaptorEagleXV : public ADPixci
      */
     virtual asynStatus sendSoftTrigger() final;
 
-    asynStatus updateStatus() final;
+    virtual asynStatus updateStatus() final;
 
-    asynStatus updateIntialPVs() final;
+    virtual asynStatus updateIntialPVs() final;
 
     /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 
@@ -514,7 +514,7 @@ class ADRaptorEagleXV : public ADPixci
      * @param value
      * @return asynStatus
      */
-    asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) final;
+    virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value) final;
 
     /**
      * @brief handle the parameter change from the queue
@@ -529,7 +529,7 @@ class ADRaptorEagleXV : public ADPixci
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
      */
-    void changeVideoFormatConfig() final;
+    virtual void changeVideoFormatConfig() final;
 };
 
 

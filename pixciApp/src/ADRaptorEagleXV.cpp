@@ -683,14 +683,17 @@ asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     }
 }
 
-// TODO: this is scary and needs some thought
 void ADRaptorEagleXV::changeVideoFormatConfig()
 {
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
+    epicsInt32 sizeX = 0;
+    epicsInt32 sizeY = 0;
     std::string cameraModel = "";
     getIntegerParam(ADBinX, &binX);
     getIntegerParam(ADBinY, &binY);
+    getIntegerParam(ADSizeX, &sizeX);
+    getIntegerParam(ADSizeY, &sizeY);
     getStringParam(ADModel, cameraModel);
     if (cameraModel == RAPTOR_EAGLE_XV_4710)
     {
@@ -1175,6 +1178,7 @@ void ADRaptorEagleXV::changeVideoFormatConfig()
     else {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model not supported");
     }
+    ADPixci::changeVideoFormatConfig(sizeX / binX, sizeY / binY);
 }
 
 asynStatus ADRaptorEagleXV::updateStatus()
@@ -1264,7 +1268,61 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
 void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) {
     asynStatus status = asynSuccess;
-    if (parameter == PR_ToggleTec)
+    if (parameter == ADBinX)
+    {
+        status = this->setBin(i_val, BIN_AXIS_X);
+        if (status == asynSuccess)
+        {
+            epicsInt32 acquire = 0;
+            epicsInt32 triggerMode;
+            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
+            setIntegerParam(ADBinX, i_val);     // Updating the binX value.
+            getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+            if (acquire == 1)
+            {
+                acquireStop();
+            }
+            callParamCallbacks();
+            this->changeVideoFormatConfig();  // Video settings have to be loaded respective of binning value.
+            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+            setTriggerMode(triggerMode);
+            setupAquisition();
+            if (acquire == 1)
+            {
+                aquireStart();     // starting acquisition if acquisition was running before.
+            }
+        }
+    }
+    else if (parameter == ADBinY)
+    {
+        status = this->setBin(i_val, BIN_AXIS_Y);
+        if (status == asynSuccess)
+        {
+            epicsInt32 acquire = 0;
+            epicsInt32 triggerMode = ADTriggerInternal;
+            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
+            setIntegerParam(ADBinY, i_val);
+            getIntegerParam(ADAcquire, &acquire);
+            getIntegerParam(ADTriggerMode, &triggerMode);
+            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
+            if (acquire == 1)
+            {
+                acquireStop();
+            }
+            callParamCallbacks();
+            this->changeVideoFormatConfig();
+            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+            setTriggerMode(triggerMode);
+            setupAquisition();
+            if (acquire == 1)
+            {
+                aquireStart();
+            }
+        }
+    }
+    else if (parameter == PR_ToggleTec)
     {
         status = toggleTec(b_val);
         if (status == asynSuccess)

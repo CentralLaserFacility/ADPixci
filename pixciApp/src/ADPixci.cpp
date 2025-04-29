@@ -75,8 +75,7 @@ extern "C"
 //
 //
 #if !defined(PIXCI_LITE)
-_cDcl(_dllpxlib, _cfunfcc, epicsInt32)
-    pxd_setVideoResolution(
+_cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
         epicsInt32 unitmap,     // usual
         epicsInt32 xdim,        // pixels per line
         epicsInt32 ydim,        // pixels per column (per field)
@@ -470,76 +469,8 @@ void ADPixci::acquireTask()
 void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
-    if (parameter == ADBinX)
-    {
-        epicsInt32 sizeX = 0;
-        epicsInt32 sizeY = 0;
-        epicsInt32 binY = 0;
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADSizeY, &sizeY);
-        getIntegerParam(ADBinY, &binY);
-        status = this->setBin(i_val, BIN_AXIS_X);
-        if (status == asynSuccess)
-        {
-            epicsInt32 acquire = 0;
-            epicsInt32 triggerMode;
-            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
-            setIntegerParam(ADBinX, i_val);     // Updating the binX value.
-            getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            if (acquire == 1)
-            {
-                acquireStop();
-            }
-            callParamCallbacks();
-            // TODO: take this out into its own Pixci function, and move the rest of this if block to raptorEagleXV, same for the ADBinY param task
-            this->changeVideoFormatConfig();  // Video settings have to be loaded respective of binning value.
-            pxd_setVideoResolution(UNIT, sizeX / i_val, sizeY / binY, 0, 0);
-            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-            setTriggerMode(triggerMode);
-            setupAquisition();
-            if (acquire == 1)
-            {
-                aquireStart();     // starting acquisition if acquisition was running before.
-            }
-        }
-    }
-    else if (parameter == ADBinY)
-    {
-        epicsInt32 sizeX = 0;
-        epicsInt32 sizeY = 0;
-        epicsInt32 binX = 0;
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADSizeY, &sizeY);
-        getIntegerParam(ADBinX, &binX);
-        status = this->setBin(i_val, BIN_AXIS_Y);
-        if (status == asynSuccess)
-        {
-            epicsInt32 acquire = 0;
-            epicsInt32 triggerMode = ADTriggerInternal;
-            epicsInt32 triggerPolarity = PR_EXT_RISING_EDGE;
-            setIntegerParam(ADBinY, i_val);
-            getIntegerParam(ADAcquire, &acquire);
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            if (acquire == 1)
-            {
-                acquireStop();
-            }
-            callParamCallbacks();
-            this->changeVideoFormatConfig();
-            pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / i_val, 0, 0);
-            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-            setTriggerMode(triggerMode);
-            setupAquisition();
-            if (acquire == 1)
-            {
-                aquireStart();
-            }
-        }
-    }
-    else if (parameter == PR_SoftTrigger)
+    
+    if (parameter == PR_SoftTrigger)
     {
         status = sendSoftTrigger();
     }
@@ -616,7 +547,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         status = setRoiSizeX(sizeX);
         status = setRoiOffsetX(minX);
         sizeX = getRoiSizeX();
-        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        changeVideoFormatConfig(sizeX / binX, sizeY / binY);
         setIntegerParam(ADSizeX, sizeX);
         setIntegerParam(ADMinX, getRoiOffsetX());
         setupAquisition();
@@ -652,7 +583,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         status = setRoiSizeY(sizeY);
         status = setRoiOffsetY(minY);
         sizeY = getRoiSizeY();
-        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        changeVideoFormatConfig(sizeX / binX, sizeY / binY);
         setIntegerParam(ADSizeY, sizeY);
         setIntegerParam(ADMinY, getRoiOffsetY());
 
@@ -689,7 +620,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         sizeX = getRoiSizeX();
         // status = setRoiSizeY(sizeY);
         // status = setRoiOffsetY(minY);
-        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        changeVideoFormatConfig(sizeX / binX, sizeY / binY);
         setIntegerParam(ADMinX, getRoiOffsetX());
         setIntegerParam(ADSizeX, sizeX);
         setupAquisition();
@@ -725,7 +656,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         status = setRoiSizeY(sizeY);
         status = setRoiOffsetY(minY);
         sizeY = getRoiSizeY();
-        pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+        changeVideoFormatConfig(sizeX / binX, sizeY / binY);
         setIntegerParam(ADMinY, getRoiOffsetY());
         setIntegerParam(ADSizeY, sizeY);
         setupAquisition();
@@ -982,6 +913,10 @@ asynStatus ADPixci::updateIntialPVs()
 
     setStatIfHigher(&status, callParamCallbacks());
     return status;
+}
+
+void ADPixci::changeVideoFormatConfig(epicsInt32 width, epicsInt32 height){
+    pxd_setVideoResolution(UNIT, width, height, 0, 0);
 }
 
 void ADPixci::report(FILE *fp, epicsInt32 details)

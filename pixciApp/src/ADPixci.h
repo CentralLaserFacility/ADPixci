@@ -144,6 +144,13 @@ class ADPixci : public ADDriver
     epicsFloat64 Baudrate;
 
     /**
+     * @brief load initial settings parameters
+     *
+     * @return asynStatus asynSuccess or asynError
+     */
+    asynStatus setupAquisition();
+
+    /**
      * @brief Starts live capture image to frame buffer.
      */
     asynStatus aquireStart();
@@ -199,7 +206,7 @@ class ADPixci : public ADDriver
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
      */
-    virtual void changeVideoFormatConfig();
+    virtual void changeVideoFormatConfig(epicsInt32 width, epicsInt32 height);
 
     /*****************************************Methods overridden from ADDriver*****************************************/
     /**
@@ -229,13 +236,6 @@ class ADPixci : public ADDriver
 
     /* Queue for changing parameters that use serial communication. */
     epicsMessageQueue *paramMsgQue;
-
-    /**
-     * @brief load initial settings parameters
-     *
-     * @return asynStatus asynSuccess or asynError
-     */
-    asynStatus setupAquisition();
 
     /**
      * @brief update the PV ADTemperatureActual
