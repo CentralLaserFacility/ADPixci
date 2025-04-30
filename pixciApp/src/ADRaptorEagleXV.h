@@ -492,11 +492,11 @@ class ADRaptorEagleXV : public ADPixci
      */
     virtual asynStatus sendSoftTrigger() final;
 
+    /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
+
     virtual asynStatus updateStatus() final;
 
     virtual asynStatus updateIntialPVs() final;
-
-    /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 
     /**
      * @brief Overriden to implement custom write features
