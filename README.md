@@ -60,6 +60,9 @@ classDiagram
 
 ## Contributing
 
+To contribute to this repository please fork it, develop your code in your fork, and then create a pull request back into this repository. \
+From there, two CLF developers will review and merge your feature or fix.
+
 ### Adding a new detector
 If you encounter a new detector that recommends the use of the PIXCI&reg; frame grabber and XCLIB&trade; software, you can create a new detector class that inherits from ADPixci, in a similar manner to ADRaptorEagleXV. \
 The `changeVideoFormatConfig` method **must** be implemented for loading format files for different binning values. \
