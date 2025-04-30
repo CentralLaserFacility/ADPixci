@@ -20,7 +20,7 @@ The Eagle XV II Instruction Manual from [Raptor Photonics](https://www.raptorpho
 
 ### Architecture
 The high level architecture of this driver is shown in the below diagram. \
-*Note: this does not show all methods and parameters.*
+*Note: this does not show all methods and attributes.*
 
 The abstract class ADPixci inherits from the base areaDetector driver and provides generic code for using PIXCI&reg; frame grabbers with areaDetector. \
 ADRaptorEagleXV inherits from ADPixci, providing camera specific code and serial commands.
