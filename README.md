@@ -57,4 +57,11 @@ classDiagram
     }
     click ADDriver href "https://areadetector.github.io/areaDetector/ADCore/ADDriver.html" "ADDriver documentation"
 ```
-*Note: Other cameras that can be used with the PIXCI&reg; frame grabbers can inherit from ADPixci in a similar fashion, adding in their respective serial commands and quirks.*
+
+## Contributing
+
+### Adding a new detector
+If you encounter a new detector that recommends the use of the PIXCI&reg; frame grabber and XCLIB&trade; software, you can create a new detector class that inherits from ADPixci, in a similar manner to ADRaptorEagleXV. \
+The `changeVideoFormatConfig` method **must** be implemented for loading format files for different binning values. \
+If the `writeInt32`, `writeFloat64`, `updateStatus`, `updateInitialPVs`, or `handleParamTask`  methods are overloaded, make sure to call their ADPixci implementation too. \
+There are a few pure virtual functions for camera attributes you might want to use in ADPixci.h that can be implemented if needed too.
