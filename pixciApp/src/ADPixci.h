@@ -72,7 +72,7 @@ auto setStatIfHigher = [](asynStatus *status, const asynStatus returnedStatus)
  * @param cval char array of size 5
  * @return unsigned long long
  */
-static epicsUInt64 int8ToUInt64(epicsInt8 *cval);
+epicsUInt64 int8ToUInt64(epicsInt8 *cval);
 
 /**
  * @brief convert unsigned long long to char value 
@@ -80,7 +80,7 @@ static epicsUInt64 int8ToUInt64(epicsInt8 *cval);
  * @param lval unsigned long long value
  * @param cval address of char array of size 5
  */
-static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval);
+void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval);
 
 /**
  * @brief Inherited from ADDriver class which has all the parameters that all areaDetector drivers should implement.

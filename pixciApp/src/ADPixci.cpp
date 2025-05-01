@@ -201,7 +201,7 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
 
 #endif  // !defined(PIXCI_LITE)
 
-static epicsUInt64 int8ToUInt64(epicsInt8 *cval)
+epicsUInt64 int8ToUInt64(epicsInt8 *cval)
 {
     epicsUInt64 lval = 0;
     lval += (epicsUInt64)(epicsUInt8)cval[4];
@@ -212,7 +212,7 @@ static epicsUInt64 int8ToUInt64(epicsInt8 *cval)
     return lval;
 }
 
-static void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
+void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
 {
     cval[0] = (epicsInt8)((lval & 0xFF00000000) >> 32);
     cval[1] = (epicsInt8)((lval & 0x00FF000000) >> 24);
