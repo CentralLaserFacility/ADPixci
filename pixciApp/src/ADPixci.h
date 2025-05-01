@@ -41,8 +41,6 @@
 
 #include <cstdio>
 
-constexpr const char *driverName = "ADPixci";
-
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
 constexpr const char *UpdateStatusString = "PR_UPDATE_STATUS";
@@ -133,6 +131,8 @@ class ADPixci : public ADDriver
     } PRTriggerPolarity_t;
 
  protected:
+    const char *driverName;
+
     epicsInt32 PR_SoftTrigger;
     epicsInt32 PR_UpdateStatus;
     epicsInt32 PR_BuildDate;

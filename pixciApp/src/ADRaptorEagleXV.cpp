@@ -49,7 +49,7 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
     : ADPixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
 {
     Baudrate = BAUDRATE;
-
+    driverName = "ADRaptorEagleXV";
     createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePCB);
     createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec);
     createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain);

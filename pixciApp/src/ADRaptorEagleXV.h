@@ -35,7 +35,6 @@
 
 #include "ADPixci.h"
 
-constexpr const char *driverName = "ADRaptorEagleXV";
 constexpr const char *RAPTOR_EAGLE_XV_4710 = "Raptor_Eagle_XV_4710";  // 1056 x 1027 active pixels
 constexpr const char *RAPTOR_EAGLE_XV_4240 = "Raptor_Eagle_XV_4240";  // 2048 x 2048 active pixels
 
