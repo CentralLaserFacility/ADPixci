@@ -52,13 +52,13 @@ record(dfanout, "$(P)$(R)WriteEnabler") {
 }
 
 ################################################################################
-# If this record is processed, the driver will update the PCB temperature, the 
-# actual temperature, and the maunfacturer information 
+# Record to update the maunfacturer information 
 #
-record(bo, "$(P)$(R)UpdateStatus")
+record(bo, "$(P)$(R)UpdateInfo")
 {
    field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_INFO")
+   field(PINI, "1")
 }
 
 ################################################################################

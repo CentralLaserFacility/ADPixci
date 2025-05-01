@@ -322,10 +322,8 @@ class ADRaptorEagleXV : public ADPixci
 
     /**
      * @brief update the PVs related to manufacturers data
-     *
-     * @param callBackFlag Flag for calling the callParamCallbacks function
      */
-    asynStatus updateManufacturersData(epicsBoolean callBackFlag = epicsFalse);
+    asynStatus updateInfo();
 
     /*****************************Functions from Pixci class that are only implemented here****************************/
 
@@ -488,8 +486,6 @@ class ADRaptorEagleXV : public ADPixci
      * @return asynStatus
      */
     virtual asynStatus sendSoftTrigger() final;
-
-    virtual asynStatus updateStatus() final;
 
     /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 

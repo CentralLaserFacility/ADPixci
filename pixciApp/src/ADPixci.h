@@ -43,7 +43,7 @@
 
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
-constexpr const char *UpdateStatusString = "PR_UPDATE_STATUS";
+constexpr const char *UpdateInfoString = "PD_UPDATE_INFO";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
@@ -134,7 +134,7 @@ class ADPixci : public ADDriver
     const char *driverName;
 
     epicsInt32 PR_SoftTrigger;
-    epicsInt32 PR_UpdateStatus;
+    epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_TriggerPolarity;
 
@@ -405,7 +405,7 @@ class ADPixci : public ADDriver
      * @brief update the status related to device
      *
      */
-    virtual asynStatus updateStatus() = 0;
+    virtual asynStatus updateInfo() = 0;
 
     /******************************************************************************************************************/
 };

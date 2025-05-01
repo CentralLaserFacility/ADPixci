@@ -421,7 +421,7 @@ asynStatus ADRaptorEagleXV::updateTemperatureActual()
     return status;
 }
 
-asynStatus ADRaptorEagleXV::updateManufacturersData(epicsBoolean callBackFlag)
+asynStatus ADRaptorEagleXV::updateInfo()
 {
     using std::to_string;
 
@@ -493,8 +493,6 @@ asynStatus ADRaptorEagleXV::updateManufacturersData(epicsBoolean callBackFlag)
         DAC_M = 40.0f / (dacCountFortyDegree - dacCountZeroDegree);
         DAC_C = 40.0f - (DAC_M * dacCountFortyDegree);
 
-        if (callBackFlag)
-            callParamCallbacks();
         return asynSuccess;
     }
 
@@ -1171,14 +1169,6 @@ void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, 
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model not supported");
     }
     ADPixci::changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-}
-
-asynStatus ADRaptorEagleXV::updateStatus()
-{
-    asynStatus status = asynSuccess;
-    setStatIfHigher(&status, updateManufacturersData());
-    setStatIfHigher(&status, updateTemperatureActual());
-    return status;
 }
 
 asynStatus ADRaptorEagleXV::updateIntialPVs(){

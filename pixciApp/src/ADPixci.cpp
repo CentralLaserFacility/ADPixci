@@ -234,7 +234,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
 
     createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
     createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity);
-    createParam(UpdateStatusString, asynParamInt32, &PR_UpdateStatus);
+    createParam(UpdateInfoString, asynParamInt32, &PR_UpdateInfo);
     createParam(BuildDateString, asynParamOctet, &PR_BuildDate);
 
     setStringParam(ADModel, cameraModel);
@@ -276,7 +276,6 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 
     // Updating all the PVs related to the status of device and the manufacturers data
-    setStatIfHigher(&status, updateStatus());
     setStatIfHigher(&status, updateIntialPVs());
     if (status == asynError)
     {
@@ -466,9 +465,9 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     {
         status = sendSoftTrigger();
     }
-    else if (parameter == PR_UpdateStatus)
+    else if (parameter == PR_UpdateInfo)
     {
-        status = updateStatus();
+        status = this->updateInfo();
     }
     else if (parameter == ADTemperatureActual)
     {
@@ -848,7 +847,7 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
     if (function == ADBinX || function == ADBinY || function == ADReadStatus || function == ADTriggerMode ||
-        function == PR_SoftTrigger || function == PR_UpdateStatus || function == PR_TriggerPolarity ||
+        function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_TriggerPolarity ||
         function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY ) 
     {
         addToParamQue(function, value);
