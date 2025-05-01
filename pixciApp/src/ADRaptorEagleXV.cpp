@@ -262,7 +262,7 @@ epicsFloat64 ADRaptorEagleXV::getTemperaturePcb()
     return lval / 16.0;
 }
 
-epicsFloat64 ADRaptorEagleXV::getTecTemperature()
+epicsFloat64 ADRaptorEagleXV::getCoolingSetPoint()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -276,7 +276,7 @@ epicsFloat64 ADRaptorEagleXV::getTecTemperature()
     return convertDacCountToCentigrade(lval);
 }
 
-asynStatus ADRaptorEagleXV::setTecTemperature(epicsFloat64 temperature)
+asynStatus ADRaptorEagleXV::setCoolingSetPoint(epicsFloat64 temperature)
 {
     epicsUInt16 dacCount = convertCentigradeToDacCount(temperature);
 

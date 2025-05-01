@@ -234,7 +234,6 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
 
     createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
     createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity);
-    createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature);
     createParam(UpdateStatusString, asynParamInt32, &PR_UpdateStatus);
     createParam(BuildDateString, asynParamOctet, &PR_BuildDate);
 
@@ -494,11 +493,11 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     }
     else if (parameter == ADTemperature)
     {
-        status = setTecTemperature(d_val);
+        status = this->setCoolingSetPoint(d_val);
         if (status == asynSuccess)
         {
-            epicsFloat64 tecTemperature = getTecTemperature();
-            setDoubleParam(ADTemperature, tecTemperature);
+            epicsFloat64 coolingSetPoint = this->getCoolingSetPoint();
+            setDoubleParam(ADTemperature, coolingSetPoint);
         }
     }
     else if (parameter == ADAcquireTime)
@@ -637,8 +636,6 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         }
         acquireStop();
 
-        // status = setRoiSizeX(sizeX);
-        // status = setRoiOffsetX(minX);
         status = setRoiSizeY(sizeY);
         status = setRoiOffsetY(minY);
         sizeY = getRoiSizeY();

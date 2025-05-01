@@ -244,14 +244,24 @@ class ADPixci : public ADDriver
     /* Queue for changing parameters that use serial communication. */
     epicsMessageQueue *paramMsgQue;
 
-    /**
-     * @brief update the PV ADTemperatureActual
-     *
-     * @param callBackFlag Flag for calling the callParamCallbacks function
-     */
-    asynStatus updateADTemperatureActual(epicsBoolean callBackFlag = epicsFalse);
-
     /**********************************************Pure virtual functions**********************************************/
+
+    /**
+    /**
+     * @brief Readback the desired temperature for the cooling system on the camera
+     *
+     * @return double temperature in centigrade
+     */
+    virtual epicsFloat64 getCoolingSetPoint() = 0;
+    
+    /**
+     * @brief Set the desired temperature for the cooling system on the camera
+     *
+     * @param temperature
+     * @return asynStatus
+     */
+    virtual asynStatus setCoolingSetPoint(epicsFloat64 temperature) = 0;
+
     /**
      * @brief Set the Frame Rate for Internal FFR mode
      *
@@ -321,7 +331,7 @@ class ADPixci : public ADDriver
      */
     virtual asynStatus setRoiOffsetY(epicsInt32 RoiOffsetY) = 0;
 
-     /**
+    /**
      * @brief Get the ROI Offset Y
      *
      * @return int

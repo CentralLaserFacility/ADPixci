@@ -192,21 +192,6 @@ class ADRaptorEagleXV : public ADPixci
     asynStatus setSystemStatus(epicsInt8 val);
 
     /**
-     * @brief Set the Frame Rate for Internal FFR mode
-     *
-     * @param frameRate
-     * @return asynStatus
-     */
-    asynStatus setFrameRate(epicsFloat64 frameRate) final;
-
-        /**
-     * @brief Get the Frame Rate from the camera
-     *
-     * @return double framerate
-     */
-    epicsFloat64 getFrameRate() final;
-
-        /**
      * @brief Convert the ADC Count to the temperature in centigrade
      *
      * @param adcCount ADC count value
@@ -244,20 +229,7 @@ class ADRaptorEagleXV : public ADPixci
      */
     epicsFloat64 getTemperaturePcb();
 
-    /**
-     * @brief Get the Tec Temperature from the camera
-     *
-     * @return double TEC temperature in centigrade
-     */
-    epicsFloat64 getTecTemperature();
     
-    /**
-     * @brief Set the TEC Temperature
-     *
-     * @param temperature
-     * @return asynStatus
-     */
-    asynStatus setTecTemperature(epicsFloat64 temperature);
     
     /**
      * @brief Get the FPGA Status from camera
@@ -365,6 +337,36 @@ class ADRaptorEagleXV : public ADPixci
     asynStatus updateManufacturersData(epicsBoolean callBackFlag = epicsFalse);
 
     /*****************************Functions from Pixci class that are only implemented here****************************/
+
+    /**
+     * @brief Get the Tec temperature from the camera
+     *
+     * @return double TEC temperature in centigrade
+     */
+    virtual epicsFloat64 getCoolingSetPoint() final;
+    
+    /**
+     * @brief Set the TEC temperature
+     *
+     * @param temperature
+     * @return asynStatus
+     */
+    virtual asynStatus setCoolingSetPoint(epicsFloat64 temperature) final;
+
+    /**
+     * @brief Set the Frame Rate for Internal FFR mode
+     *
+     * @param frameRate
+     * @return asynStatus
+     */
+    asynStatus setFrameRate(epicsFloat64 frameRate) final;
+
+    /**
+     * @brief Get the Frame Rate from the camera
+     *
+     * @return double framerate
+     */
+    epicsFloat64 getFrameRate() final;
 
     /**
      * @brief Set the ROI Size X
