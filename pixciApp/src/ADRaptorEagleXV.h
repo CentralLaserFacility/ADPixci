@@ -470,14 +470,6 @@ class ADRaptorEagleXV : public ADPixci
     virtual asynStatus setBin(epicsInt32 val, epicsBoolean coordinate) final;
 
     /**
-     * @brief Get the Binning settings. Uses serial communication.
-     *
-     * @param coordinate 0 for x axis and 1 for y axis.
-     * @return epicsInt32
-     */
-    virtual epicsInt32 getBin(epicsBoolean coordinate) final;
-
-    /**
      * @brief Set the Trigger Mode for the image capturing
      *
      * @param mode index of the mode,

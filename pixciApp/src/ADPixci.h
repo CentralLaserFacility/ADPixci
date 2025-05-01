@@ -387,14 +387,6 @@ class ADPixci : public ADDriver
     virtual asynStatus setBin(epicsInt32 val, epicsBoolean coordinate) = 0;
 
     /**
-     * @brief Get the Binning settings. Uses serial communication.
-     *
-     * @param coordinate 0 for x axis and 1 for y axis.
-     * @return epicsInt32
-     */
-    virtual epicsInt32 getBin(epicsBoolean coordinate) = 0;
-
-    /**
      * @brief Set the Trigger Mode for the image capturing
      *
      * @param mode index of the mode
