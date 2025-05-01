@@ -39,6 +39,15 @@ constexpr const char *driverName = "ADRaptorEagleXV";
 constexpr const char *RAPTOR_EAGLE_XV_4710 = "Raptor_Eagle_XV_4710";  // 1056 x 1027 active pixels
 constexpr const char *RAPTOR_EAGLE_XV_4240 = "Raptor_Eagle_XV_4240";  // 2048 x 2048 active pixels
 
+constexpr const char *TemperaturePCBString = "PR_TEMPERATURE_PCB";
+constexpr const char *ToggleTecString = "PR_TOGGLE_TEC";
+constexpr const char *ToggleGainString = "PR_TOGGLE_Gain";
+constexpr const char *ToggleFPGACommsString = "PR_TOGGLE_FPGA_COMMS";
+constexpr const char *ADCCalibrationZeroDegreeString = "PR_ADC_CALIBRATION_ZERO_DEGREE";
+constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORTY_DEGREE";
+constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
+constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
+
 constexpr const epicsFloat64 BAUDRATE = 115200;
 constexpr const epicsFloat64 MILLISECOND_PER_COUNT = 1.6384;
 

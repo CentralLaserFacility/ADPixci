@@ -45,16 +45,8 @@ constexpr const char *driverName = "ADPixci";
 
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
-constexpr const char *TemperaturePCBString = "PR_TEMPERATURE_PCB";
-constexpr const char *ToggleTecString = "PR_TOGGLE_TEC";
-constexpr const char *ToggleGainString = "PR_TOGGLE_Gain";
-constexpr const char *ToggleFPGACommsString = "PR_TOGGLE_FPGA_COMMS";
 constexpr const char *UpdateStatusString = "PR_UPDATE_STATUS";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
-constexpr const char *ADCCalibrationZeroDegreeString = "PR_ADC_CALIBRATION_ZERO_DEGREE";
-constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORTY_DEGREE";
-constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
-constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
 
