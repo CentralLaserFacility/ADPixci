@@ -32,6 +32,8 @@
 
 #include "ADRaptorEagleXV.h"
 
+#include <string>
+
 /* ADPixci headers
  source: http://www.epixinc.com/products/xclib.htm
  XCLW64 .dll and .lib files should be included for windows-64 OS
@@ -44,8 +46,8 @@ extern "C"
 #include "xcliball.h"
 }
 
-ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
-    const char *cameraModel, const char *formatFile)
+ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
+    epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
     : ADPixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
 {
     Baudrate = BAUDRATE;
@@ -650,9 +652,9 @@ asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
         break;
     case PRExternalTrigger:
         {   // brackets so that trigger polarity goes out of scope after this case
-            epicsInt32 triggerPolarity = PRExternalRisingEdge;
+            epicsInt32 triggerPolarity = PRExtRisingEdge;
             getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            hexval = (triggerPolarity == PRExternalFallingEdge) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
+            hexval = (triggerPolarity == PRExtFallingEdge) ? EXTERNAL_FALLING_EDGE_BYTE : EXTERNAL_RISING_EDGE_BYTE;
         }
         break;
     case PRSoftTrigger:
@@ -1311,13 +1313,13 @@ void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, 
     else if (parameter == PR_TriggerPolarity)
     {
         epicsInt32 triggerMode = PRInternalITRTrigger;
-        if (i_val == PRExternalRisingEdge)
+        if (i_val == PRExtRisingEdge)
         {
-            setIntegerParam(PR_TriggerPolarity, PRExternalRisingEdge);
+            setIntegerParam(PR_TriggerPolarity, PRExtRisingEdge);
         }
-        else if (i_val == PRExternalFallingEdge)
+        else if (i_val == PRExtFallingEdge)
         {
-            setIntegerParam(PR_TriggerPolarity, PRExternalFallingEdge);
+            setIntegerParam(PR_TriggerPolarity, PRExtFallingEdge);
         }
         callParamCallbacks();
         getIntegerParam(ADTriggerMode, &triggerMode);

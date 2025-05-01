@@ -225,8 +225,8 @@ void uInt64ToInt8(epicsUInt64 lval, epicsInt8 *cval)
 /**
  * @brief Default constructor to create a new ADPixci::ADPixci object
  */
-ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
-    const char *cameraModel, const char *formatFile)
+ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority,
+    epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
     : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
     epicsInt32 connectionStatusCode = 0;
@@ -460,7 +460,7 @@ void ADPixci::acquireTask()
 void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
-    
+
     if (parameter == PR_SoftTrigger)
     {
         status = sendSoftTrigger();
@@ -525,7 +525,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         {
             epicsInt32 acquire = 0;
             epicsInt32 triggerMode;
-            epicsInt32 triggerPolarity = PRExternalRisingEdge;
+            epicsInt32 triggerPolarity = PRExtRisingEdge;
             setIntegerParam(ADBinX, i_val);     // Updating the binX value.
             getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
             getIntegerParam(ADTriggerMode, &triggerMode);
@@ -535,7 +535,8 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
                 acquireStop();
             }
             callParamCallbacks();
-            this->changeVideoFormatConfig(i_val, binY, sizeX, sizeY);  // Video settings have to be loaded respective of binning value.
+            // Video settings have to be loaded respective of binning value.
+            this->changeVideoFormatConfig(i_val, binY, sizeX, sizeY);
             setIntegerParam(PR_TriggerPolarity, triggerPolarity);
             setTriggerMode(triggerMode);
             setupAquisition();
@@ -558,7 +559,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         {
             epicsInt32 acquire = 0;
             epicsInt32 triggerMode = ADTriggerInternal;
-            epicsInt32 triggerPolarity = PRExternalRisingEdge;
+            epicsInt32 triggerPolarity = PRExtRisingEdge;
             setIntegerParam(ADBinY, i_val);
             getIntegerParam(ADAcquire, &acquire);
             getIntegerParam(ADTriggerMode, &triggerMode);
@@ -848,7 +849,7 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     */
     if (function == ADBinX || function == ADBinY || function == ADReadStatus || function == ADTriggerMode ||
         function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_TriggerPolarity ||
-        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY ) 
+        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY )
     {
         addToParamQue(function, value);
     }

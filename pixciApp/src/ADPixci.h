@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PIXCIAPP_SRC_PIXCI_H_
-#define PIXCIAPP_SRC_PIXCI_H_
+#ifndef PIXCIAPP_SRC_ADPIXCI_H_
+#define PIXCIAPP_SRC_ADPIXCI_H_
 
 /* AreaDetector headers */
 #include "ADDriver.h"
@@ -126,8 +126,8 @@ class ADPixci : public ADDriver
     /* Trigger Polarity */
     typedef enum
     {
-        PRExternalRisingEdge,
-        PRExternalFallingEdge
+        PRExtRisingEdge,
+        PRExtFallingEdge
     } PRTriggerPolarity_t;
 
  protected:
@@ -151,7 +151,7 @@ class ADPixci : public ADDriver
      * @brief Starts live capture image to frame buffer.
      */
     asynStatus aquireStart();
-    
+
     /**
      * @brief Stops live capturing.
      */
@@ -241,7 +241,7 @@ class ADPixci : public ADDriver
      * @return double temperature in centigrade
      */
     virtual epicsFloat64 getCoolingSetPoint() = 0;
-    
+
     /**
      * @brief Set the desired temperature for the cooling system on the camera
      *
@@ -409,4 +409,4 @@ class ADPixci : public ADDriver
 
     /******************************************************************************************************************/
 };
-#endif  // PIXCIAPP_SRC_PIXCI_H_
+#endif  // PIXCIAPP_SRC_ADPIXCI_H_
