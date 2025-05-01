@@ -472,7 +472,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     }
     else if (parameter == ADTemperatureActual)
     {
-        this->updateTemperatureActual();
+        status = this->updateTemperatureActual();
     }
     else if (parameter == ADAcquirePeriod)
     {

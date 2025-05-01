@@ -328,6 +328,7 @@ class ADRaptorEagleXV : public ADPixci
     asynStatus updateManufacturersData(epicsBoolean callBackFlag = epicsFalse);
 
     /*****************************Functions from Pixci class that are only implemented here****************************/
+
     /**
      * @brief update the PCB and CCD temperatures of the camera
      */

@@ -61,8 +61,9 @@ record(bo, "$(P)$(R)UpdateStatus")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
 }
 
-# Override TemperatureActual from ADCore
-# to force a readback of the temperature at a 5 second interval
+################################################################################
+# Override TemperatureActual from ADCore to force a readback of the temperature
+# at a 5 second interval
 record(ai, "$(P)$(R)TemperatureActual")
 {
    field(SCAN, "5 second")
