@@ -9,7 +9,8 @@ dbLoadDatabase "dbd/pixci.dbd"
 pixci_registerRecordDeviceDriver pdbbase
 
 # Set this to the model of the camera you are using
-epicsEnvSet("CAMERA_MODEL","4710")
+epicsEnvSet("MODEL_NUMBER","4710")
+epicsEnvSet("CAMERA_MODEL","Raptor_Eagle_XV_$(MODEL_NUMBER)")
 
 # Prefix for all records
 epicsEnvSet("PREFIX", "13PS1:")
@@ -19,16 +20,16 @@ epicsEnvSet("PORT",   "PS1")
 epicsEnvSet("QSIZE",  "20")
 
 # the video format file to load initially
-epicsEnvSet("RAPTOR_SETTINGS_FILE","fmt/Raptor_Eagle_XV_$(CAMERA_MODEL).fmt")
+epicsEnvSet("FORMAT_FILE","fmt/$(CAMERA_MODEL).fmt")
 
 # The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
-#pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,formatfile)
-pixciConfig("$(PORT)", 0,  0, 0, 0, "Raptor_Eagle_XV_$(CAMERA_MODEL)", $(RAPTOR_SETTINGS_FILE))
+#pixciConfig(portName, maxBuffers,maxMemory,priority,stackSize,cameraModel,formatfile)
+pixciConfig("$(PORT)", 0, 0, 0, 0, "$(CAMERA_MODEL)", $(FORMAT_FILE))
 
 ## Load record instances
-dbLoadRecords("$(ADPIXCI)/db/Pixci.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
+dbLoadRecords("$(ADPIXCI)/db/RaptorEagleXV.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 # Create an NDStdArrays plugin
 NDStdArraysConfigure("Image1", 20, 0, "$(PORT)", 0, 0, 0, 0, 0, 5)
