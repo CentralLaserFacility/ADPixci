@@ -45,7 +45,6 @@ constexpr const char *driverName = "ADPixci";
 
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
-constexpr const char *UpdateTemperatureString = "PR_UPDATE_TEMPERATURE";
 constexpr const char *TemperaturePCBString = "PR_TEMPERATURE_PCB";
 constexpr const char *ToggleTecString = "PR_TOGGLE_TEC";
 constexpr const char *ToggleGainString = "PR_TOGGLE_Gain";
@@ -143,7 +142,6 @@ class ADPixci : public ADDriver
 
  protected:
     epicsInt32 PR_SoftTrigger;
-    epicsInt32 PR_UpdateTemperature;
     epicsInt32 PR_UpdateStatus;
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_TriggerPolarity;
@@ -201,12 +199,6 @@ class ADPixci : public ADDriver
      */
     virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
-    /**
-     * @brief update the status related to device
-     *
-     */
-    virtual asynStatus updateStatus();
-
     virtual asynStatus updateIntialPVs();
 
     /**
@@ -247,6 +239,10 @@ class ADPixci : public ADDriver
     /**********************************************Pure virtual functions**********************************************/
 
     /**
+     * @brief update the PVs related to temperature of the camera
+     */
+    virtual asynStatus updateTemperatureActual() = 0;
+
     /**
      * @brief Readback the desired temperature for the cooling system on the camera
      *
@@ -420,6 +416,13 @@ class ADPixci : public ADDriver
      * @return asynStatus
      */
     virtual asynStatus sendSoftTrigger() = 0;
+
+    /**
+     * @brief update the status related to device
+     *
+     */
+    virtual asynStatus updateStatus() = 0;
+
     /******************************************************************************************************************/
 };
 #endif  // PIXCIAPP_SRC_PIXCI_H_

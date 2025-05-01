@@ -470,11 +470,9 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     {
         status = updateStatus();
     }
-    else if (parameter == PR_UpdateTemperature)
+    else if (parameter == ADTemperatureActual)
     {
-        // TODO: decide which temperature should use the ad default one and sort these out
-        updateADTemperatureActual();
-        updateTemperaturePcb(epicsTrue);
+        this->updateTemperatureActual();
     }
     else if (parameter == ADAcquirePeriod)
     {
@@ -850,9 +848,8 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
     if (function == ADBinX || function == ADBinY || function == ADReadStatus || function == ADTriggerMode ||
-        function == PR_SoftTrigger || function == PR_UpdateStatus || function == PR_UpdateTemperature ||
-        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY ||
-        function == PR_TriggerPolarity) 
+        function == PR_SoftTrigger || function == PR_UpdateStatus || function == PR_TriggerPolarity ||
+        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY ) 
     {
         addToParamQue(function, value);
     }
@@ -898,22 +895,6 @@ void ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 }
 
 // PV Updating Functions
-asynStatus ADPixci::updateADTemperatureActual(epicsBoolean callBackFlag)
-{
-    asynStatus status = asynSuccess;
-    setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, getTemperatureActual()));    // setting the Actual Temperature PV
-    if (callBackFlag)
-        setStatIfHigher(&status, callParamCallbacks());
-    return status;
-}
-
-asynStatus ADPixci::updateStatus()
-{
-    asynStatus status = asynSuccess;
-    // TODO: Get the manufacturer data and also refactor the AdcCountToCentigrade function
-    setStatIfHigher(&status, updateADTemperatureActual());
-    return status;
-}
 
 asynStatus ADPixci::updateIntialPVs()
 {

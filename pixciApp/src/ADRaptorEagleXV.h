@@ -117,7 +117,7 @@ class ADRaptorEagleXV : public ADPixci
     } PRTriggerMode_t;
 
  protected:
-    epicsInt32 PR_TemperaturePcb;
+    epicsInt32 PR_TemperaturePCB;
     epicsInt32 PR_ToggleTec;
     epicsInt32 PR_ToggleGain;
     epicsInt32 PR_ToggleFpgaComms;
@@ -216,20 +216,11 @@ class ADRaptorEagleXV : public ADPixci
     epicsFloat64 convertDacCountToCentigrade(epicsInt16 dacCount);
 
     /**
-     * @brief Get the Actual Temperature from the camera
-     *
-     * @return double actual temperature
-     */
-    epicsFloat64 getTemperatureActual() override;
-
-    /**
-     * @brief Get the PCB Temperature from the camera
+     * @brief Get the PCB temperature from the camera
      *
      * @return double PCB temperature
      */
-    epicsFloat64 getTemperaturePcb();
-
-    
+    epicsFloat64 getTemperaturePCB();
     
     /**
      * @brief Get the FPGA Status from camera
@@ -320,14 +311,6 @@ class ADRaptorEagleXV : public ADPixci
      * @return epicsFloat64 delay time in ms
      */
     epicsFloat64 convertHexToDelayTime(epicsUInt8 hexVal);
-    
-    /**
-     * @brief update the PV TemperaturePCB
-     *
-     * @param callBackFlag Flag for calling the callParamCallbacks function
-     * @return asynStatus
-     */
-    asynStatus updateTemperaturePcb(epicsBoolean callBackFlag = epicsFalse);
 
     /**
      * @brief update the PVs related to manufacturers data
@@ -337,6 +320,17 @@ class ADRaptorEagleXV : public ADPixci
     asynStatus updateManufacturersData(epicsBoolean callBackFlag = epicsFalse);
 
     /*****************************Functions from Pixci class that are only implemented here****************************/
+    /**
+     * @brief update the PCB and CCD temperatures of the camera
+     */
+    virtual asynStatus updateTemperatureActual() final;
+
+    /**
+     * @brief Get the CCD temperature from the camera
+     *
+     * @return double CCD temperature
+     */
+    virtual epicsFloat64 getTemperatureActual() final;
 
     /**
      * @brief Get the Tec temperature from the camera
@@ -494,9 +488,9 @@ class ADRaptorEagleXV : public ADPixci
      */
     virtual asynStatus sendSoftTrigger() final;
 
-    /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
-
     virtual asynStatus updateStatus() final;
+
+    /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 
     virtual asynStatus updateIntialPVs() final;
 

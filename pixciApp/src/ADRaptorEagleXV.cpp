@@ -50,7 +50,7 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
 {
     Baudrate = BAUDRATE;
 
-    createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePcb);
+    createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePCB);
     createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec);
     createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain);
     createParam(ToggleFPGACommsString, asynParamInt32, &PR_ToggleFpgaComms);
@@ -249,7 +249,7 @@ epicsFloat64 ADRaptorEagleXV::getTemperatureActual()
     return convertAdcCountToCentigrade(adcCount);
 }
 
-epicsFloat64 ADRaptorEagleXV::getTemperaturePcb()
+epicsFloat64 ADRaptorEagleXV::getTemperaturePCB()
 {
     epicsInt8 cval[2] = {0, 0};
 
@@ -412,12 +412,12 @@ epicsFloat64 ADRaptorEagleXV::getShutterCloseDelay()
     return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
 }
 
-asynStatus ADRaptorEagleXV::updateTemperaturePcb(epicsBoolean callBackFlag)
+asynStatus ADRaptorEagleXV::updateTemperatureActual()
 {
     asynStatus status = asynSuccess;
-    setStatIfHigher(&status, setDoubleParam(PR_TemperaturePcb, getTemperaturePcb()));
-    if (callBackFlag)
-        setStatIfHigher(&status, callParamCallbacks());
+    setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, getTemperatureActual()));
+    setStatIfHigher(&status, setDoubleParam(PR_TemperaturePCB, getTemperaturePCB()));
+    setStatIfHigher(&status, callParamCallbacks());
     return status;
 }
 
@@ -1177,8 +1177,7 @@ asynStatus ADRaptorEagleXV::updateStatus()
 {
     asynStatus status = asynSuccess;
     setStatIfHigher(&status, updateManufacturersData());
-    setStatIfHigher(&status, updateTemperaturePcb(epicsTrue));
-    setStatIfHigher(&status, ADPixci::updateStatus());
+    setStatIfHigher(&status, updateTemperatureActual());
     return status;
 }
 
