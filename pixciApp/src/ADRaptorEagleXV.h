@@ -99,7 +99,7 @@ class ADRaptorEagleXV : public ADPixci
         const char *cameraModel, const char *formatFile);
 
     /* Binning Options */
-    typedef enum PR_BinningOptions_t
+    typedef enum
     {
         PR_BIN_1 = 1,
         PR_BIN_2 = 2,
@@ -108,7 +108,7 @@ class ADRaptorEagleXV : public ADPixci
         PR_BIN_16 = 16,
         PR_BIN_32 = 32,
         PR_BIN_FVB = 2048,
-    };
+    } PR_BinningOptions_t;
 
     /* Trigger modes of Raptor Eagle-XV */
     /* ITR mode will be used to capture a continuous sequence of images.
