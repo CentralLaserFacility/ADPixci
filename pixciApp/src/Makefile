@@ -7,8 +7,13 @@ ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
 USR_CPPFLAGS += -D__X64
 endif
 
+# INC += ADPixci.h
+# INC += ADRaptorEagleXV.h
+# INC += pixciMain.h
+
 LIBRARY_IOC_WIN32 = pixci
-LIB_SRCS_WIN32 += pixci.cpp
+LIB_SRCS += pixciMain.cpp
+LIB_SRCS += ADPixci.cpp ADRaptorEagleXV.cpp 
 
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 LIB_LIBS += XCLIBWNT
