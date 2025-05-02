@@ -1168,7 +1168,7 @@ void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, 
         }
     }
     else {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model not supported");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model %s not supported ???", cameraModel.c_str());
     }
     ADPixci::changeVideoFormatConfig(binX, binY, sizeX, sizeY);
 }
