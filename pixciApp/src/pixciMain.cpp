@@ -51,7 +51,7 @@ extern "C" epicsInt32 pixciConfig(const char *portName, epicsInt32 maxBuffers, s
         }
         catch(const std::runtime_error& e)
         {
-            epicsStdoutPrintf("%s\n", e.what());
+            epicsStdoutPrintf("Runtime Error: %s\n", e.what());
             return asynError;
         }
     }

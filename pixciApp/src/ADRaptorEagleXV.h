@@ -47,7 +47,6 @@ constexpr const char *ADCCalibrationFortyDegreeString = "PR_ADC_CALIBRATION_FORT
 constexpr const char *DACCalibrationZeroDegreeString = "PR_DAC_CALIBRATION_ZERO_DEGREE";
 constexpr const char *DACCalibrationFortyDegreeString = "PR_DAC_CALIBRATION_FORTY_DEGREE";
 
-constexpr const epicsFloat64 BAUDRATE = 115200;
 constexpr const epicsFloat64 MILLISECOND_PER_COUNT = 1.6384;
 
 constexpr const epicsFloat64 COUNT_PER_FRAME = 40e6;

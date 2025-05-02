@@ -51,6 +51,7 @@ constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integer
 constexpr const char *DRIVERPARMS = "";     // Use '-QU 0' for no interrupts.
 constexpr const epicsInt32 UNIT = 1;        // Unit to be selected for streaming
 constexpr const epicsInt32 RESERVED  = 0;
+constexpr const epicsFloat64 BAUDRATE = 115200;
 
 constexpr const epicsBoolean BIN_AXIS_X = epicsFalse;
 constexpr const epicsBoolean BIN_AXIS_Y = epicsTrue;
@@ -137,8 +138,6 @@ class ADPixci : public ADDriver
     epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_TriggerPolarity;
-
-    epicsFloat64 Baudrate;
 
     /**
      * @brief load initial settings parameters

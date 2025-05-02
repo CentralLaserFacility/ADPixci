@@ -248,7 +248,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     if (connectionStatusCode < PIXCI_NO_ERROR)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: Cannot OPEN camera: %s.",
+                  "%s: Cannot OPEN camera: %s\n",
                   driverName, pxd_mesgErrorCode(connectionStatusCode));
         throw std::runtime_error("Failed to open camera");
     }
@@ -257,12 +257,12 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
                   "%s Camera connected;",
                   driverName);
-        serialConnection = pxd_serialConfigure(UNIT, RESERVED, Baudrate, 8, 0, 1, RESERVED, RESERVED, RESERVED);
+        serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
         if (serialConnection < PIXCI_NO_ERROR)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                      "%s: Cannot make serial connection: %s.",
-                      driverName, pxd_mesgErrorCode(connectionStatusCode));
+                      "%s: Cannot make serial connection: %s\n",
+                      driverName, pxd_mesgErrorCode(serialConnection));
             throw std::runtime_error("Failed to make serial connection");
         }
     }
