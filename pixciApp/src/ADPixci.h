@@ -43,7 +43,7 @@
 
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
-constexpr const char *UpdateInfoString = "PD_UPDATE_INFO";
+constexpr const char *UpdateInfoString = "PR_UPDATE_INFO";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
