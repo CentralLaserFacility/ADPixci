@@ -418,7 +418,6 @@ asynStatus ADRaptorEagleXV::updateTemperatureActual()
     asynStatus status = asynSuccess;
     setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, getTemperatureActual()));
     setStatIfHigher(&status, setDoubleParam(PR_TemperaturePCB, getTemperaturePCB()));
-    setStatIfHigher(&status, callParamCallbacks());
     return status;
 }
 

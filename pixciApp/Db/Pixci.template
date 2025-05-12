@@ -62,10 +62,13 @@ record(bo, "$(P)$(R)UpdateInfo")
 }
 
 ################################################################################
-# Override TemperatureActual from ADCore to force a readback of the temperature
-# at a 5 second interval
-record(ai, "$(P)$(R)TemperatureActual")
+# Record to update temperature readings from the device at a regular interval
+#
+record(bo, "$(P)$(R)UpdateTemperature")
 {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
+   field(PINI, "1")
    field(SCAN, "5 second")
 }
 
@@ -132,7 +135,6 @@ record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
 {
    field(EGU, "ms")
 }
-
 
 ################################################################################
 # Records to disable settings records while acquiring

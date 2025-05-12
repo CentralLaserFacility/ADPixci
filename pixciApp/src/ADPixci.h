@@ -44,6 +44,7 @@
 constexpr const char *SoftTriggerParamString = "PR_SOFT_TRIGGER";
 constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
 constexpr const char *UpdateInfoString = "PR_UPDATE_INFO";
+constexpr const char *UpdateTemperatureString = "PR_UPDATE_TEMPERATURE";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
@@ -136,6 +137,7 @@ class ADPixci : public ADDriver
 
     epicsInt32 PR_SoftTrigger;
     epicsInt32 PR_UpdateInfo;
+    epicsInt32 PR_UpdateTemperature;
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_TriggerPolarity;
 

@@ -235,6 +235,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
     createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity);
     createParam(UpdateInfoString, asynParamInt32, &PR_UpdateInfo);
+    createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature);
     createParam(BuildDateString, asynParamOctet, &PR_BuildDate);
 
     setStringParam(ADModel, cameraModel);
@@ -469,7 +470,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     {
         status = this->updateInfo();
     }
-    else if (parameter == ADTemperatureActual)
+    else if (parameter == PR_UpdateTemperature)
     {
         status = this->updateTemperatureActual();
     }
@@ -847,9 +848,10 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
-    if (function == ADBinX || function == ADBinY || function == ADReadStatus || function == ADTriggerMode ||
-        function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_TriggerPolarity ||
-        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY )
+    if (function == ADReadStatus || function == ADTriggerMode || function == PR_TriggerPolarity ||
+        function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_UpdateTemperature ||
+        function == ADBinX || function == ADBinY || function == ADMinX || function == ADMinY ||
+        function == ADSizeX || function == ADSizeY )
     {
         addToParamQue(function, value);
     }

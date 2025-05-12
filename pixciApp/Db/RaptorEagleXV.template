@@ -41,7 +41,7 @@ record(ai, "$(P)$(R)TemperaturePCB")
 {
    field(DTYP, "asynFloat64")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEMPERATURE_PCB")
-   field(PREC, "3")
+   field(PREC, "1")
    field(EGU, "C")
    field(SCAN, "I/O Intr")
 }
