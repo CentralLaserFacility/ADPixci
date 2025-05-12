@@ -1229,15 +1229,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
             }
         }
     } /* set  value for default parameters */
-    else if (function == PR_ToggleTec)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_ToggleGain)
-    {
-        addToParamQue(function, value);
-    }
-    else if (function == PR_ToggleFpgaComms)
+    else if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
     {
         addToParamQue(function, value);
     } else {
