@@ -144,7 +144,7 @@ class ADPixci : public ADDriver
     /**
      * @brief load initial settings parameters
      *
-     * @return asynStatus asynSuccess or asynError
+     * @return asynStatus
      */
     asynStatus setupAquisition();
 

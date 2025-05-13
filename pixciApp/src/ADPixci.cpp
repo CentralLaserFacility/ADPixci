@@ -248,23 +248,27 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
 
     if (connectionStatusCode < PIXCI_NO_ERROR)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: Cannot OPEN camera: %s\n",
-                  driverName, pxd_mesgErrorCode(connectionStatusCode));
-        throw std::runtime_error("Failed to open camera");
+        std::string errMsg = pxd_mesgErrorCode(connectionStatusCode);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName, errMsg);
+        setIntegerParam(ADStatus, ADStatusDisconnected);
+        setStringParam(ADStatusMessage, errMsg);
+        this->deviceIsReachable = epicsFalse;
+        throw std::runtime_error("Failed to open camera: " + errMsg);
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "%s Camera connected;",
-                  driverName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s Camera connected\n", driverName);
+        setIntegerParam(ADStatus, ADStatusIdle);
         serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
         if (serialConnection < PIXCI_NO_ERROR)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                      "%s: Cannot make serial connection: %s\n",
-                      driverName, pxd_mesgErrorCode(serialConnection));
-            throw std::runtime_error("Failed to make serial connection");
+            std::string errMsg = pxd_mesgErrorCode(serialConnection);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot make serial connection: %s\n", driverName, 
+                errMsg);
+            setIntegerParam(ADStatus, ADStatusError);
+            setStringParam(ADStatusMessage, errMsg);
+            this->deviceIsReachable = epicsFalse;
+            throw std::runtime_error("Failed to make serial connection: " + errMsg);
         }
     }
 
@@ -286,89 +290,94 @@ ADPixci::~ADPixci()
     disconnectStatusCode = pxd_PIXCIclose();
     if (disconnectStatusCode < PIXCI_NO_ERROR)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: disconnect camera error: %s .",
-                  driverName, pxd_mesgErrorCode(disconnectStatusCode));
+        std::string errMsg = pxd_mesgErrorCode(disconnectStatusCode);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, errMsg);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, errMsg);
+        throw std::runtime_error("Failed to disconnect the camera: " + errMsg);
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "%s: camera disconnected;",
-                  driverName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s: Camera disconnected\n", driverName);
+        setIntegerParam(ADStatus, ADStatusDisconnected);
+        setStringParam(ADStatusMessage, "Camera disconnected.");
     }
 }
 
 asynStatus ADPixci::setupAquisition()
 {
+    asynStatus status = asynSuccess;
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
     epicsInt32 RoiSizeX = 0;
     epicsInt32 RoiSizeY = 0;
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
-    callParamCallbacks();
-    getIntegerParam(ADBinX, &binX);
+    setStatIfHigher(&status, callParamCallbacks());
+    setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
     if (binX <= 0)
     {
         binX = 1;
-        setIntegerParam(ADBinX, binX);
+        setStatIfHigher(&status, setIntegerParam(ADBinX, binX));
     }
-    getIntegerParam(ADBinY, &binY);
+    setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
     if (binY <= 0)
     {
         binY = 1;
-        setIntegerParam(ADBinY, binY);
+        setStatIfHigher(&status, setIntegerParam(ADBinY, binY));
     }
 
-    getIntegerParam(ADSizeX, &RoiSizeX);
-    getIntegerParam(ADSizeY, &RoiSizeY);
-    // setIntegerParam(ADSizeX, sizeX);
-    // setIntegerParam(ADSizeY, sizeY);
+    setStatIfHigher(&status, getIntegerParam(ADSizeX, &RoiSizeX));
+    setStatIfHigher(&status, getIntegerParam(ADSizeY, &RoiSizeY));
 
-    setIntegerParam(NDArraySizeX, RoiSizeX / binX);
-    setIntegerParam(NDArraySizeY, RoiSizeY / binY);
+    setStatIfHigher(&status, setIntegerParam(NDArraySizeX, RoiSizeX / binX));
+    setStatIfHigher(&status, setIntegerParam(NDArraySizeY, RoiSizeY / binY));
 
-    callParamCallbacks();
+    setStatIfHigher(&status, callParamCallbacks());
 
-    return asynSuccess;
+    return status;
 }
 
 asynStatus ADPixci::aquireStart()
 {
     /* TODO: implement all acquisition method like trigger, ringbuffer etc */
-    static const char *functionName = "aquireStart";
     pxbuffer_t buffer = 1L;     // Image frame buffer
     /* live capture the image into frame buffer */
     epicsInt32 error = pxd_goLive(UNIT, buffer);
     if (error < PIXCI_NO_ERROR)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "acquisition error: %s : %s", functionName, pxd_mesgErrorCode(error));
+        std::string errMsg = pxd_mesgErrorCode(error);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error : %s\n", errMsg);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, errMsg);
         return asynError;
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "acquisition initiated ");
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
+        setIntegerParam(ADStatus, ADStatusAcquire);
+        setStringParam(ADStatusMessage, "Acquisition started\n");
         return asynSuccess;
     }
 }
 
 asynStatus ADPixci::acquireStop()
 {
-    static const char *functionName = "acquireStop";
     /* stop the live capturing */
     epicsInt32 error = pxd_goUnLive(UNIT);
     if (error < PIXCI_NO_ERROR)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "live couldn't stop: %s : %s", functionName, pxd_mesgErrorCode(error));
+        std::string errMsg = pxd_mesgErrorCode(error);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stop error: : %s\n", errMsg);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, errMsg);
         return asynError;
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "live stopped \n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
+        setIntegerParam(ADStatus, ADStatusIdle);
+        setStringParam(ADStatusMessage, "Acquisition stopped\n");
         return asynSuccess;
     }
 }
@@ -384,15 +393,18 @@ void ADPixci::acquireTask()
     NDDataType_t dataType = NDUInt16;
     epicsInt32 sizeX = 0;
     epicsInt32 sizeY = 0;
-    epicsInt32 binX = 0;
-    epicsInt32 binY = 0;
     size_t dims[2] = {};
     epicsTimeStamp currentTime = {};
     epicsInt32 numImagesCounter = 0;
     epicsInt32 imageCounter = 0;
     epicsInt32 arrayCallbacks = 0;
-    setupAquisition();
-
+    asynStatus acquisitionSetupStatus = setupAquisition();
+    if (acquisitionSetupStatus != asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition setup failed\n");
+        throw std::runtime_error("Acquisition setup failed");
+    }
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition setup successful\n");
     for (;;)
     {
         /* waiting for event to be triggered */
@@ -401,8 +413,6 @@ void ADPixci::acquireTask()
 
         getIntegerParam(NDArraySizeX, &sizeX);
         getIntegerParam(NDArraySizeY, &sizeY);
-        getIntegerParam(ADBinX, &binX);
-        getIntegerParam(ADBinY, &binY);
         getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
 
         dims[0] = sizeX;
@@ -413,12 +423,20 @@ void ADPixci::acquireTask()
             lock();
             /* Allocate NDArray */
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
-            /* Pixel values from an image frame buffer and area of interest are copied into buffer
-            pxd_readuchar(unit, framebuf, ulxc, ulyc, lrx, lry, membuf, cnt, colorspace)*/
-            pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, reinterpret_cast<ushort *>(pImage->pData),
+            setIntegerParam(ADStatus, ADStatusReadout);
+            /* Pixel values from an image frame buffer and area of interest are copied into buffer */
+            epicsInt32 err = pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, reinterpret_cast<ushort *>(pImage->pData),
                         dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
-            // pxd_readushort (unitmap, framebuf, ulx, uly, lrx, lry, membuf, cnt, colorspace);
-
+            if (err < PIXCI_NO_ERROR)
+            {
+                std::string errMsg = pxd_mesgErrorCode(err);
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n", errMsg);
+                setIntegerParam(ADStatus, ADStatusError);
+                setStringParam(ADStatusMessage, "Error reading image from detector: " + errMsg);
+                unlock();
+                callParamCallbacks();
+                continue;
+            }
             /* uniqueId and timeStamp must be implemented for standard ADDriver. */
             pImage->uniqueId = imageCounter;
             epicsTimeGetCurrent(&currentTime);
@@ -427,6 +445,7 @@ void ADPixci::acquireTask()
             unlock();
             getAttributes(pImage->pAttributeList);
 
+            setIntegerParam(ADStatus, ADStatusSaving);
             /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
             Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
             or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
@@ -444,6 +463,7 @@ void ADPixci::acquireTask()
         setIntegerParam(NDArraySize, static_cast<epicsInt32>(dims[0] * dims[1] * sizeof(NDUInt16)));
         setIntegerParam(NDArrayCounter, imageCounter);
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
+        setIntegerParam(ADStatus, ADStatusIdle);
         callParamCallbacks();
     }
 }
