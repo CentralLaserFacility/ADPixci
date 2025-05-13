@@ -513,7 +513,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
             }
         }
     }
-    if (parameter == ADBinX)
+    else if (parameter == ADBinX)
     {
         epicsInt32 binY = 0;
         epicsInt32 sizeX = 0;
