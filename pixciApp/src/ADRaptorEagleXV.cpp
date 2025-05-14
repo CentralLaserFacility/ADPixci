@@ -59,6 +59,8 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
     createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree);
     createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
     createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
+    // Updating all the PVs related to the status of device and the manufacturers data
+    this->updateInitialPVs();
 }
 
 asynStatus ADRaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)

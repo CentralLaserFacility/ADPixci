@@ -276,8 +276,6 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 
-    // Updating all the PVs related to the status of device and the manufacturers data
-    setStatIfHigher(&status, updateInitialPVs());
     if (status == asynError)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
