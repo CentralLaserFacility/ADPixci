@@ -271,16 +271,8 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap,
     pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
     g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
-    asynStatus status = asynSuccess;
-    setStatIfHigher(&status, setStringParam(ADManufacturer, "Raptor Photonics"));
 
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
-
-    if (status == asynError)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to initialize the detector\n");
-        return;
-    }
 }
 
 ADPixci::~ADPixci()
