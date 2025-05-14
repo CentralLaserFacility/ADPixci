@@ -229,40 +229,44 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
     : ADDriver(portName, 1, 1, maxBuffers, maxMemory, 0, 0, ASYN_CANBLOCK, 1, priority, stackSize)
 {
-    epicsInt32 connectionStatusCode = 0;
-    epicsInt32 serialConnection = 0;
-
-    createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger);
-    createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity);
-    createParam(UpdateInfoString, asynParamInt32, &PR_UpdateInfo);
-    createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature);
-    createParam(BuildDateString, asynParamOctet, &PR_BuildDate);
+    epicsInt32 cameraConnectionStatus = PIXCI_NO_ERROR;
+    epicsInt32 serialConnectionStatus = PIXCI_NO_ERROR;
+    asynStatus status = asynSuccess;
 
     setStringParam(ADModel, cameraModel);
-
-    /* pxd_PIXCIopen(driverparms, formatname, formatfile) return 0 if connection is successfull
-     * returns value <0 if any error occured
-     * pxd_mesgErrorCode(int code) will return description of the error occured
-     */
-    connectionStatusCode = pxd_PIXCIopen(DRIVERPARMS, nullptr, formatFile);
-
-    if (connectionStatusCode < PIXCI_NO_ERROR)
-    {
-        std::string errMsg = pxd_mesgErrorCode(connectionStatusCode);
+    setIntegerParam(ADStatus, ADStatusInitializing);
+    // Initialize driver parameters
+    setStatIfHigher(&status, createParam(SoftTriggerParamString, asynParamInt32, &PR_SoftTrigger));
+    setStatIfHigher(&status, createParam(TriggerPolarityParamString, asynParamInt32, &PR_TriggerPolarity));
+    setStatIfHigher(&status, createParam(UpdateInfoString, asynParamInt32, &PR_UpdateInfo));
+    setStatIfHigher(&status, createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature));
+    setStatIfHigher(&status, createParam(BuildDateString, asynParamOctet, &PR_BuildDate));
+    if (status > asynSuccess)
+    { // Parameter initialization failed
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to create parameters\n", driverName);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, "Cannot create parameters");
+        throw std::runtime_error("Failed to create parameters");
+    }
+    // Open the connection to the camera
+    cameraConnectionStatus = pxd_PIXCIopen(DRIVERPARMS, nullptr, formatFile);
+    if (cameraConnectionStatus < PIXCI_NO_ERROR)
+    { // Failed to connect to the camera
+        std::string errMsg = pxd_mesgErrorCode(cameraConnectionStatus);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName, errMsg);
         setIntegerParam(ADStatus, ADStatusDisconnected);
         setStringParam(ADStatusMessage, errMsg);
         this->deviceIsReachable = epicsFalse;
         throw std::runtime_error("Failed to open camera: " + errMsg);
     }
-    else
-    {
+    else 
+    { // Connected to the camera
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s Camera connected\n", driverName);
-        setIntegerParam(ADStatus, ADStatusIdle);
-        serialConnection = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
-        if (serialConnection < PIXCI_NO_ERROR)
-        {
-            std::string errMsg = pxd_mesgErrorCode(serialConnection);
+        // Make the serial connection to the camera
+        serialConnectionStatus = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
+        if (serialConnectionStatus < PIXCI_NO_ERROR)
+        { // Failed to make the serial connection
+            std::string errMsg = pxd_mesgErrorCode(serialConnectionStatus);
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot make serial connection: %s\n", driverName, 
                 errMsg);
             setIntegerParam(ADStatus, ADStatusError);
@@ -270,38 +274,35 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
             this->deviceIsReachable = epicsFalse;
             throw std::runtime_error("Failed to make serial connection: " + errMsg);
         }
+        // Camera is connected and ready for use
+        setIntegerParam(ADStatus, ADStatusIdle);
     }
-
-    /* Any thread waiting upon the event will be notified whenever a field has been captured by pxd_goSnap,
-    pxd_goLive, pxd_goLivePair and pxd_goLiveSeq*/
+    // Create an event to notify when a field has been captured by pxd_goSnap, pxd_goLive
     g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
-
+    // Create a message queue for parameter changes
     paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 }
 
 ADPixci::~ADPixci()
 {
-    /* Closing connection to frame grabber */
+    // Destroy the event and message queue
+    pxd_eventCapturedFieldClose(UNIT, g_hEvent);
+    delete paramMsgQue;
+    // Closing connection to frame grabber
     epicsInt32 disconnectStatusCode = PIXCI_NO_ERROR;
-    /*pxd_PIXCIclose() disconnect the driver from the device.
-     * return 0 if disconnect successfull, return integer <0 if error occured
-     * pxd_mesgErrorCode(int code) will return description of the error occured
-     */
     disconnectStatusCode = pxd_PIXCIclose();
     if (disconnectStatusCode < PIXCI_NO_ERROR)
-    {
+    { // Error on disconnect
         std::string errMsg = pxd_mesgErrorCode(disconnectStatusCode);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, errMsg);
         setIntegerParam(ADStatus, ADStatusError);
         setStringParam(ADStatusMessage, errMsg);
         throw std::runtime_error("Failed to disconnect the camera: " + errMsg);
     }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s: Camera disconnected\n", driverName);
-        setIntegerParam(ADStatus, ADStatusDisconnected);
-        setStringParam(ADStatusMessage, "Camera disconnected.");
-    }
+    // Camera successfully disconnected
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s: Camera disconnected\n", driverName);
+    setIntegerParam(ADStatus, ADStatusDisconnected);
+    setStringParam(ADStatusMessage, "Camera disconnected.");
 }
 
 asynStatus ADPixci::setupAquisition()
