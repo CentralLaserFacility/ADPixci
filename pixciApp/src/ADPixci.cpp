@@ -314,14 +314,16 @@ asynStatus ADPixci::setupAquisition()
     epicsInt32 RoiSizeY = 0;
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
-    setStatIfHigher(&status, callParamCallbacks());
+    callParamCallbacks(); // TODO: check if this line can be deleted
+
     setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
+    setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
+    if (status != asynSuccess) return status;
     if (binX <= 0)
     {
         binX = 1;
         setStatIfHigher(&status, setIntegerParam(ADBinX, binX));
     }
-    setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
     if (binY <= 0)
     {
         binY = 1;
@@ -330,57 +332,51 @@ asynStatus ADPixci::setupAquisition()
 
     setStatIfHigher(&status, getIntegerParam(ADSizeX, &RoiSizeX));
     setStatIfHigher(&status, getIntegerParam(ADSizeY, &RoiSizeY));
+    if (status != asynSuccess) return status;
 
     setStatIfHigher(&status, setIntegerParam(NDArraySizeX, RoiSizeX / binX));
     setStatIfHigher(&status, setIntegerParam(NDArraySizeY, RoiSizeY / binY));
 
-    setStatIfHigher(&status, callParamCallbacks());
-
+    callParamCallbacks();
     return status;
 }
 
 asynStatus ADPixci::aquireStart()
 {
-    /* TODO: implement all acquisition method like trigger, ringbuffer etc */
-    pxbuffer_t buffer = 1L;     // Image frame buffer
-    /* live capture the image into frame buffer */
+    pxbuffer_t buffer = 1L; // Image frame buffer
+    // start capture of the image into the frame buffer
     epicsInt32 error = pxd_goLive(UNIT, buffer);
     if (error < PIXCI_NO_ERROR)
-    {
+    {   // Error starting acquisition
         std::string errMsg = pxd_mesgErrorCode(error);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error : %s\n", errMsg);
         setIntegerParam(ADStatus, ADStatusError);
         setStringParam(ADStatusMessage, errMsg);
         return asynError;
     }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
-        setIntegerParam(ADStatus, ADStatusAcquire);
-        setStringParam(ADStatusMessage, "Acquisition started\n");
-        return asynSuccess;
-    }
+    // acquisition successfully started
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
+    setIntegerParam(ADStatus, ADStatusAcquire);
+    setStringParam(ADStatusMessage, "Acquisition started\n");
+    return asynSuccess;
 }
 
 asynStatus ADPixci::acquireStop()
 {
-    /* stop the live capturing */
     epicsInt32 error = pxd_goUnLive(UNIT);
     if (error < PIXCI_NO_ERROR)
-    {
+    {   // Error stopping acquisition
         std::string errMsg = pxd_mesgErrorCode(error);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stop error: : %s\n", errMsg);
         setIntegerParam(ADStatus, ADStatusError);
         setStringParam(ADStatusMessage, errMsg);
         return asynError;
     }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
-        setIntegerParam(ADStatus, ADStatusIdle);
-        setStringParam(ADStatusMessage, "Acquisition stopped\n");
-        return asynSuccess;
-    }
+    // acquisition successfully stopped
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
+    setIntegerParam(ADStatus, ADStatusIdle);
+    setStringParam(ADStatusMessage, "Acquisition stopped\n");
+    return asynSuccess;
 }
 
 /**
