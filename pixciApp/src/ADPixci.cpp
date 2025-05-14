@@ -101,7 +101,7 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
         return (PXERNOTOPEN);
 #if 1
     {
-        pxvidstate_s *vidstatep = NULL;
+        pxvidstate_s *vidstatep = nullptr;
         // We might have compiled for multiple formats, but it may not be active.
         if (xc->pxlib.getAllocState(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstatep) >= 0)
         {
@@ -422,7 +422,7 @@ void ADPixci::acquireTask()
         {
             lock();
             /* Allocate NDArray */
-            pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, NULL);
+            pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, nullptr);
             setIntegerParam(ADStatus, ADStatusReadout);
             /* Pixel values from an image frame buffer and area of interest are copied into buffer */
             epicsInt32 err = pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, reinterpret_cast<ushort *>(pImage->pData),
