@@ -464,7 +464,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
 
     if (parameter == PR_SoftTrigger)
     {
-        status = sendSoftTrigger();
+        status = this->sendSoftTrigger();
     }
     else if (parameter == PR_UpdateInfo)
     {
@@ -478,10 +478,10 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     {
         if (d_val != 0.0)
         {
-            status = setFrameRate(1 / d_val);
+            status = this->setFrameRate(1 / d_val);
             if (status == asynSuccess)
             {
-                epicsFloat64 readBackFrameRate = getFrameRate();
+                epicsFloat64 readBackFrameRate = this->getFrameRate();
                 if (readBackFrameRate > 0)
                 {
                     setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
@@ -502,10 +502,10 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     {
         if (d_val != 0.0)
         {
-            status = setExposure(d_val);
+            status = this->setExposure(d_val);
             if (status == asynSuccess)
             {
-                epicsFloat64 readBackAcquireTime = getExposure();
+                epicsFloat64 readBackAcquireTime = this->getExposure();
                 if (readBackAcquireTime > 0)
                 {
                     setDoubleParam(ADAcquireTime, readBackAcquireTime);
@@ -539,7 +539,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
             // Video settings have to be loaded respective of binning value.
             this->changeVideoFormatConfig(i_val, binY, sizeX, sizeY);
             setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-            setTriggerMode(triggerMode);
+            this->setTriggerMode(triggerMode);
             setupAquisition();
             if (acquire == 1)
             {
@@ -572,7 +572,7 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
             callParamCallbacks();
             this->changeVideoFormatConfig(binX, i_val, sizeX, sizeY);
             setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-            setTriggerMode(triggerMode);
+            this->setTriggerMode(triggerMode);
             setupAquisition();
             if (acquire == 1)
             {
@@ -601,12 +601,12 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         }
         acquireStop();
 
-        status = setRoiSizeX(sizeX);
-        status = setRoiOffsetX(minX);
-        sizeX = getRoiSizeX();
-        changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+        status = this->setRoiSizeX(sizeX);
+        status = this->setRoiOffsetX(minX);
+        sizeX = this->getRoiSizeX();
+        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
         setIntegerParam(ADSizeX, sizeX);
-        setIntegerParam(ADMinX, getRoiOffsetX());
+        setIntegerParam(ADMinX, this->getRoiOffsetX());
         setupAquisition();
 
         if (acquire == 1)
@@ -635,12 +635,12 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         }
         acquireStop();
 
-        status = setRoiSizeY(sizeY);
-        status = setRoiOffsetY(minY);
-        sizeY = getRoiSizeY();
-        changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+        status = this->setRoiSizeY(sizeY);
+        status = this->setRoiOffsetY(minY);
+        sizeY = this->getRoiSizeY();
+        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
         setIntegerParam(ADSizeY, sizeY);
-        setIntegerParam(ADMinY, getRoiOffsetY());
+        setIntegerParam(ADMinY, this->getRoiOffsetY());
 
         setupAquisition();
         if (acquire == 1)
@@ -670,13 +670,13 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
         }
         acquireStop();
 
-        status = setRoiSizeX(sizeX);
-        status = setRoiOffsetX(minX);
-        sizeX = getRoiSizeX();
+        status = this->setRoiSizeX(sizeX);
+        status = this->setRoiOffsetX(minX);
+        sizeX = this->getRoiSizeX();
         // status = setRoiSizeY(sizeY);
         // status = setRoiOffsetY(minY);
-        changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-        setIntegerParam(ADMinX, getRoiOffsetX());
+        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+        setIntegerParam(ADMinX, this->getRoiOffsetX());
         setIntegerParam(ADSizeX, sizeX);
         setupAquisition();
         if (acquire == 1)
@@ -708,11 +708,11 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
 
         // status == setRoiSizeX(sizeX);
         // status = setRoiOffsetX(minX);
-        status = setRoiSizeY(sizeY);
-        status = setRoiOffsetY(minY);
-        sizeY = getRoiSizeY();
-        changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-        setIntegerParam(ADMinY, getRoiOffsetY());
+        status = this->setRoiSizeY(sizeY);
+        status = this->setRoiOffsetY(minY);
+        sizeY = this->getRoiSizeY();
+        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+        setIntegerParam(ADMinY, this->getRoiOffsetY());
         setIntegerParam(ADSizeY, sizeY);
         setupAquisition();
         if (acquire == 1)
@@ -722,10 +722,10 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     }
     else if (parameter == ADShutterOpenDelay)
     {
-        status = setShutterOpenDelay(d_val);
+        status = this->setShutterOpenDelay(d_val);
         if (status == asynSuccess)
         {
-            epicsFloat64 openDelay = getShutterOpenDelay();
+            epicsFloat64 openDelay = this->getShutterOpenDelay();
             setDoubleParam(ADShutterOpenDelay, openDelay);
         }
         else {
@@ -734,10 +734,10 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     }
     else if (parameter == ADShutterCloseDelay)
     {
-        status = setShutterCloseDelay(d_val);
+        status = this->setShutterCloseDelay(d_val);
         if (status == asynSuccess)
         {
-            epicsFloat64 closeDelay = getShutterCloseDelay();
+            epicsFloat64 closeDelay = this->getShutterCloseDelay();
             setDoubleParam(ADShutterCloseDelay, closeDelay);
         }
         else {

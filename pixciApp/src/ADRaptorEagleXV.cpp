@@ -416,7 +416,7 @@ epicsFloat64 ADRaptorEagleXV::getShutterCloseDelay()
 asynStatus ADRaptorEagleXV::updateTemperatureActual()
 {
     asynStatus status = asynSuccess;
-    setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, getTemperatureActual()));
+    setStatIfHigher(&status, setDoubleParam(ADTemperatureActual, this->getTemperatureActual()));
     setStatIfHigher(&status, setDoubleParam(PR_TemperaturePCB, getTemperaturePCB()));
     return status;
 }
@@ -1173,9 +1173,9 @@ void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, 
 
 asynStatus ADRaptorEagleXV::updateIntialPVs(){
     asynStatus status = asynSuccess;
-    epicsFloat64 acquireFrameRate = getFrameRate();
+    epicsFloat64 acquireFrameRate = this->getFrameRate();
 
-    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, getExposure()));
+    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, this->getExposure()));
     if (acquireFrameRate > 0)
     {
         setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
@@ -1269,7 +1269,7 @@ void ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, 
     {
         epicsInt32 acquisitionStatus = asynSuccess;
         epicsInt32 previousTriggerMode = PRInternalITRTrigger;
-        status = setTriggerMode(i_val);
+        status = this->setTriggerMode(i_val);
         if (status == asynSuccess)
         {
             if (i_val == PRSoftTrigger)
