@@ -242,7 +242,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     setStatIfHigher(&status, createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature));
     setStatIfHigher(&status, createParam(BuildDateString, asynParamOctet, &PR_BuildDate));
     if (status > asynSuccess)
-    { // Parameter initialization failed
+    {   // Parameter initialization failed
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to create parameters\n", driverName);
         setIntegerParam(ADStatus, ADStatusError);
         setStringParam(ADStatusMessage, "Cannot create parameters");
@@ -251,7 +251,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     // Open the connection to the camera
     cameraConnectionStatus = pxd_PIXCIopen(DRIVERPARMS, nullptr, formatFile);
     if (cameraConnectionStatus < PIXCI_NO_ERROR)
-    { // Failed to connect to the camera
+    {   // Failed to connect to the camera
         std::string errMsg = pxd_mesgErrorCode(cameraConnectionStatus);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName, errMsg);
         setIntegerParam(ADStatus, ADStatusDisconnected);
@@ -260,12 +260,12 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         throw std::runtime_error("Failed to open camera: " + errMsg);
     }
     else 
-    { // Connected to the camera
+    {   // Connected to the camera
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s Camera connected\n", driverName);
         // Make the serial connection to the camera
         serialConnectionStatus = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
         if (serialConnectionStatus < PIXCI_NO_ERROR)
-        { // Failed to make the serial connection
+        {   // Failed to make the serial connection
             std::string errMsg = pxd_mesgErrorCode(serialConnectionStatus);
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot make serial connection: %s\n", driverName, 
                 errMsg);
@@ -292,7 +292,7 @@ ADPixci::~ADPixci()
     epicsInt32 disconnectStatusCode = PIXCI_NO_ERROR;
     disconnectStatusCode = pxd_PIXCIclose();
     if (disconnectStatusCode < PIXCI_NO_ERROR)
-    { // Error on disconnect
+    {   // Error on disconnect
         std::string errMsg = pxd_mesgErrorCode(disconnectStatusCode);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, errMsg);
         setIntegerParam(ADStatus, ADStatusError);
