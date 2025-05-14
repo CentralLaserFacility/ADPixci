@@ -488,7 +488,7 @@ class ADRaptorEagleXV : public ADPixci
 
     /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 
-    asynStatus updateIntialPVs() final;
+    asynStatus updateInitialPVs() final;
 
     /**
      * @brief Overriden to implement custom write features

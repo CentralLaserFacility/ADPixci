@@ -192,7 +192,7 @@ class ADPixci : public ADDriver
      */
     virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
-    virtual asynStatus updateIntialPVs();
+    virtual asynStatus updateInitialPVs();
 
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of

@@ -1171,7 +1171,7 @@ void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, 
     ADPixci::changeVideoFormatConfig(binX, binY, sizeX, sizeY);
 }
 
-asynStatus ADRaptorEagleXV::updateIntialPVs(){
+asynStatus ADRaptorEagleXV::updateInitialPVs(){
     asynStatus status = asynSuccess;
     epicsFloat64 acquireFrameRate = this->getFrameRate();
 
@@ -1181,7 +1181,7 @@ asynStatus ADRaptorEagleXV::updateIntialPVs(){
         setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
 
-    ADPixci::updateIntialPVs();
+    ADPixci::updateInitialPVs();
     return status;
 }
 
