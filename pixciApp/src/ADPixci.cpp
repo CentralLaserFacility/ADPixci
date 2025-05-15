@@ -465,23 +465,79 @@ void ADPixci::acquireTask()
     }
 }
 
-asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
+asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY)
+{
+    asynStatus status = asynSuccess;
+    epicsInt32 sizeX = 0;
+    epicsInt32 sizeY = 0;
+    epicsInt32 acquire = 0;
+    epicsInt32 triggerMode = ADTriggerInternal;
+    epicsInt32 triggerPolarity = PRExtRisingEdge;
+    setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
+    setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
+    setStatIfHigher(&status, getIntegerParam(ADAcquire, &acquire));   // Getting the ADAcquire value.
+    setStatIfHigher(&status, getIntegerParam(ADTriggerMode, &triggerMode));
+    setStatIfHigher(&status, getIntegerParam(PR_TriggerPolarity, &triggerPolarity));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get parameters for %s update\n", param);
+        return status;
+    }
+    if (acquire == 1)
+    {   // If acquisition is enabled, stop the current acquisition before reloading the configuration.
+        status = acquireStop();
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "BinX updated, but failed to stop acquisition for reloading configuration\n");
+            return status;
+        }
+    }
+    callParamCallbacks();
+    // Video settings have to be loaded respective of binning value.
+    this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+    status = setIntegerParam(PR_TriggerPolarity, triggerPolarity);
+    setStatIfHigher(&status, this->setTriggerMode(triggerMode));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update trigger mode after binning update\n");
+        return status;
+    }
+    status = setupAquisition();
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+            "Failed to set up detector for acquisition after binning update\n");
+        return status;
+    }
+    if (acquire == 1)
+    {   // starting acquisition if acquisition was running before.
+        status = aquireStart();
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to restart acquisition after binning update\n");
+        }
+    }
+    return status;
+}
+
+asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
 
-    if (parameter == PR_SoftTrigger)
+    if (param == PR_SoftTrigger)
     {
         status = this->sendSoftTrigger();
     }
-    else if (parameter == PR_UpdateInfo)
+    else if (param == PR_UpdateInfo)
     {
         status = this->updateInfo();
     }
-    else if (parameter == PR_UpdateTemperature)
+    else if (param == PR_UpdateTemperature)
     {
         status = this->updateTemperatureActual();
     }
-    else if (parameter == ADAcquirePeriod)
+    else if (param == ADAcquirePeriod)
     {
         if (d_val == 0.0) return status;
         status = this->setFrameRate(1 / d_val);
@@ -493,12 +549,12 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             return asynError;
         }
         status = setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
-        if (status > asynSuccess) 
+        if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set frame rate but failed to update readback\n");
         }
     }
-    else if (parameter == ADTemperature)
+    else if (param == ADTemperature)
     {
         status = this->setCoolingSetPoint(d_val);
         if (status > asynSuccess) return status;
@@ -509,7 +565,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set cooling set point but failed to update readback\n");
         }
     }
-    else if (parameter == ADAcquireTime)
+    else if (param == ADAcquireTime)
     {
         if (d_val == 0.0) return status;
         status = this->setExposure(d_val);
@@ -521,12 +577,12 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             return asynError;
         }
         status = setDoubleParam(ADAcquireTime, readBackAcquireTime);
-        if (status > asynSuccess) 
+        if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set acquire time but failed to update readback\n");
         }
     }
-    else if (parameter == ADShutterOpenDelay)
+    else if (param == ADShutterOpenDelay)
     {
         status = this->setShutterOpenDelay(d_val);
         if (status > asynSuccess) return status;
@@ -537,7 +593,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter open delay but failed to update readback\n");
         }
     }
-    else if (parameter == ADShutterCloseDelay)
+    else if (param == ADShutterCloseDelay)
     {
         status = this->setShutterCloseDelay(d_val);
         if (status > asynSuccess) return status;
@@ -546,76 +602,48 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter close delay but failed to update readback\n");
-        } 
+        }
     }
-    else if (parameter == ADBinX)
+    else if (param == ADBinX)
     {
         epicsInt32 binY = 0;
-        epicsInt32 sizeX = 0;
-        epicsInt32 sizeY = 0;
-        getIntegerParam(ADBinY, &binY);
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADSizeY, &sizeY);
         status = this->setBin(i_val, BIN_AXIS_X);
-        if (status == asynSuccess)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADBinX, i_val);     // Updating the binX value.
+        if (status > asynSuccess)
         {
-            epicsInt32 acquire = 0;
-            epicsInt32 triggerMode;
-            epicsInt32 triggerPolarity = PRExtRisingEdge;
-            setIntegerParam(ADBinX, i_val);     // Updating the binX value.
-            getIntegerParam(ADAcquire, &acquire);   // Getting the ADAcquire value.
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            if (acquire == 1)
-            {
-                acquireStop();
-            }
-            callParamCallbacks();
-            // Video settings have to be loaded respective of binning value.
-            this->changeVideoFormatConfig(i_val, binY, sizeX, sizeY);
-            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-            this->setTriggerMode(triggerMode);
-            setupAquisition();
-            if (acquire == 1)
-            {
-                aquireStart();     // starting acquisition if acquisition was running before.
-            }
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set binX but failed to update readback\n");
+            return status;
         }
+        status = getIntegerParam(ADBinY, &binY);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current binY value\n");
+            return status;
+        }
+        // Reload the configuration with new binX value
+        status = reloadConfiguration(param, i_val, binY);
     }
-    else if (parameter == ADBinY)
+    else if (param == ADBinY)
     {
         epicsInt32 binX = 0;
-        epicsInt32 sizeX = 0;
-        epicsInt32 sizeY = 0;
-        getIntegerParam(ADBinX, &binX);
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADSizeY, &sizeY);
         status = this->setBin(i_val, BIN_AXIS_Y);
-        if (status == asynSuccess)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADBinY, i_val);
+        if (status > asynSuccess)
         {
-            epicsInt32 acquire = 0;
-            epicsInt32 triggerMode = ADTriggerInternal;
-            epicsInt32 triggerPolarity = PRExtRisingEdge;
-            setIntegerParam(ADBinY, i_val);
-            getIntegerParam(ADAcquire, &acquire);
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            getIntegerParam(PR_TriggerPolarity, &triggerPolarity);
-            if (acquire == 1)
-            {
-                acquireStop();
-            }
-            callParamCallbacks();
-            this->changeVideoFormatConfig(binX, i_val, sizeX, sizeY);
-            setIntegerParam(PR_TriggerPolarity, triggerPolarity);
-            this->setTriggerMode(triggerMode);
-            setupAquisition();
-            if (acquire == 1)
-            {
-                aquireStart();
-            }
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set binY but failed to update readback\n");
+            return status;
         }
+        status = getIntegerParam(ADBinX, &binX);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current binX value\n");
+            return status;
+        }
+        status = reloadConfiguration(param, binX, i_val);
     }
-    else if (parameter == ADMinX)
+    else if (param == ADMinX)
     {
         epicsInt32 maxSizeX = 0;
         epicsInt32 sizeX = 0;
@@ -649,7 +677,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             aquireStart();
         }
     }
-    else if (parameter == ADMinY)
+    else if (param == ADMinY)
     {
         epicsInt32 maxSizeY = 0;
         epicsInt32 sizeX = 0;
@@ -683,7 +711,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             aquireStart();
         }
     }
-    else if (parameter == ADSizeX)
+    else if (param == ADSizeX)
     {
         epicsInt32 maxSizeX = 0;
         epicsInt32 minX = 0;
@@ -717,7 +745,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             aquireStart();
         }
     }
-    else if (parameter == ADSizeY)
+    else if (param == ADSizeY)
     {
         epicsInt32 maxSizeY = 0;
         epicsInt32 minY = 0;

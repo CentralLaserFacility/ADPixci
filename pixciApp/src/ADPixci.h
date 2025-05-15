@@ -185,13 +185,13 @@ class ADPixci : public ADDriver
 
     /**
      * @brief handle the parameter change from the queue
-     * @param parameter the parameter that has to be changed
+     * @param param the parameter that has to be changed
      * @param d_val the value of the parameter as a double
      * @param i_val the value of the parameter as an integer
      * @param b_val the value of the parameter as a boolean
      * @return asynStatus
      */
-    virtual asynStatus handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
+    virtual asynStatus handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
     virtual asynStatus updateInitialPVs();
 
@@ -229,6 +229,16 @@ class ADPixci : public ADDriver
 
     /* Queue for changing parameters that use serial communication. */
     epicsMessageQueue *paramMsgQue;
+
+    /**
+     * @brief Reloads configuration based on parameter and binning values.
+     *
+     * @param parameter The parameter to reload
+     * @param binX The horizontal binning value
+     * @param binY The vertical binning value
+     * @return asynStatus
+     */
+    asynStatus ADPixci::reloadConfiguration(epicsInt32 parameter, epicsInt32 binX, epicsInt32 binY);
 
     /**********************************************Pure virtual functions**********************************************/
 

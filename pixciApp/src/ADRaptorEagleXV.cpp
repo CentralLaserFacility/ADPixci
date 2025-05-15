@@ -1242,9 +1242,10 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     return status;
 }
 
-asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) {
+asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
+{
     asynStatus status = asynSuccess;
-    if (parameter == PR_ToggleTec)
+    if (param == PR_ToggleTec)
     {
         status = toggleTec(b_val);
         if (status == asynSuccess)
@@ -1252,7 +1253,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d
             setIntegerParam(PR_ToggleTec, isTecEnabled());
         }
     }
-    else if (parameter == PR_ToggleGain)
+    else if (param == PR_ToggleGain)
     {
         status = toggleGain(b_val);
         if (status == asynSuccess)
@@ -1260,7 +1261,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d
             setIntegerParam(PR_ToggleGain, isGainEnabled());
         }
     }
-    else if (parameter == PR_ToggleFpgaComms)
+    else if (param == PR_ToggleFpgaComms)
     {
         status = toggleFpgaComms(b_val);
         if (status == asynSuccess)
@@ -1268,7 +1269,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d
             setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
         }
     }
-    else if (parameter == ADTriggerMode)
+    else if (param == ADTriggerMode)
     {
         epicsInt32 acquisitionStatus = asynSuccess;
         epicsInt32 previousTriggerMode = PRInternalITRTrigger;
@@ -1303,7 +1304,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d
             setIntegerParam(ADTriggerMode, i_val);
         }
     }
-    else if (parameter == PR_TriggerPolarity)
+    else if (param == PR_TriggerPolarity)
     {
         epicsInt32 triggerMode = PRInternalITRTrigger;
         if (i_val == PRExtRisingEdge)
@@ -1322,6 +1323,6 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 parameter, epicsFloat64 d
         }
     }
     else {
-        ADPixci::handleParamTask(parameter, d_val, i_val, b_val);
+        ADPixci::handleParamTask(param, d_val, i_val, b_val);
     }
 }

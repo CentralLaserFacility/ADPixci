@@ -501,13 +501,13 @@ class ADRaptorEagleXV : public ADPixci
 
     /**
      * @brief handle the parameter change from the queue
-     * @param parameter the parameter that has to be changed
+     * @param param the parameter that has to be changed
      * @param d_val the value of the parameter as a double
      * @param i_val the value of the parameter as an integer
      * @param b_val the value of the parameter as a boolean
      * @return asynStatus
      */
-    asynStatus handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) final;
+    asynStatus handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val) final;
 
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
