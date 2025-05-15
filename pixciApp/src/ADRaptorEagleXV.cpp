@@ -166,7 +166,7 @@ epicsUInt8 ADRaptorEagleXV::getSystemStatus()
         cval = inputMsg[0];
     }
 
-    // TODO: Need proper error handling, same is for reading serial register as else where
+    // TODO(irie-stfc): Need proper error handling, same is for reading serial register as else where
     return cval;    // cval will be 0x00 if there is no success
 }
 
@@ -296,7 +296,7 @@ epicsUInt8 ADRaptorEagleXV::getFpgaStatus()
 {
     epicsInt8 cval = 0;
     readSerialRegister(FPGA_STATUS_BYTE, &cval);
-    // TODO: implement proper error handling
+    // TODO(irie-stfc): implement proper error handling
     return (epicsUInt8)cval;
 }
 
@@ -1195,7 +1195,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     asynStatus status = asynSuccess;
     if (function == ADAcquire)
     {
-        /* TODO: adstatus == ADStatusIdle has to be checked */
+        // TODO(irie-stfc): adstatus == ADStatusIdle has to be checked
         if (value)
         {
             status = aquireStart();
@@ -1206,7 +1206,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
             }
         }
         // Stop acquisition
-        /* TODO: adstatus != ADStatusIdle has to be checked */
+        // TODO(irie-stfc): adstatus != ADStatusIdle has to be checked
         if (!value)
         {
             /* In button trigger mode , acquisition should no be stoped, that will

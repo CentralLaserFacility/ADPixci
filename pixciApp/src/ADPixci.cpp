@@ -259,7 +259,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         this->deviceIsReachable = epicsFalse;
         throw std::runtime_error("Failed to open camera: " + errMsg);
     }
-    else 
+    else
     {   // Connected to the camera
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s Camera connected\n", driverName);
         // Make the serial connection to the camera
@@ -267,7 +267,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         if (serialConnectionStatus < PIXCI_NO_ERROR)
         {   // Failed to make the serial connection
             std::string errMsg = pxd_mesgErrorCode(serialConnectionStatus);
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot make serial connection: %s\n", driverName, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot make serial connection: %s\n", driverName,
                 errMsg);
             setIntegerParam(ADStatus, ADStatusError);
             setStringParam(ADStatusMessage, errMsg);
@@ -708,8 +708,6 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
         status = this->setRoiSizeX(sizeX);
         status = this->setRoiOffsetX(minX);
         sizeX = this->getRoiSizeX();
-        // status = setRoiSizeY(sizeY);
-        // status = setRoiOffsetY(minY);
         this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
         setIntegerParam(ADMinX, this->getRoiOffsetX());
         setIntegerParam(ADSizeX, sizeX);
@@ -741,8 +739,6 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
         }
         acquireStop();
 
-        // status == setRoiSizeX(sizeX);
-        // status = setRoiOffsetX(minX);
         status = this->setRoiSizeY(sizeY);
         status = this->setRoiOffsetY(minY);
         sizeY = this->getRoiSizeY();
