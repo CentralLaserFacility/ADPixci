@@ -526,6 +526,28 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set acquire time but failed to update readback\n");
         }
     }
+    else if (parameter == ADShutterOpenDelay)
+    {
+        status = this->setShutterOpenDelay(d_val);
+        if (status > asynSuccess) return status;
+        epicsFloat64 openDelay = this->getShutterOpenDelay();
+        status = setDoubleParam(ADShutterOpenDelay, openDelay);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter open delay but failed to update readback\n");
+        }
+    }
+    else if (parameter == ADShutterCloseDelay)
+    {
+        status = this->setShutterCloseDelay(d_val);
+        if (status > asynSuccess) return status;
+        epicsFloat64 closeDelay = this->getShutterCloseDelay();
+        status = setDoubleParam(ADShutterCloseDelay, closeDelay);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter close delay but failed to update readback\n");
+        } 
+    }
     else if (parameter == ADBinX)
     {
         epicsInt32 binY = 0;
@@ -732,28 +754,6 @@ asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, ep
         {
             aquireStart();
         }
-    }
-    else if (parameter == ADShutterOpenDelay)
-    {
-        status = this->setShutterOpenDelay(d_val);
-        if (status > asynSuccess) return status;
-        epicsFloat64 openDelay = this->getShutterOpenDelay();
-        status = setDoubleParam(ADShutterOpenDelay, openDelay);
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter open delay but failed to update readback\n");
-        }
-    }
-    else if (parameter == ADShutterCloseDelay)
-    {
-        status = this->setShutterCloseDelay(d_val);
-        if (status > asynSuccess) return status;
-        epicsFloat64 closeDelay = this->getShutterCloseDelay();
-        status = setDoubleParam(ADShutterCloseDelay, closeDelay);
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter close delay but failed to update readback\n");
-        } 
     }
     return status;
 }
