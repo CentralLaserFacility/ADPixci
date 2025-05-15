@@ -465,7 +465,7 @@ void ADPixci::acquireTask()
     }
 }
 
-void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
+asynStatus ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
 
@@ -483,41 +483,47 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     }
     else if (parameter == ADAcquirePeriod)
     {
-        if (d_val != 0.0)
+        if (d_val == 0.0) return status;
+        status = this->setFrameRate(1 / d_val);
+        if (status > asynSuccess) return status;
+        epicsFloat64 readBackFrameRate = this->getFrameRate();
+        if (readBackFrameRate <= 0.0)
         {
-            status = this->setFrameRate(1 / d_val);
-            if (status == asynSuccess)
-            {
-                epicsFloat64 readBackFrameRate = this->getFrameRate();
-                if (readBackFrameRate > 0)
-                {
-                    setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
-                }
-            }
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error in frame rate readback. Readback not set\n");
+            return asynError;
+        }
+        status = setDoubleParam(ADAcquirePeriod, (1 / readBackFrameRate));
+        if (status > asynSuccess) 
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set frame rate but failed to update readback\n");
         }
     }
     else if (parameter == ADTemperature)
     {
         status = this->setCoolingSetPoint(d_val);
-        if (status == asynSuccess)
+        if (status > asynSuccess) return status;
+        epicsFloat64 coolingSetPoint = this->getCoolingSetPoint();
+        status = setDoubleParam(ADTemperature, coolingSetPoint);
+        if (status > asynSuccess)
         {
-            epicsFloat64 coolingSetPoint = this->getCoolingSetPoint();
-            setDoubleParam(ADTemperature, coolingSetPoint);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set cooling set point but failed to update readback\n");
         }
     }
     else if (parameter == ADAcquireTime)
     {
-        if (d_val != 0.0)
+        if (d_val == 0.0) return status;
+        status = this->setExposure(d_val);
+        if (status > asynSuccess) return status;
+        epicsFloat64 readBackAcquireTime = this->getExposure();
+        if (readBackAcquireTime <= 0.0)
         {
-            status = this->setExposure(d_val);
-            if (status == asynSuccess)
-            {
-                epicsFloat64 readBackAcquireTime = this->getExposure();
-                if (readBackAcquireTime > 0)
-                {
-                    setDoubleParam(ADAcquireTime, readBackAcquireTime);
-                }
-            }
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error in acquire time readback. Readback not set\n");
+            return asynError;
+        }
+        status = setDoubleParam(ADAcquireTime, readBackAcquireTime);
+        if (status > asynSuccess) 
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set acquire time but failed to update readback\n");
         }
     }
     else if (parameter == ADBinX)
@@ -730,27 +736,26 @@ void ADPixci::handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt
     else if (parameter == ADShutterOpenDelay)
     {
         status = this->setShutterOpenDelay(d_val);
-        if (status == asynSuccess)
+        if (status > asynSuccess) return status;
+        epicsFloat64 openDelay = this->getShutterOpenDelay();
+        status = setDoubleParam(ADShutterOpenDelay, openDelay);
+        if (status > asynSuccess)
         {
-            epicsFloat64 openDelay = this->getShutterOpenDelay();
-            setDoubleParam(ADShutterOpenDelay, openDelay);
-        }
-        else {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter open delay\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter open delay but failed to update readback\n");
         }
     }
     else if (parameter == ADShutterCloseDelay)
     {
         status = this->setShutterCloseDelay(d_val);
-        if (status == asynSuccess)
+        if (status > asynSuccess) return status;
+        epicsFloat64 closeDelay = this->getShutterCloseDelay();
+        status = setDoubleParam(ADShutterCloseDelay, closeDelay);
+        if (status > asynSuccess)
         {
-            epicsFloat64 closeDelay = this->getShutterCloseDelay();
-            setDoubleParam(ADShutterCloseDelay, closeDelay);
-        }
-        else {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set shutter close delay\n");
-        }
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set shutter close delay but failed to update readback\n");
+        } 
     }
+    return status;
 }
 
 void ADPixci::paramTask()

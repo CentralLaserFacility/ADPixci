@@ -189,8 +189,9 @@ class ADPixci : public ADDriver
      * @param d_val the value of the parameter as a double
      * @param i_val the value of the parameter as an integer
      * @param b_val the value of the parameter as a boolean
+     * @return asynStatus
      */
-    virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
+    virtual asynStatus handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
     virtual asynStatus updateInitialPVs();
 
