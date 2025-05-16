@@ -818,6 +818,12 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     if (pxd_serialRead(unit, RESERVED, nullptr, 0) > 0)
     {
         count = pxd_serialRead(unit, 0, serialIn, serialInBufferSize);
+        if (count < PIXCI_NO_ERROR)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                "%s: Failed to clear the serial bugger on the camera unit. Error code: %s.",
+                driverName, pxd_mesgErrorCode(count));
+        }
     }
 
     /* wait if any message is in the send que*/
@@ -828,7 +834,7 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     }
     outMsgwait = 0;
 
-    /* creating checksum to send as the last character of the message */
+    // creating checksum to send as the last character of the message
     for (int i = 0; i < msgOutSize; i++)
     {
         bufOut[i] = serialOut[i];
@@ -836,20 +842,18 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     }
     serialOut[msgOutSize] = chkSum;
 
-    /* sending the seriaOut message */
+    // sending the serialOut message
     count = pxd_serialWrite(unit, RESERVED, serialOut, msgOutSize + 1);
     Sleep(130);
 
     if (count < PIXCI_NO_ERROR)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s: Cannot serial write: %s.",
-                  driverName, pxd_mesgErrorCode(count));
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to serial write to camera unit. Error code: %s.",
+            driverName, pxd_mesgErrorCode(count));
         return count;
     }
     else
-    {
-        /*waiting for the reply */
+    {   // waiting for the reply
         inMsgwaitFlag = pxd_serialRead(unit, 0, nullptr, 0);
         while (inMsgwaitFlag < 1 && inMsgwait < 20)
         {
@@ -860,8 +864,13 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
         inMsgwait = 0;
         /* read the message and message count */
         count = pxd_serialRead(UNIT, RESERVED, serialIn, serialInBufferSize);
+        if (count < PIXCI_NO_ERROR)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                "%s: Failed to serial read from the camera unit. Error code: %s.", 
+                driverName, pxd_mesgErrorCode(count));
+        }
     }
-
     return count;
 }
 
