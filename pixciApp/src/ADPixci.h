@@ -232,7 +232,7 @@ class ADPixci : public ADDriver
      * @param binY The vertical binning value
      * @return asynStatus
      */
-    asynStatus ADPixci::reloadConfiguration(epicsInt32 parameter, epicsInt32 binX, epicsInt32 binY);
+    asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY);
 
     /**********************************************Pure virtual functions**********************************************/
 
