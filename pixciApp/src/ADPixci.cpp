@@ -42,18 +42,19 @@ extern "C"
 #include "xcliball.h"
 }
 
-/* For windows */
+// For Windows
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 #include <windows.h>
 #endif
 
-/* Epics headers */
+// Epics headers
 #include <epicsEvent.h>
 #include <epicsTime.h>
 #include <epicsString.h>
 #include <epicsExit.h>
 #include <epicsMessageQueue.h>
 
+// Standard C++ headers
 #include <algorithm>
 #include <string>
 #include <cstdio>
@@ -66,13 +67,12 @@ extern "C"
 // butchered so as to make our job harder.
 //
 // If setting an AOI with camera commands, this function's
-// hoffset & voffset should be 0. In other words: of the
+// hoffset & voffset should be 0. In other words: if the
 // pixels output by the camera, do not skip any lines or columns.
 // In contrast, if the camera is outputting full resolution and
 // this function is used to capture less than the full resolution,
 // then hoffset & voffset would allow positioning the capture AOI
 // within the larger camera space.
-//
 //
 #if !defined(PIXCI_LITE)
 _cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
@@ -404,8 +404,8 @@ void ADPixci::acquireTask()
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition setup successful\n");
     for (;;)
     {
-        /* waiting for event to be triggered */
-        /* TODO: seperate waiting task for linux */
+        // waiting for event to be triggered
+        // TODO: seperate waiting task for linux
         WaitForSingleObject(g_hEvent, INFINITE);
 
         getIntegerParam(NDArraySizeX, &sizeX);
@@ -418,10 +418,10 @@ void ADPixci::acquireTask()
         if (arrayCallbacks)
         {
             lock();
-            /* Allocate NDArray */
+            // Allocate NDArray
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, nullptr);
             setIntegerParam(ADStatus, ADStatusReadout);
-            /* Pixel values from an image frame buffer and area of interest are copied into buffer */
+            // Pixel values from an image frame buffer and area of interest are copied into buffer
             epicsInt32 err = pxd_readushort(UNIT, buf, 0, 0, sizeX, sizeY, reinterpret_cast<ushort *>(pImage->pData),
                         dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
             if (err < PIXCI_NO_ERROR)
@@ -434,7 +434,7 @@ void ADPixci::acquireTask()
                 callParamCallbacks();
                 continue;
             }
-            /* uniqueId and timeStamp must be implemented for standard ADDriver. */
+            // uniqueId and timeStamp must be implemented for standard ADDriver
             pImage->uniqueId = imageCounter;
             epicsTimeGetCurrent(&currentTime);
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
@@ -819,7 +819,7 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     epicsInt32 inMsgwait = 0;
     epicsInt32 inMsgwaitFlag = 0;
 
-    /* checking if any message packer left to read, and clear the buffer by reading it */
+    // checking if any message packer left to read, and clear the buffer by reading it
     if (pxd_serialRead(unit, RESERVED, nullptr, 0) > 0)
     {
         count = pxd_serialRead(unit, 0, serialIn, serialInBufferSize);
@@ -831,7 +831,7 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
         }
     }
 
-    /* wait if any message is in the send que*/
+    // wait if any messages are in the send queue
     while (pxd_serialWrite(unit, RESERVED, nullptr, 0) < msgOutSize && outMsgwait < 50)
     {
         outMsgwait++;
@@ -867,7 +867,7 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
             Sleep(10);
         }
         inMsgwait = 0;
-        /* read the message and message count */
+        // read the message and message count
         count = pxd_serialRead(UNIT, RESERVED, serialIn, serialInBufferSize);
         if (count < PIXCI_NO_ERROR)
         {
