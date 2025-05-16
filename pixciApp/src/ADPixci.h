@@ -107,12 +107,6 @@ class ADPixci : public ADDriver
     ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
         const char *cameraModel, const char *formatFile);
 
-    /** Reports on the properties of the attribute.
-     * @param[in] fp File pointer for the report output.
-     * @param[in] details Level of detail desired; currently not implemented.
-     */
-    void report(FILE *fp, epicsInt32 details);
-
     /**
      * @brief Thread that waits for signal from frame grabber during live capture
      */
