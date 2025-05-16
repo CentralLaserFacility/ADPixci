@@ -798,7 +798,11 @@ void ADPixci::paramTask()
         b_val = static_cast<epicsBoolean>(functionAndVal[1]);
         i_val = static_cast<epicsInt32>(functionAndVal[1]);
         d_val = functionAndVal[1];
-        this->handleParamTask(function, d_val, i_val, b_val);
+        status = this->handleParamTask(function, d_val, i_val, b_val);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to handle parameter change. Parameter %d not changed to %f\n", function, d_val);
+        }
         callParamCallbacks();
     }
 }
