@@ -946,7 +946,7 @@ asynStatus ADPixci::updateInitialPVs()
     setStatIfHigher(&status, setIntegerParam(ADSizeX, sizeX));
     setStatIfHigher(&status, setIntegerParam(ADSizeY, sizeY));
 
-    setStatIfHigher(&status, callParamCallbacks());
+    callParamCallbacks();
     return status;
 }
 
