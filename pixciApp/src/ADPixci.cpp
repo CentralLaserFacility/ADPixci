@@ -641,6 +641,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current binX value\n");
             return status;
         }
+        // Reload the configuration with new binY value
         status = reloadConfiguration(param, binX, i_val);
     }
     else if (param == ADMinX)
@@ -925,18 +926,14 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 void ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
 {
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), static_cast<epicsFloat64>(value)};
-    /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
 void ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 {
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
-    /*sending buffer data to the queue */
     paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
-
-// PV Updating Functions
 
 asynStatus ADPixci::updateInitialPVs()
 {
@@ -953,24 +950,7 @@ asynStatus ADPixci::updateInitialPVs()
     return status;
 }
 
-void ADPixci::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY){
-    pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
-}
-
-void ADPixci::report(FILE *fp, epicsInt32 details)
+void ADPixci::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
 {
-    fprintf(fp, "Raptor detector %s\n", this->portName);
-    if (details > 0)
-    {
-        epicsInt32 nx = 0;
-        epicsInt32 ny = 0;
-        epicsInt32 dataType = 0;
-        getIntegerParam(ADSizeX, &nx);
-        getIntegerParam(ADSizeY, &ny);
-        getIntegerParam(NDDataType, &dataType);
-        fprintf(fp, "  NX, NY:            %d  %d\n", nx, ny);
-        fprintf(fp, "  Data type:         %d\n", dataType);
-    }
-    /* Invoke the base class method */
-    ADDriver::report(fp, details);
+    pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
 }
