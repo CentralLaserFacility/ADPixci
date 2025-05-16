@@ -899,13 +899,9 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         function == ADSizeX || function == ADSizeY )
     {
         addToParamQue(function, value);
+        return asynSuccess;
     }
-    else
-    {
-        status = ADDriver::writeInt32(pasynUser, value);
-    }
-
-    return status;
+    return ADDriver::writeInt32(pasynUser, value);
 }
 
 asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
@@ -919,12 +915,7 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
         addToParamQue(function, value);
         return asynSuccess;
     }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: unknown function(%d) with value: %f\n",
-            functionName, function, value);
-        return asynError;
-    }
+    return ADDriver::writeFloat64(pasynUser, value);
 }
 
 void ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
