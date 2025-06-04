@@ -465,16 +465,13 @@ void ADPixci::acquireTask()
     }
 }
 
-asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY)
+asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY, 
+    epicsInt32 sizeX, epicsInt32 sizeY)
 {
     asynStatus status = asynSuccess;
-    epicsInt32 sizeX = 0;
-    epicsInt32 sizeY = 0;
     epicsInt32 acquire = 0;
     epicsInt32 triggerMode = ADTriggerInternal;
     epicsInt32 triggerPolarity = PRExtRisingEdge;
-    setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
-    setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
     setStatIfHigher(&status, getIntegerParam(ADAcquire, &acquire));   // Getting the ADAcquire value.
     setStatIfHigher(&status, getIntegerParam(ADTriggerMode, &triggerMode));
     setStatIfHigher(&status, getIntegerParam(PR_TriggerPolarity, &triggerPolarity));
@@ -489,25 +486,25 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                "BinX updated, but failed to stop acquisition for reloading configuration\n");
+                "%s updated, but failed to stop acquisition for reloading configuration\n", param);
             return status;
         }
     }
     callParamCallbacks();
-    // Video settings have to be loaded respective of binning value.
+    // Video settings have to be loaded respective of new values.
     this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
     status = setIntegerParam(PR_TriggerPolarity, triggerPolarity);
     setStatIfHigher(&status, this->setTriggerMode(triggerMode));
     if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update trigger mode after binning update\n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update trigger mode after update of %s\n", param);
         return status;
     }
     status = setupAquisition();
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-            "Failed to set up detector for acquisition after binning update\n");
+            "Failed to set up detector for acquisition after update of %s\n", param);
         return status;
     }
     if (acquire == 1)
@@ -515,7 +512,8 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
         status = aquireStart();
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to restart acquisition after binning update\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                "Failed to restart acquisition after update of %s\n", param);
         }
     }
     return status;
@@ -607,6 +605,8 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
     else if (param == ADBinX)
     {
         epicsInt32 binY = 0;
+        epicsInt32 sizeX = 0;
+        epicsInt32 sizeY = 0;
         status = this->setBin(i_val, BIN_AXIS_X);
         if (status > asynSuccess) return status;
         status = setIntegerParam(ADBinX, i_val);     // Updating the binX value.
@@ -616,17 +616,21 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             return status;
         }
         status = getIntegerParam(ADBinY, &binY);
+        setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
+        setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current binY value\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
             return status;
         }
         // Reload the configuration with new binX value
-        status = reloadConfiguration(param, i_val, binY);
+        status = reloadConfiguration(param, i_val, binY, sizeX, sizeY);
     }
     else if (param == ADBinY)
     {
         epicsInt32 binX = 0;
+        epicsInt32 sizeX = 0;
+        epicsInt32 sizeY = 0;
         status = this->setBin(i_val, BIN_AXIS_Y);
         if (status > asynSuccess) return status;
         status = setIntegerParam(ADBinY, i_val);
@@ -636,13 +640,15 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             return status;
         }
         status = getIntegerParam(ADBinX, &binX);
+        setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
+        setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current binX value\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter value\n");
             return status;
         }
         // Reload the configuration with new binY value
-        status = reloadConfiguration(param, binX, i_val);
+        status = reloadConfiguration(param, binX, i_val, sizeX, sizeY);
     }
     else if (param == ADMinX)
     {
@@ -651,32 +657,37 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         epicsInt32 sizeY = 0;
         epicsInt32 binX = 0;
         epicsInt32 binY = 0;
-        epicsInt32 acquire = 0;
-        getIntegerParam(ADMaxSizeX, &maxSizeX);
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADSizeY, &sizeY);
-        getIntegerParam(ADBinX, &binX);
-        getIntegerParam(ADBinY, &binY);
-        getIntegerParam(ADAcquire, &acquire);
+        status = getIntegerParam(ADMaxSizeX, &maxSizeX);
+        setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
+        setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
+        setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
+        setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
+            return status;
+        }
         epicsInt32 minX = (i_val > maxSizeX) ? maxSizeX : i_val;
         if ((sizeX + minX) > maxSizeX)
         {
             sizeX = maxSizeX - minX;
+            status = this->setRoiSizeX(sizeX);
+            if (status > asynSuccess)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set new ROI Size X value\n");
+                return status;
+            }
         }
-        acquireStop();
-
-        status = this->setRoiSizeX(sizeX);
         status = this->setRoiOffsetX(minX);
-        sizeX = this->getRoiSizeX();
-        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-        setIntegerParam(ADSizeX, sizeX);
-        setIntegerParam(ADMinX, this->getRoiOffsetX());
-        setupAquisition();
-
-        if (acquire == 1)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADSizeX, this->getRoiSizeX());
+        setStatIfHigher(&status, setIntegerParam(ADMinX, this->getRoiOffsetX()));
+        if (status > asynSuccess)
         {
-            aquireStart();
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set ROI Offset X but failed to update readback\n");
+            return status;
         }
+        status = reloadConfiguration(param, binX, i_val, sizeX, sizeY);
     }
     else if (param == ADMinY)
     {
@@ -685,32 +696,37 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         epicsInt32 sizeY = 0;
         epicsInt32 binX = 0;
         epicsInt32 binY = 0;
-        epicsInt32 acquire = 0;
-        getIntegerParam(ADMaxSizeY, &maxSizeY);
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADSizeY, &sizeY);
-        getIntegerParam(ADBinX, &binX);
-        getIntegerParam(ADBinY, &binY);
-        getIntegerParam(ADAcquire, &acquire);
+        status = getIntegerParam(ADMaxSizeY, &maxSizeY);
+        setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
+        setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
+        setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
+        setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
+            return status;
+        }
         epicsInt32 minY = (i_val > maxSizeY) ? maxSizeY : i_val;
         if ((sizeY + minY) > maxSizeY)
         {
             sizeY = maxSizeY - minY;
+            status = this->setRoiSizeY(sizeY);
+            if (status > asynSuccess)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set new ROI Size Y value\n");
+                return status;
+            }
         }
-        acquireStop();
-
-        status = this->setRoiSizeY(sizeY);
         status = this->setRoiOffsetY(minY);
-        sizeY = this->getRoiSizeY();
-        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-        setIntegerParam(ADSizeY, sizeY);
-        setIntegerParam(ADMinY, this->getRoiOffsetY());
-
-        setupAquisition();
-        if (acquire == 1)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADSizeY, this->getRoiSizeY());
+        setStatIfHigher(&status, setIntegerParam(ADMinY, this->getRoiOffsetY()));
+        if (status > asynSuccess)
         {
-            aquireStart();
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set ROI Offset Y but failed to update readback\n");
+            return status;
         }
+        status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
     }
     else if (param == ADSizeX)
     {
@@ -719,32 +735,37 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         epicsInt32 sizeY = 0;
         epicsInt32 binX = 0;
         epicsInt32 binY = 0;
-        epicsInt32 acquire = 0;
-        getIntegerParam(ADMaxSizeX, &maxSizeX);
-        getIntegerParam(ADMinX, &minX);
-        getIntegerParam(ADSizeY, &sizeY);
-        getIntegerParam(ADBinX, &binX);
-        getIntegerParam(ADBinY, &binY);
-        getIntegerParam(ADAcquire, &acquire);
+        status = getIntegerParam(ADMaxSizeX, &maxSizeX);
+        setStatIfHigher(&status, getIntegerParam(ADMinX, &minX));
+        setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
+        setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
+        setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
+            return status;
+        }
         epicsInt32 sizeX = (i_val > maxSizeX) ? maxSizeX : i_val;
-
         if ((sizeX + minX) > maxSizeX)
         {
             minX = maxSizeX - sizeX;
+            status = this->setRoiOffsetX(minX);
+            if (status > asynSuccess)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set new ROI Offset X value\n");
+                return status;
+            }
         }
-        acquireStop();
-
         status = this->setRoiSizeX(sizeX);
-        status = this->setRoiOffsetX(minX);
-        sizeX = this->getRoiSizeX();
-        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-        setIntegerParam(ADMinX, this->getRoiOffsetX());
-        setIntegerParam(ADSizeX, sizeX);
-        setupAquisition();
-        if (acquire == 1)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADMinX, this->getRoiOffsetX());
+        setStatIfHigher(&status, setIntegerParam(ADSizeX, this->getRoiSizeX()));
+        if (status > asynSuccess)
         {
-            aquireStart();
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set ROI Size X but failed to update readback\n");
+            return status;
         }
+        status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
     }
     else if (param == ADSizeY)
     {
@@ -753,32 +774,37 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         epicsInt32 sizeX = 0;
         epicsInt32 binX = 0;
         epicsInt32 binY = 0;
-        epicsInt32 acquire = 0;
-        getIntegerParam(ADMaxSizeY, &maxSizeY);
-        getIntegerParam(ADMinY, &minY);
-        getIntegerParam(ADSizeX, &sizeX);
-        getIntegerParam(ADBinX, &binX);
-        getIntegerParam(ADBinY, &binY);
-        getIntegerParam(ADAcquire, &acquire);
+        status = getIntegerParam(ADMaxSizeY, &maxSizeY);
+        setStatIfHigher(&status, getIntegerParam(ADMinY, &minY));
+        setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
+        setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
+        setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
+            return status;
+        }
         epicsInt32 sizeY = (i_val > maxSizeY) ? maxSizeY : i_val;
-
         if ((sizeY + minY) > maxSizeY)
         {
             minY = maxSizeY - sizeY;
+            status = this->setRoiOffsetY(minY);
+            if (status > asynSuccess)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set new ROI Offset Y value\n");
+                return status;
+            }
         }
-        acquireStop();
-
         status = this->setRoiSizeY(sizeY);
-        status = this->setRoiOffsetY(minY);
-        sizeY = this->getRoiSizeY();
-        this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
-        setIntegerParam(ADMinY, this->getRoiOffsetY());
-        setIntegerParam(ADSizeY, sizeY);
-        setupAquisition();
-        if (acquire == 1)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADMinY, this->getRoiOffsetY());
+        setStatIfHigher(&status, setIntegerParam(ADSizeY, this->getRoiSizeY()));
+        if (status > asynSuccess)
         {
-            aquireStart();
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set ROI Size Y but failed to update readback\n");
+            return status;
         }
+        status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
     }
     return status;
 }

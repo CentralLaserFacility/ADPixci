@@ -230,9 +230,12 @@ class ADPixci : public ADDriver
      * @param parameter The parameter to reload
      * @param binX The horizontal binning value
      * @param binY The vertical binning value
+     * @param sizeX The horizontal size of the ROI
+     * @param sizeY The vertical size of the ROI
      * @return asynStatus
      */
-    asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY);
+    asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY, 
+        epicsInt32 sizeX, epicsInt32 sizeY);
 
     /**********************************************Pure virtual functions**********************************************/
 
