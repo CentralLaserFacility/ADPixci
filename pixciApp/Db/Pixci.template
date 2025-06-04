@@ -6,35 +6,6 @@
 include "ADBase.template"
 
 ################################################################################
-# Override ADBase to extend Trigger Mode and RBV
-#
-record(mbbo, "$(P)$(R)TriggerMode")
-{
-   field(ZRST, "Live - ITR")
-   field(ZRVL, "0")
-   field(ONST, "Live - FFR")
-   field(ONVL, "1")
-   field(TWST, "Ext. Triggered")
-   field(TWVL, "2")
-   field(THST, "Btn. Triggered")
-   field(THVL, "3")
-   field(DISP, "1")
-}
-
-record(mbbi, "$(P)$(R)TriggerMode_RBV")
-{
-   field(ZRST, "Live - ITR")
-   field(ZRVL, "0")
-   field(ONST, "Live - FFR")
-   field(ONVL, "1")
-   field(TWST, "Ext. Triggered")
-   field(TWVL, "2")
-   field(THST, "Btn. Triggered")
-   field(THVL, "3")
-   field(FLNK, "$(P)$(R)WriteEnabler")
-}
-
-################################################################################
 # Records for sending a soft trigger and setting external trigger mode polarity
 #
 record(bo, "$(P)$(R)SoftTrigger")
@@ -81,130 +52,24 @@ record(dfanout, "$(P)$(R)WriteEnabler") {
 }
 
 ################################################################################
-# Record for the temperature reading from the device PCB 
+# Record to update the maunfacturer information 
 #
-record(ai, "$(P)$(R)TemperaturePCB")
+record(bo, "$(P)$(R)UpdateInfo")
 {
-   field(DTYP, "asynFloat64")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TEMPERATURE_PCB")
-   field(PREC, "3")
-   field(EGU, "C")
-   field(SCAN, "I/O Intr")
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_INFO")
+   field(PINI, "1")
 }
 
 ################################################################################
-# If this record is processed, the driver will update the PCB temperature, the 
-# actual temperature, and the maunfacturer information 
+# Record to update temperature readings from the device at a regular interval
 #
-record(bo, "$(P)$(R)UpdateStatus")
-{
-   field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_STATUS")
-}
-
-################################################################################
-# Records related to ThermoElectric Cooling (TEC)
-#
-record(bo, "$(P)$(R)ToggleTEC")
-{
-   field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_TEC")
-   field(ZNAM, "Disabled")
-   field(ONAM, "Enabled")
-}
-
-record(bi, "$(P)$(R)ToggleTEC_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_TEC")
-   field(ZNAM, "Disabled")
-   field(ONAM, "Enabled")
-   field(SCAN, "I/O Intr")
-}
-
 record(bo, "$(P)$(R)UpdateTemperature")
 {
    field(DTYP, "asynInt32")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
+   field(PINI, "1")
    field(SCAN, "5 second")
-}
-
-# Analogue to Digital Converter Section
-record(ai, "$(P)$(R)ADCCalibrationZeroDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_ZERO_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)ADCCalibrationFortyDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ADC_CALIBRATION_FORTY_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-# Digital to Analogue Converter Section
-record(ai, "$(P)$(R)DACCalibrationZeroDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_ZERO_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)DACCalibrationFortyDegree_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_DAC_CALIBRATION_FORTY_DEGREE")
-   field(SCAN, "I/O Intr")
-}
-
-# Override Temperature from ADCore 
-# to initialize the temperature to 20C (not 25C) and stop autosave
-record(ao, "$(P)$(R)Temperature")
-{
-   field(VAL, "20.0")
-   info(autosaveFields, "")
-}
-
-################################################################################
-# Records related to pre amp gain
-#
-record(bo, "$(P)$(R)ToggleGain")
-{
-   field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_GAIN")
-   field(ZNAM, "Disabled")
-   field(ONAM, "Enabled")
-}
-
-record(bi, "$(P)$(R)ToggleGain_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_GAIN")
-   field(ZNAM, "Disabled")
-   field(ONAM, "Enabled")
-   field(SCAN, "I/O Intr")
-}
-
-################################################################################
-# Records realted to the Field-programmable gate array
-# 
-record(bo, "$(P)$(R)ToggleFPGAComms")
-{
-   field(DTYP, "asynInt32")
-   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_FPGA_COMMS")
-   field(ZNAM, "Disabled")
-   field(ONAM, "Enabled")
-}
-
-record(bi, "$(P)$(R)ToggleFPGAComms_RBV")
-{
-   field(DTYP, "asynInt32")
-   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TOGGLE_FPGA_COMMS")
-   field(ZNAM, "Disabled")
-   field(ONAM, "Enabled")
-   field(SCAN, "I/O Intr")
 }
 
 ################################################################################
@@ -270,7 +135,6 @@ record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
 {
    field(EGU, "ms")
 }
-
 
 ################################################################################
 # Records to disable settings records while acquiring
