@@ -276,11 +276,15 @@ epicsFloat64 ADRaptorEagleXV::convertDacCountToCentigrade(epicsInt16 dacCount)
 
 epicsFloat64 ADRaptorEagleXV::getTemperatureActual()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
 
-    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]);
-    readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]);
-
+    setStatIfHigher(&status, readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]));
+    setStatIfHigher(&status, readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading CCD temperature\n");
+    }
     epicsInt16 adcCount = 0;
     adcCount += (epicsInt16)(epicsUInt8)cval[1];
     adcCount += ((epicsInt16)(epicsUInt8)cval[0]) << 8;
@@ -290,11 +294,15 @@ epicsFloat64 ADRaptorEagleXV::getTemperatureActual()
 
 epicsFloat64 ADRaptorEagleXV::getTemperaturePCB()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
 
-    readSerialRegister(PCB_TEMPERATURE_BYTES[0], PCB_TEMPERATURE_BYTES[1], &cval[1]);
-    readSerialRegister(PCB_TEMPERATURE_BYTES[2], PCB_TEMPERATURE_BYTES[3], &cval[0]);
-
+    setStatIfHigher(&status, readSerialRegister(PCB_TEMPERATURE_BYTES[0], PCB_TEMPERATURE_BYTES[1], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(PCB_TEMPERATURE_BYTES[2], PCB_TEMPERATURE_BYTES[3], &cval[0]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading PCB temperature\n");
+    }
     epicsInt16 lval = 0;
     lval += (epicsInt16)(epicsUInt8)cval[0];
     lval += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
@@ -303,11 +311,15 @@ epicsFloat64 ADRaptorEagleXV::getTemperaturePCB()
 
 epicsFloat64 ADRaptorEagleXV::getCoolingSetPoint()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
 
-    readSerialRegister(TEC_TEMPERATURE_BYTES[0], &cval[1]);
-    readSerialRegister(TEC_TEMPERATURE_BYTES[1], &cval[0]);
-
+    setStatIfHigher(&status, readSerialRegister(TEC_TEMPERATURE_BYTES[0], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(TEC_TEMPERATURE_BYTES[1], &cval[0]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading TEC set point\n");
+    }
     epicsInt16 lval = 0;
     lval += (epicsInt16)(epicsUInt8)cval[0];
     lval += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
@@ -317,14 +329,16 @@ epicsFloat64 ADRaptorEagleXV::getCoolingSetPoint()
 
 asynStatus ADRaptorEagleXV::setCoolingSetPoint(epicsFloat64 temperature)
 {
+    asynStatus status = asynSuccess;
     epicsUInt16 dacCount = convertCentigradeToDacCount(temperature);
 
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((dacCount & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((dacCount & 0x00FF));
 
-    writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]));
+    return status;
 }
 
 epicsUInt8 ADRaptorEagleXV::getFpgaStatus()
