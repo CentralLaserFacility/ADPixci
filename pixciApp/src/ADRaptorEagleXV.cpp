@@ -400,31 +400,40 @@ epicsBoolean ADRaptorEagleXV::isGainEnabled()
 
 asynStatus ADRaptorEagleXV::setExposure(epicsFloat64 exposureTime)
 {
+    asynStatus status = asynSuccess;
     epicsInt8 exposureTimeHexVal[5] = {0, 0, 0, 0, 0};
     epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
     uInt64ToInt8(exposureTimeCount, exposureTimeHexVal);
 
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]);
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]);
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[2], exposureTimeHexVal[2]);
-    writeSerialRegister(UNIT, EXPOSURE_BYTES[3], exposureTimeHexVal[3]);
-    return writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[2], exposureTimeHexVal[2]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[3], exposureTimeHexVal[3]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]));
+    return status;
 }
 
 epicsFloat64 ADRaptorEagleXV::getExposure()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[5] = {0, 0, 0, 0, 0};
     epicsFloat64 exposureTime = 0.0;
-    readSerialRegister(EXPOSURE_BYTES[0], &cval[0]);
-    readSerialRegister(EXPOSURE_BYTES[1], &cval[1]);
-    readSerialRegister(EXPOSURE_BYTES[2], &cval[2]);
-    readSerialRegister(EXPOSURE_BYTES[3], &cval[3]);
-    readSerialRegister(EXPOSURE_BYTES[4], &cval[4]);
-
-    epicsUInt64 exposureTimeCount = int8ToUInt64(cval);
-    if (exposureTimeCount > 0)
+    setStatIfHigher(&status, readSerialRegister(EXPOSURE_BYTES[0], &cval[0]));
+    setStatIfHigher(&status, readSerialRegister(EXPOSURE_BYTES[1], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(EXPOSURE_BYTES[2], &cval[2]));
+    setStatIfHigher(&status, readSerialRegister(EXPOSURE_BYTES[3], &cval[3]));
+    setStatIfHigher(&status, readSerialRegister(EXPOSURE_BYTES[4], &cval[4]));
+    if (status > asynSuccess)
     {
-        exposureTime = (static_cast<epicsFloat64>(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading exposure time\n");
+    }
+    else 
+    {
+        epicsUInt64 exposureTimeCount = int8ToUInt64(cval);
+        if (exposureTimeCount > 0)
+        {
+            exposureTime = (static_cast<epicsFloat64>(exposureTimeCount) / EXPOSURE_COUNT_TO_TIME) * SEC_TO_mS;
+        }
     }
     return exposureTime;
 }
@@ -451,7 +460,11 @@ asynStatus ADRaptorEagleXV::setShutterOpenDelay(epicsFloat64 delayTime)
 epicsFloat64 ADRaptorEagleXV::getShutterOpenDelay()
 {
     epicsInt8 hexVal = 0;
-    readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
+    asynStatus status = readSerialRegister(SHUTTER_OPEN_DELAY_BYTE, &hexVal);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read shutter open delay\n");
+    }
     return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
 }
 
@@ -464,7 +477,11 @@ asynStatus ADRaptorEagleXV::setShutterCloseDelay(epicsFloat64 delayTime)
 epicsFloat64 ADRaptorEagleXV::getShutterCloseDelay()
 {
     epicsInt8 hexVal = 0;
-    readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
+    asynStatus status = readSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, &hexVal);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read shutter close delay\n");
+    }
     return convertHexToDelayTime(reinterpret_cast<epicsUInt8&>(hexVal));
 }
 
@@ -1239,7 +1256,13 @@ asynStatus ADRaptorEagleXV::updateInitialPVs(){
     asynStatus status = asynSuccess;
     epicsFloat64 acquireFrameRate = this->getFrameRate();
 
-    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, this->getExposure()));
+    epicsFloat64 readBackAcquireTime = this->getExposure();
+    if (readBackAcquireTime <= 0.0)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error in acquire time readback. Readback not set\n");
+        return asynError;
+    }
+    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, readBackAcquireTime));
     if (acquireFrameRate > 0)
     {
         setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
