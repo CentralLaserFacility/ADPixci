@@ -221,31 +221,40 @@ asynStatus ADRaptorEagleXV::setSystemStatus(epicsInt8 val)
 
 asynStatus ADRaptorEagleXV::setFrameRate(epicsFloat64 frameRate)
 {
+    asynStatus status = asynSuccess;
     epicsInt8 frameRateHexVal[5] = {0, 0, 0, 0, 0};
     epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
     uInt64ToInt8(frameRateCount, frameRateHexVal);
 
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]);
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]);
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[2], frameRateHexVal[2]);
-    writeSerialRegister(UNIT, FRAME_RATE_BYTES[3], frameRateHexVal[3]);
-    return writeSerialRegister(UNIT, FRAME_RATE_BYTES[4], frameRateHexVal[4]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[2], frameRateHexVal[2]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[3], frameRateHexVal[3]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[4], frameRateHexVal[4]));
+    return status;
 }
 
 epicsFloat64 ADRaptorEagleXV::getFrameRate()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[5] = {0, 0, 0, 0, 0};
     epicsFloat64 frameRate = 0.0;
-    readSerialRegister(FRAME_RATE_BYTES[0], &cval[0]);
-    readSerialRegister(FRAME_RATE_BYTES[1], &cval[1]);
-    readSerialRegister(FRAME_RATE_BYTES[2], &cval[2]);
-    readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]);
-    readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]);
-
-    epicsUInt64 frameRateCount = int8ToUInt64(cval);
-    if (frameRateCount > 0)
+    setStatIfHigher(&status, readSerialRegister(FRAME_RATE_BYTES[0], &cval[0]));
+    setStatIfHigher(&status, readSerialRegister(FRAME_RATE_BYTES[1], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(FRAME_RATE_BYTES[2], &cval[2]));
+    setStatIfHigher(&status, readSerialRegister(FRAME_RATE_BYTES[3], &cval[3]));
+    setStatIfHigher(&status, readSerialRegister(FRAME_RATE_BYTES[4], &cval[4]));
+    if (status > asynSuccess)
     {
-        frameRate = 40e6 / epicsFloat64(frameRateCount);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading frame rate\n");
+    }
+    else 
+    {
+        epicsUInt64 frameRateCount = int8ToUInt64(cval);
+        if (frameRateCount > 0)
+        {
+            frameRate = 40e6 / epicsFloat64(frameRateCount);
+        }
     }
     return frameRate;
 }
