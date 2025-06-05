@@ -50,18 +50,38 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
     epicsInt32 stackSize, const char *cameraModel, const char *formatFile)
     : ADPixci(portName, maxBuffers, maxMemory, priority, stackSize, cameraModel, formatFile)
 {
-    driverName = "ADRaptorEagleXV";
-    setStringParam(ADManufacturer, "Raptor Photonics");
-    createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePCB);
-    createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec);
-    createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain);
-    createParam(ToggleFPGACommsString, asynParamInt32, &PR_ToggleFpgaComms);
-    createParam(ADCCalibrationZeroDegreeString, asynParamInt32, &PR_ADCCalibrationZeroDegree);
-    createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree);
-    createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree);
-    createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree);
+    asynStatus status = asynSuccess;
+    this->driverName = "ADRaptorEagleXV";
+
+    status = setStringParam(ADManufacturer, "Raptor Photonics");
+    if (status != asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set manufacturer name");
+    }
+    setStatIfHigher(&status, createParam(TemperaturePCBString, asynParamFloat64, &PR_TemperaturePCB));
+    setStatIfHigher(&status, createParam(ToggleTecString, asynParamInt32, &PR_ToggleTec));
+    setStatIfHigher(&status, createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain));
+    setStatIfHigher(&status, createParam(ToggleFPGACommsString, asynParamInt32, &PR_ToggleFpgaComms));
+    setStatIfHigher(&status, createParam(ADCCalibrationZeroDegreeString, asynParamInt32, &PR_ADCCalibrationZeroDegree));
+    setStatIfHigher(&status, createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree));
+    setStatIfHigher(&status, createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree));
+    setStatIfHigher(&status, createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree));
+    if (status > asynSuccess)
+    {   // Parameter initialization failed
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to create parameters\n", driverName);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, "Cannot create parameters");
+        throw std::runtime_error("Failed to create parameters");
+    }
     // Updating all the PVs related to the status of device and the manufacturers data
-    this->updateInitialPVs();
+    status = this->updateInitialPVs();
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to update initial PVs\n", driverName);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, "Failed to update initial PVs");
+        throw std::runtime_error("Failed to update initial PVs");
+    }
 }
 
 asynStatus ADRaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
@@ -1184,7 +1204,7 @@ asynStatus ADRaptorEagleXV::updateInitialPVs(){
         setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
 
-    ADPixci::updateInitialPVs();
+    setStatIfHigher(&status, ADPixci::updateInitialPVs());
     return status;
 }
 
