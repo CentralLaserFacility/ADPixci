@@ -278,16 +278,16 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         setIntegerParam(ADStatus, ADStatusIdle);
     }
     // Create an event to notify when a field has been captured by pxd_goSnap, pxd_goLive
-    g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
+    this->g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
     // Create a message queue for parameter changes
-    paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
+    this->paramMsgQue = new epicsMessageQueue(PARAM_MESSAGE_QUE_SIZE, PARAM_MESSAGE_SIZE);
 }
 
 ADPixci::~ADPixci()
 {
     // Destroy the event and message queue
-    pxd_eventCapturedFieldClose(UNIT, g_hEvent);
-    delete paramMsgQue;
+    pxd_eventCapturedFieldClose(UNIT, this->g_hEvent);
+    delete this->paramMsgQue;
     // Closing connection to frame grabber
     epicsInt32 disconnectStatusCode = PIXCI_NO_ERROR;
     disconnectStatusCode = pxd_PIXCIclose();
@@ -406,7 +406,7 @@ void ADPixci::acquireTask()
     {
         // waiting for event to be triggered
         // TODO: seperate waiting task for linux
-        WaitForSingleObject(g_hEvent, INFINITE);
+        WaitForSingleObject(this->g_hEvent, INFINITE);
 
         getIntegerParam(NDArraySizeX, &sizeX);
         getIntegerParam(NDArraySizeY, &sizeY);
@@ -820,7 +820,7 @@ void ADPixci::paramTask()
 
     for (;;)
     {
-        paramMsgQue->receive(functionAndVal, PARAM_MESSAGE_SIZE);
+        this->paramMsgQue->receive(functionAndVal, PARAM_MESSAGE_SIZE);
         function = static_cast<epicsInt32>(functionAndVal[0]);
         b_val = static_cast<epicsBoolean>(functionAndVal[1]);
         i_val = static_cast<epicsInt32>(functionAndVal[1]);
@@ -952,13 +952,13 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 void ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
 {
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), static_cast<epicsFloat64>(value)};
-    paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+    this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
 void ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 {
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
-    paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+    this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
 }
 
 asynStatus ADPixci::updateInitialPVs()
