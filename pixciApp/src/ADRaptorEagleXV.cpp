@@ -582,52 +582,64 @@ asynStatus ADRaptorEagleXV::updateInfo()
 
 asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoisizeX & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoisizeX & 0x00FF));
 
-    writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]));
+    return status;
 }
 
 asynStatus ADRaptorEagleXV::setRoiSizeY(epicsInt32 RoisizeY)
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoisizeY & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoisizeY & 0x00FF));
 
-    writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]));
+    return status;
 }
 
 asynStatus ADRaptorEagleXV::setRoiOffsetX(epicsInt32 RoiOffsetX)
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoiOffsetX & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoiOffsetX & 0x00FF));
 
-    writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]));
+    return status;
 }
 
 asynStatus ADRaptorEagleXV::setRoiOffsetY(epicsInt32 RoiOffsetY)
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
     cval[0] = (epicsInt8)((RoiOffsetY & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoiOffsetY & 0x00FF));
 
-    writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]);
-    return writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]);
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]));
+    return status;
 }
 
 epicsInt32 ADRaptorEagleXV::getRoiSizeX()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_X_SIZE_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_X_SIZE_BYTES[1], &cval[0]);
-
     epicsInt16 ival = 0;
+
+    setStatIfHigher(&status, readSerialRegister(ROI_X_SIZE_BYTES[0], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(ROI_X_SIZE_BYTES[1], &cval[0]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading ROI X size\n");
+    }
     ival += (epicsInt16)(epicsUInt8)cval[0];
     ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
 
@@ -636,12 +648,16 @@ epicsInt32 ADRaptorEagleXV::getRoiSizeX()
 
 epicsInt32 ADRaptorEagleXV::getRoiSizeY()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_Y_SIZE_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_Y_SIZE_BYTES[1], &cval[0]);
-
     epicsInt16 ival = 0;
+
+    setStatIfHigher(&status, readSerialRegister(ROI_Y_SIZE_BYTES[0], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(ROI_Y_SIZE_BYTES[1], &cval[0]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading ROI Y size\n");
+    }
     ival += (epicsInt16)(epicsUInt8)cval[0];
     ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
 
@@ -650,12 +666,16 @@ epicsInt32 ADRaptorEagleXV::getRoiSizeY()
 
 epicsInt32 ADRaptorEagleXV::getRoiOffsetX()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_X_OFFSET_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_X_OFFSET_BYTES[1], &cval[0]);
-
     epicsInt16 ival = 0;
+
+    setStatIfHigher(&status, readSerialRegister(ROI_X_OFFSET_BYTES[0], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(ROI_X_OFFSET_BYTES[1], &cval[0]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading ROI X offset\n");
+    }
     ival += (epicsInt16)(epicsUInt8)cval[0];
     ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
 
@@ -664,12 +684,16 @@ epicsInt32 ADRaptorEagleXV::getRoiOffsetX()
 
 epicsInt32 ADRaptorEagleXV::getRoiOffsetY()
 {
+    asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
-
-    readSerialRegister(ROI_Y_OFFSET_BYTES[0], &cval[1]);
-    readSerialRegister(ROI_Y_OFFSET_BYTES[1], &cval[0]);
-
     epicsInt16 ival = 0;
+
+    setStatIfHigher(&status, readSerialRegister(ROI_Y_OFFSET_BYTES[0], &cval[1]));
+    setStatIfHigher(&status, readSerialRegister(ROI_Y_OFFSET_BYTES[1], &cval[0]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading ROI Y offset\n");
+    }
     ival += (epicsInt16)(epicsUInt8)cval[0];
     ival += (epicsInt16)(epicsUInt8)(cval[1] & 0x0F) << 8;
 
