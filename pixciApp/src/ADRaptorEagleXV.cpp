@@ -185,6 +185,10 @@ epicsUInt8 ADRaptorEagleXV::getSystemStatus()
     {
         cval = inputMsg[0];
     }
+    else
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get system status\n");
+    }
 
     // TODO(irie-stfc): Need proper error handling, same is for reading serial register as else where
     return cval;    // cval will be 0x00 if there is no success
@@ -202,11 +206,13 @@ asynStatus ADRaptorEagleXV::setSystemStatus(epicsInt8 val)
 
     if (inSize < PIXCI_NO_ERROR)
     {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Failed to set system status\n");
         return asynError;
     }
 
     if (inputMsg[0] == SUCCESS_MESSAGE)
     {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "System status set successfully\n");
         return asynSuccess;
     }
 
