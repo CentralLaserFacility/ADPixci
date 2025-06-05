@@ -344,8 +344,11 @@ asynStatus ADRaptorEagleXV::setCoolingSetPoint(epicsFloat64 temperature)
 epicsUInt8 ADRaptorEagleXV::getFpgaStatus()
 {
     epicsInt8 cval = 0;
-    readSerialRegister(FPGA_STATUS_BYTE, &cval);
-    // TODO(irie-stfc): implement proper error handling
+    asynStatus status = readSerialRegister(FPGA_STATUS_BYTE, &cval);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading FPGA status\n");
+    }
     return (epicsUInt8)cval;
 }
 
@@ -477,6 +480,7 @@ asynStatus ADRaptorEagleXV::updateInfo()
 {
     using std::to_string;
 
+    asynStatus status = asynSuccess;
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
     char first_bufout[] = {
@@ -504,13 +508,21 @@ asynStatus ADRaptorEagleXV::updateInfo()
     epicsInt16 dacCountZeroDegree = 0;
     epicsInt16 dacCountFortyDegree = 0;
 
-    toggleFpgaComms(epicsTrue);
+    setStatIfHigher(&status, toggleFpgaComms(epicsTrue));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to turn FPGA comms on\n");
+    }
 
     /*writing to serial connection*/
     inSize = writeReadSerial(UNIT, first_bufout, sizeof(first_bufout), inputMsg, 20);
     inSize = writeReadSerial(UNIT, last_bufout, sizeof(last_bufout), inputMsg, 20);
 
-    toggleFpgaComms(epicsFalse);
+    setStatIfHigher(&status, toggleFpgaComms(epicsFalse));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to turn FPGA comms off\n");
+    }
 
     if (inputMsg[18] == SUCCESS_MESSAGE)
     {
