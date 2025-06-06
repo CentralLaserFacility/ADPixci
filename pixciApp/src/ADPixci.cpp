@@ -952,7 +952,6 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     return ADDriver::writeFloat64(pasynUser, value);
 }
 
-// TODO(irie-stfc): add error handling from send function everywhere its used
 asynStatus ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
 {
     epicsInt32 err = 0;
