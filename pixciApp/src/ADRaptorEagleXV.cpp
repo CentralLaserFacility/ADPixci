@@ -1372,25 +1372,43 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 param, epicsFloat64 d_val
     if (param == PR_ToggleTec)
     {
         status = toggleTec(b_val);
-        if (status == asynSuccess)
+        if (status > asynSuccess)
         {
-            setIntegerParam(PR_ToggleTec, isTecEnabled());
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to toggle TEC\n");
+            return status;
+        }
+        status = setIntegerParam(PR_ToggleTec, isTecEnabled());
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Toggled TEC but failed to update readback\n");
         }
     }
     else if (param == PR_ToggleGain)
     {
         status = toggleGain(b_val);
-        if (status == asynSuccess)
+        if (status > asynSuccess)
         {
-            setIntegerParam(PR_ToggleGain, isGainEnabled());
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to toggle gain\n");
+            return status;
+        }
+        status = setIntegerParam(PR_ToggleGain, isGainEnabled());
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Toggled gain but failed to update readback\n");
         }
     }
     else if (param == PR_ToggleFpgaComms)
     {
         status = toggleFpgaComms(b_val);
-        if (status == asynSuccess)
+        if (status > asynSuccess)
         {
-            setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to toggle FPGA comms\n");
+            return status;
+        }
+        status = setIntegerParam(PR_ToggleFpgaComms, isFpgaCommsEnabled());
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Toggled FPGA comms but failed to update readback\n");
         }
     }
     else if (param == ADTriggerMode)
@@ -1447,6 +1465,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 param, epicsFloat64 d_val
         }
     }
     else {
-        ADPixci::handleParamTask(param, d_val, i_val, b_val);
+        status = ADPixci::handleParamTask(param, d_val, i_val, b_val);
     }
+    return status;
 }
