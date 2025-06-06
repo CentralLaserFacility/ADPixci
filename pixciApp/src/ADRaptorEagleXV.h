@@ -320,7 +320,7 @@ class ADRaptorEagleXV : public ADPixci
     epicsFloat64 convertHexToDelayTime(epicsUInt8 hexVal);
 
     /**
-     * @brief update the PVs related to manufacturers data
+     * @brief Update the PVs related to manufacturers data
      */
     asynStatus updateInfo();
 
@@ -343,7 +343,9 @@ class ADRaptorEagleXV : public ADPixci
     /*****************************Functions from Pixci class that are only implemented here****************************/
 
     /**
-     * @brief update the PCB and CCD temperatures of the camera
+     * @brief Update the PCB and CCD temperatures of the camera
+     * 
+     * @return asynStatus
      */
     asynStatus updateTemperatureActual() final;
 
