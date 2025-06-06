@@ -331,6 +331,14 @@ class ADRaptorEagleXV : public ADPixci
      * @return asynStatus
      */
     asynStatus updateTriggerMode(epicsInt32 newTriggerMode);
+    
+    /**
+     * @brief Handle trigger polarity updates
+     * 
+     * @param newTriggerPolarity new trigger polarity to set on the camera
+     * @return asynStatus
+     */
+    asynStatus updateTriggerPolarity(epicsInt32 newTriggerPolarity);
 
     /*****************************Functions from Pixci class that are only implemented here****************************/
 

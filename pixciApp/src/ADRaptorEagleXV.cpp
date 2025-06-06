@@ -642,6 +642,39 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
     return status;
 }
 
+asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
+{
+    asynStatus status = asynSuccess;
+    epicsInt32 triggerMode = PRInternalITRTrigger;
+    status = getIntegerParam(ADTriggerMode, &triggerMode);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode for setting polarity\n");
+        return status;
+    }
+    if (triggerMode != PRExternalTrigger)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            "Trigger mode not set to external so cannot set trigger polarity\n");
+        return asynError;
+    }
+    status = setIntegerParam(PR_TriggerPolarity, newTriggerPolarity);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set trigger polarity\n");
+        return status;
+    }
+    callParamCallbacks();
+
+    status = this->setTriggerMode(PRExternalTrigger);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            "Readback set but failed to write new trigger polarity to camera.\n");
+    }
+    return status;
+}
+
 asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
 {
     asynStatus status = asynSuccess;
@@ -1481,21 +1514,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 param, epicsFloat64 d_val
     }
     else if (param == PR_TriggerPolarity)
     {
-        epicsInt32 triggerMode = PRInternalITRTrigger;
-        if (i_val == PRExtRisingEdge)
-        {
-            setIntegerParam(PR_TriggerPolarity, PRExtRisingEdge);
-        }
-        else if (i_val == PRExtFallingEdge)
-        {
-            setIntegerParam(PR_TriggerPolarity, PRExtFallingEdge);
-        }
-        callParamCallbacks();
-        getIntegerParam(ADTriggerMode, &triggerMode);
-        if (triggerMode == PRExternalTrigger)
-        {
-            setTriggerMode(PRExternalTrigger);
-        }
+        status = updateTriggerPolarity(i_val);
     }
     else {
         status = ADPixci::handleParamTask(param, d_val, i_val, b_val);
