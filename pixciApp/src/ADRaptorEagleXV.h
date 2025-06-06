@@ -512,8 +512,13 @@ class ADRaptorEagleXV : public ADPixci
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
+     * @param binX binning factor in x direction.
+     * @param binY binning factor in y direction.
+     * @param sizeX size of the image in x direction.
+     * @param sizeY size of the image in y direction.
+     * @return asynStatus
      */
-    void changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY) final;
+    asynStatus changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY) final;
 };
 
 #endif  // PIXCIAPP_SRC_ADRAPTOREAGLEXV_H_

@@ -784,10 +784,16 @@ asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     }
 }
 
-void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
+asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
 {
+    asynStatus status = asynSuccess;
     std::string cameraModel = "";
-    getStringParam(ADModel, cameraModel);
+    status = getStringParam(ADModel, cameraModel);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get camera model, so unable to change video format config");
+        return asynError;
+    }
     if (cameraModel == RAPTOR_EAGLE_XV_4710)
     {
         if (binX == PR_BIN_1 && binY == PR_BIN_1)
@@ -1269,9 +1275,11 @@ void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, 
         }
     }
     else {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model %s not supported ???", cameraModel.c_str());
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model %s not supported, so unable to change video format config", cameraModel.c_str());
+        return asynError;
     }
-    ADPixci::changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+    setStatIfHigher(&status, ADPixci::changeVideoFormatConfig(binX, binY, sizeX, sizeY));
+    return status;
 }
 
 asynStatus ADRaptorEagleXV::updateInitialPVs(){

@@ -192,8 +192,13 @@ class ADPixci : public ADDriver
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
+     * @param binX binning factor in x direction.
+     * @param binY binning factor in y direction.
+     * @param sizeX size of the image in x direction.
+     * @param sizeY size of the image in y direction.
+     * @return asynStatus
      */
-    virtual void changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY);
+    virtual asynStatus changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY);
 
     /*****************************************Methods overridden from ADDriver*****************************************/
     /**

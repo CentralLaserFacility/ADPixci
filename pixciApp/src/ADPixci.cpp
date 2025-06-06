@@ -492,7 +492,12 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
     }
     callParamCallbacks();
     // Video settings have to be loaded respective of new values.
-    this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+    status = this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to change video format config for %s update\n", param);
+        return status;
+    }
     status = setIntegerParam(PR_TriggerPolarity, triggerPolarity);
     setStatIfHigher(&status, this->setTriggerMode(triggerMode));
     if (status > asynSuccess)
@@ -976,7 +981,13 @@ asynStatus ADPixci::updateInitialPVs()
     return status;
 }
 
-void ADPixci::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
+asynStatus ADPixci::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
 {
-    pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+    epicsInt32 err = PIXCI_NO_ERROR;
+    err = pxd_setVideoResolution(UNIT, sizeX / binX, sizeY / binY, 0, 0);
+    if (err < PIXCI_NO_ERROR){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set video resolution\n");
+        return asynError;
+    }
+    return asynSuccess;
 }
