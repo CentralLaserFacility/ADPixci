@@ -171,11 +171,12 @@ class ADPixci : public ADDriver
      * is communicated by FIFO. Parameters that doesn't require serial comminication dont need to be
      * added to the queue.
      *
-     * @param function
-     * @param value
+     * @param function function to add to the queue
+     * @param value value change associated with function to add to the queue
+     * @return asynStatus
      */
-    void addToParamQue(epicsInt32 function, epicsInt32 value);
-    void addToParamQue(epicsInt32 function, epicsFloat64 value);
+    asynStatus addToParamQue(epicsInt32 function, epicsInt32 value);
+    asynStatus addToParamQue(epicsInt32 function, epicsFloat64 value);
 
     /**
      * @brief handle the parameter change from the queue

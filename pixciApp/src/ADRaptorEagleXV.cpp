@@ -1455,11 +1455,10 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     } /* set  value for default parameters */
     else if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
     {
-        addToParamQue(function, value);
+        status = addToParamQue(function, value);
     } else {
-        setStatIfHigher(&status, ADPixci::writeInt32(pasynUser, value));
+        status = ADPixci::writeInt32(pasynUser, value);
     }
-
     return status;
 }
 

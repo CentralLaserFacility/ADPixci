@@ -934,8 +934,7 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
         function == ADBinX || function == ADBinY || function == ADMinX || function == ADMinY ||
         function == ADSizeX || function == ADSizeY )
     {
-        addToParamQue(function, value);
-        return asynSuccess;
+        return addToParamQue(function, value);
     }
     return ADDriver::writeInt32(pasynUser, value);
 }
@@ -948,22 +947,36 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     if (function == ADGain || function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature ||
         function == ADShutterOpenDelay || function == ADShutterCloseDelay)
     {
-        addToParamQue(function, value);
-        return asynSuccess;
+        return addToParamQue(function, value);
     }
     return ADDriver::writeFloat64(pasynUser, value);
 }
 
-void ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
+// TODO(irie-stfc): add error handling from send function everywhere its used
+asynStatus ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
 {
+    epicsInt32 err = 0;
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), static_cast<epicsFloat64>(value)};
-    this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+    err = this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+    if (err < 0)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to send parameter message: message to large\n");
+        return asynError;
+    }
+    return asynSuccess;
 }
 
-void ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
+asynStatus ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
 {
+    epicsInt32 err = 0;
     epicsFloat64 functionAndVal[2] = {static_cast<epicsFloat64>(function), value};
-    this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+    err = this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
+    if (err < 0)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to send parameter message: message to large\n");
+        return asynError;
+    }
+    return asynSuccess;
 }
 
 asynStatus ADPixci::updateInitialPVs()
