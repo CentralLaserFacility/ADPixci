@@ -340,6 +340,14 @@ class ADRaptorEagleXV : public ADPixci
      */
     asynStatus updateTriggerPolarity(epicsInt32 newTriggerPolarity);
 
+    /**
+     * @brief Handle acquisition updates
+     * 
+     * @param value 1 to start acquisition, 0 to stop acquisition
+     * @return asynStatus
+     */
+    asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 value);
+
     /*****************************Functions from Pixci class that are only implemented here****************************/
 
     /**

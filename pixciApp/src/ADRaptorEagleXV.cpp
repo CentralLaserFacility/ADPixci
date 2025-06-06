@@ -675,6 +675,47 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
     return status;
 }
 
+asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
+{
+    asynStatus status = asynSuccess; 
+    // TODO(irie-stfc): adstatus == ADStatusIdle has to be checked
+    if (newAcquisitionStatus)
+    {
+        status = aquireStart();
+        if (status == asynSuccess)
+        {
+            setIntegerParam(ADAcquire, epicsTrue);
+            callParamCallbacks();
+        }
+    }
+    // TODO(irie-stfc): adstatus != ADStatusIdle has to be checked
+    else
+    {   // Stop acquisition
+        /* In button trigger mode , acquisition should no be stoped, that will
+        affect the WaitForSingleObject. So only status is updated to STOP. once
+        the trigger mode is changed from button trigger mode, the actual implementation
+        of acquireStop() will be done.
+        */
+        epicsInt32 triggerMode = PRInternalITRTrigger;
+        getIntegerParam(ADTriggerMode, &triggerMode);
+        if (triggerMode == PRSoftTrigger)
+        {
+            status = asynSuccess;
+        }
+        else
+        {
+            status = acquireStop();
+        }
+
+        if (status == asynSuccess)
+        {
+            setIntegerParam(ADAcquire, epicsFalse);
+            callParamCallbacks();
+        }
+    }
+    return status;
+}
+
 asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
 {
     asynStatus status = asynSuccess;
@@ -1416,42 +1457,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     asynStatus status = asynSuccess;
     if (function == ADAcquire)
     {
-        // TODO(irie-stfc): adstatus == ADStatusIdle has to be checked
-        if (value)
-        {
-            status = aquireStart();
-            if (status == asynSuccess)
-            {
-                setIntegerParam(ADAcquire, epicsTrue);
-                callParamCallbacks();
-            }
-        }
-        // Stop acquisition
-        // TODO(irie-stfc): adstatus != ADStatusIdle has to be checked
-        if (!value)
-        {
-            /* In button trigger mode , acquisition should no be stoped, that will
-            affect the WaitForSingleObject. So only status is updated to STOP. once
-            the trigger mode is changed from button trigger mode, the actual implementation
-            of acquireStop() will be done.
-            */
-            epicsInt32 triggerMode = PRInternalITRTrigger;
-            getIntegerParam(ADTriggerMode, &triggerMode);
-            if (triggerMode == PRSoftTrigger)
-            {
-                status = asynSuccess;
-            }
-            else
-            {
-                status = acquireStop();
-            }
-
-            if (status == asynSuccess)
-            {
-                setIntegerParam(ADAcquire, epicsFalse);
-                callParamCallbacks();
-            }
-        }
+        status = updateAcquisition(value); 
     } /* set  value for default parameters */
     else if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
     {
