@@ -574,8 +574,72 @@ asynStatus ADRaptorEagleXV::updateInfo()
 
         return asynSuccess;
     }
-
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read manufacturer information from camera\n");
     return asynError;
+}
+
+asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
+{
+    asynStatus status = asynSuccess;
+    epicsInt32 acquisitionStatus = epicsFalse;
+    epicsInt32 previousTriggerMode = PRInternalITRTrigger;
+    status = this->setTriggerMode(newTriggerMode);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set trigger mode\n");
+        return status;
+    }
+    if (newTriggerMode == PRSoftTrigger)
+    {
+        /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
+        called. For that aquireStart() function is called.
+        */
+        status = aquireStart();
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to start acquisition in soft trigger mode. \\
+                Will not update trigger mode readback\n");
+            return status;
+        }
+    }
+    else
+    {
+        /* When changing the mode from button triggered to any other mode, check the ADAcquire status,
+            stop acquision if ADAcquire is in 'Stop' state because in button trigger mode aquireStart()
+            is called irrespective of ADAcquire status.
+        */
+        status = getIntegerParam(ADTriggerMode, &previousTriggerMode);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get previous trigger mode. \\
+                Acquisition may work incorrectly while in new trigger mode\n");
+        }
+        if (previousTriggerMode == PRSoftTrigger)
+        {
+            status = getIntegerParam(ADAcquire, &acquisitionStatus);
+            if (status > asynSuccess)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get ADAcquire status. \\
+                    Acquisition may work incorrectly while in new trigger mode\n");
+            }
+            if (acquisitionStatus == epicsFalse)
+            {
+                /* acquisiton is stopped if ADAcquire is on stop state*/
+                status = acquireStop();
+                if (status > asynSuccess)
+                {
+                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                        "Failed to stop acquisition while transitioning out of soft trigger mode\n");
+                }
+            }
+        }
+    }
+    status = setIntegerParam(ADTriggerMode, newTriggerMode);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Trigger mode set but failed to update readback\n");
+    }
+    return status;
 }
 
 asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
@@ -1325,7 +1389,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
             status = aquireStart();
             if (status == asynSuccess)
             {
-                setIntegerParam(ADAcquire, 1);
+                setIntegerParam(ADAcquire, epicsTrue);
                 callParamCallbacks();
             }
         }
@@ -1351,7 +1415,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
             if (status == asynSuccess)
             {
-                setIntegerParam(ADAcquire, 0);
+                setIntegerParam(ADAcquire, epicsFalse);
                 callParamCallbacks();
             }
         }
@@ -1413,38 +1477,7 @@ asynStatus ADRaptorEagleXV::handleParamTask(epicsInt32 param, epicsFloat64 d_val
     }
     else if (param == ADTriggerMode)
     {
-        epicsInt32 acquisitionStatus = asynSuccess;
-        epicsInt32 previousTriggerMode = PRInternalITRTrigger;
-        status = this->setTriggerMode(i_val);
-        if (status == asynSuccess)
-        {
-            if (i_val == PRSoftTrigger)
-            {
-                /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
-                called. For that aquireStart() function is called.
-                */
-                status = aquireStart();
-            }
-            else
-            {
-                /* When changes the acquiremode from button triggered to any another trigger mode,
-                    we have to check the ADAcquire status  stop acquision if ADAcquire is in 'Stop' state.
-                    Because in button trigger mode aquireStart() is called irrespective of ADAcquire status.
-                */
-                getIntegerParam(ADTriggerMode, &previousTriggerMode);
-                if (previousTriggerMode == PRSoftTrigger)
-                {
-                    getIntegerParam(ADAcquire, &acquisitionStatus);
-
-                    if (acquisitionStatus == 0)
-                    {
-                        /* acquisiton is stopped if ADAcquire is on stop state*/
-                        acquireStop();
-                    }
-                }
-            }
-            setIntegerParam(ADTriggerMode, i_val);
-        }
+        status = updateTriggerMode(i_val);
     }
     else if (param == PR_TriggerPolarity)
     {

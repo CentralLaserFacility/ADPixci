@@ -324,6 +324,14 @@ class ADRaptorEagleXV : public ADPixci
      */
     asynStatus updateInfo();
 
+    /**
+     * @brief Handle trigger mode updates
+     * 
+     * @param newTriggerMode new trigger mode to set on the camera
+     * @return asynStatus
+     */
+    asynStatus updateTriggerMode(epicsInt32 newTriggerMode);
+
     /*****************************Functions from Pixci class that are only implemented here****************************/
 
     /**
