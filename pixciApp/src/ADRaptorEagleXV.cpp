@@ -1278,16 +1278,26 @@ void ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, 
 
 asynStatus ADRaptorEagleXV::updateInitialPVs(){
     asynStatus status = asynSuccess;
-    epicsFloat64 acquireFrameRate = this->getFrameRate();
+    epicsFloat64 acquireFrameRate = 0.0;
+    epicsFloat64 readBackAcquireTime = 0.0;
 
-    epicsFloat64 readBackAcquireTime = this->getExposure();
+    readBackAcquireTime = this->getExposure();
     if (readBackAcquireTime <= 0.0)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error in acquire time readback. Readback not set\n");
-        return asynError;
+        status = asynError;
     }
-    setStatIfHigher(&status, setDoubleParam(ADAcquireTime, readBackAcquireTime));
-    if (acquireFrameRate > 0)
+    else {
+        setStatIfHigher(&status, setDoubleParam(ADAcquireTime, readBackAcquireTime));
+    }
+
+    acquireFrameRate = this->getFrameRate();
+    if (acquireFrameRate < 0.0)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error in frame rate readback. Readback not set\n");
+        status = asynError;
+    }
+    else
     {
         setStatIfHigher(&status, setDoubleParam(ADAcquirePeriod, (1 / acquireFrameRate)));
     }
