@@ -677,41 +677,52 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
 
 asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
 {
-    asynStatus status = asynSuccess; 
-    // TODO(irie-stfc): adstatus == ADStatusIdle has to be checked
-    if (newAcquisitionStatus)
+    asynStatus status = asynSuccess;
+    epicsInt32 triggerMode = PRInternalITRTrigger;
+    epicsInt32 adStatus = ADStatusIdle;
+
+    status = getIntegerParam(ADTriggerMode, &triggerMode);
+    if (status > asynSuccess)
     {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode. \\
+            Cannot safely change acquisition state\n");
+        return status;
+    }
+    // In soft trigger mode acquisition should no be stopped as it can affect WaitForSingleObject. 
+    if (triggerMode == PRSoftTrigger) return status;
+    // get ADStatus
+    status = getIntegerParam(ADStatus, &adStatus);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. \\
+            Cannot safely change acquisition state\n");
+        return status;
+    }
+    if (newAcquisitionStatus && adStatus == ADStatusIdle)
+    {   // Start acquisition 
         status = aquireStart();
-        if (status == asynSuccess)
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADAcquire, epicsTrue);
+        if (status > asynSuccess)
         {
-            setIntegerParam(ADAcquire, epicsTrue);
-            callParamCallbacks();
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
         }
     }
-    // TODO(irie-stfc): adstatus != ADStatusIdle has to be checked
-    else
+    else if(!newAcquisitionStatus && adStatus != ADStatusIdle)
     {   // Stop acquisition
-        /* In button trigger mode , acquisition should no be stoped, that will
-        affect the WaitForSingleObject. So only status is updated to STOP. once
-        the trigger mode is changed from button trigger mode, the actual implementation
-        of acquireStop() will be done.
-        */
-        epicsInt32 triggerMode = PRInternalITRTrigger;
-        getIntegerParam(ADTriggerMode, &triggerMode);
-        if (triggerMode == PRSoftTrigger)
+        status = acquireStop();
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADAcquire, epicsFalse);
+        if (status > asynSuccess)
         {
-            status = asynSuccess;
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stopped but failed to set readback\n");
         }
-        else
-        {
-            status = acquireStop();
-        }
-
-        if (status == asynSuccess)
-        {
-            setIntegerParam(ADAcquire, epicsFalse);
-            callParamCallbacks();
-        }
+    }
+    else
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. \\
+            Detector in wrong state\n");
+        status = asynError;
     }
     return status;
 }
@@ -1457,7 +1468,8 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     asynStatus status = asynSuccess;
     if (function == ADAcquire)
     {
-        status = updateAcquisition(value); 
+        status = updateAcquisition(value);
+        callParamCallbacks(); 
     } /* set  value for default parameters */
     else if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
     {
