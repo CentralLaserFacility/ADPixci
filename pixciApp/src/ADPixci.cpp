@@ -297,7 +297,6 @@ ADPixci::~ADPixci()
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, errMsg);
         setIntegerParam(ADStatus, ADStatusError);
         setStringParam(ADStatusMessage, errMsg);
-        throw std::runtime_error("Failed to disconnect the camera: " + errMsg);
     }
     // Camera successfully disconnected
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s: Camera disconnected\n", driverName);
@@ -315,10 +314,14 @@ asynStatus ADPixci::setupAquisition()
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
     callParamCallbacks(); // TODO: check if this line can be deleted
-
     setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
     setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-    if (status != asynSuccess) return status;
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d\n", status);
+    if (status > asynSuccess) 
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get binning parameters\n", status);
+        return status;
+    }
     if (binX <= 0)
     {
         binX = 1;
@@ -329,14 +332,26 @@ asynStatus ADPixci::setupAquisition()
         binY = 1;
         setStatIfHigher(&status, setIntegerParam(ADBinY, binY));
     }
+    if (status > asynSuccess) 
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not set binning parameters\n", status);
+        callParamCallbacks();
+        return status;
+    }
 
     setStatIfHigher(&status, getIntegerParam(ADSizeX, &RoiSizeX));
     setStatIfHigher(&status, getIntegerParam(ADSizeY, &RoiSizeY));
-    if (status != asynSuccess) return status;
-
+    if (status > asynSuccess) 
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get ROI parameters\n", status);
+        return status;
+    }
     setStatIfHigher(&status, setIntegerParam(NDArraySizeX, RoiSizeX / binX));
     setStatIfHigher(&status, setIntegerParam(NDArraySizeY, RoiSizeY / binY));
-
+    if (status > asynSuccess) 
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not set array size parameters\n", status);
+    }
     callParamCallbacks();
     return status;
 }
@@ -399,7 +414,6 @@ void ADPixci::acquireTask()
     if (acquisitionSetupStatus != asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition setup failed\n");
-        throw std::runtime_error("Acquisition setup failed");
     }
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition setup successful\n");
     for (;;)
@@ -407,17 +421,15 @@ void ADPixci::acquireTask()
         // waiting for event to be triggered
         // TODO: seperate waiting task for linux
         WaitForSingleObject(this->g_hEvent, INFINITE);
-
+        this->lock();
         getIntegerParam(NDArraySizeX, &sizeX);
         getIntegerParam(NDArraySizeY, &sizeY);
         getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
-
         dims[0] = sizeX;
         dims[1] = sizeY;
 
         if (arrayCallbacks)
         {
-            lock();
             // Allocate NDArray
             pImage = this->pNDArrayPool->alloc(2, dims, dataType, 0, nullptr);
             setIntegerParam(ADStatus, ADStatusReadout);
@@ -430,7 +442,7 @@ void ADPixci::acquireTask()
                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n", errMsg);
                 setIntegerParam(ADStatus, ADStatusError);
                 setStringParam(ADStatusMessage, "Error reading image from detector: " + errMsg);
-                unlock();
+                this->unlock();
                 callParamCallbacks();
                 continue;
             }
@@ -439,9 +451,7 @@ void ADPixci::acquireTask()
             epicsTimeGetCurrent(&currentTime);
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
             updateTimeStamp(&pImage->epicsTS);
-            unlock();
             getAttributes(pImage->pAttributeList);
-
             setIntegerParam(ADStatus, ADStatusSaving);
             /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
             Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
@@ -451,7 +461,6 @@ void ADPixci::acquireTask()
                 this->pArrays[0]->release();
             this->pArrays[0] = pImage;
         }
-
         getIntegerParam(NDArrayCounter, &imageCounter);
         getIntegerParam(ADNumImagesCounter, &numImagesCounter);
         imageCounter++;
@@ -461,6 +470,7 @@ void ADPixci::acquireTask()
         setIntegerParam(NDArrayCounter, imageCounter);
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
         setIntegerParam(ADStatus, ADStatusIdle);
+        this->unlock();
         callParamCallbacks();
     }
 }
@@ -692,7 +702,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set ROI Offset X but failed to update readback\n");
             return status;
         }
-        status = reloadConfiguration(param, binX, i_val, sizeX, sizeY);
+        status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
     }
     else if (param == ADMinY)
     {
