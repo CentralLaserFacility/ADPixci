@@ -628,19 +628,33 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = setIntegerParam(ADBinX, i_val);     // Updating the binX value.
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set binX but failed to update readback\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Status %d: Set binX but failed to update readback\n", status);
             return status;
         }
         status = getIntegerParam(ADBinY, &binY);
         setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
         setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
-        if (status > asynSuccess)
+        if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
+        else if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Status %d: Failed to read current parameter values\n", status);
             return status;
         }
         // Reload the configuration with new binX value
         status = reloadConfiguration(param, i_val, binY, sizeX, sizeY);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
     }
     else if (param == ADBinY)
     {
@@ -658,13 +672,27 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = getIntegerParam(ADBinX, &binX);
         setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
         setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
-        if (status > asynSuccess)
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not "
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
+        else if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter value\n");
             return status;
         }
         // Reload the configuration with new binY value
         status = reloadConfiguration(param, binX, i_val, sizeX, sizeY);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
     }
     else if (param == ADMinX)
     {
@@ -678,7 +706,14 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
         setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
         setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-        if (status > asynSuccess)
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not "
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
+        else if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
             return status;
@@ -704,6 +739,13 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             return status;
         }
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
     }
     else if (param == ADMinY)
     {
@@ -717,7 +759,14 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
         setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
         setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-        if (status > asynSuccess)
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not "
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
+        else if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
             return status;
@@ -743,6 +792,13 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             return status;
         }
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
     }
     else if (param == ADSizeX)
     {
@@ -756,7 +812,14 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
         setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
         setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-        if (status > asynSuccess)
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not "
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
+        else if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
             return status;
@@ -782,6 +845,13 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             return status;
         }
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
     }
     else if (param == ADSizeY)
     {
@@ -795,7 +865,14 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         setStatIfHigher(&status, getIntegerParam(ADSizeX, &sizeX));
         setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
         setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-        if (status > asynSuccess)
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not "
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
+        else if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read current parameter values\n");
             return status;
@@ -821,6 +898,13 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
             return status;
         }
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+                "initialized yet. Reprocessing parameter %d\n", param, param);
+            this->addToParamQue(param, i_val);
+            return asynSuccess;
+        }
     }
     return status;
 }

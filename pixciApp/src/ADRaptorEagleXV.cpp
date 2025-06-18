@@ -617,7 +617,14 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
         if (previousTriggerMode == PRSoftTrigger)
         {
             status = getIntegerParam(ADAcquire, &acquisitionStatus);
-            if (status > asynSuccess)
+            if (status == asynParamUndefined)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition parameter not initialised yet, so "
+                    "assuming it is stopped\n");
+                acquisitionStatus = epicsFalse; // assume acquisition is stopped if parameter is not set
+                status = asynSuccess;
+            }
+            else if (status > asynSuccess)
             {
                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get ADAcquire status. \\
                     Acquisition may work incorrectly while in new trigger mode\n");
@@ -646,26 +653,33 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
 {
     asynStatus status = asynSuccess;
     epicsInt32 triggerMode = PRInternalITRTrigger;
-    status = getIntegerParam(ADTriggerMode, &triggerMode);
-    if (status > asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode for setting polarity\n");
-        return status;
-    }
-    if (triggerMode != PRExternalTrigger)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-            "Trigger mode not set to external so cannot set trigger polarity\n");
-        return asynError;
-    }
     status = setIntegerParam(PR_TriggerPolarity, newTriggerPolarity);
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set trigger polarity\n");
         return status;
     }
+    status = getIntegerParam(ADTriggerMode, &triggerMode);
+    if (status == asynParamUndefined)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Trigger mode parameter not initialised yet, so unable to "
+            "process trigger polarity change. Reprocessing trigger polarity.\n");
+        this->addToParamQue(PR_TriggerPolarity, newTriggerPolarity);
+        return asynSuccess;
+    }
+    else if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Status %d: Failed to get trigger mode for setting polarity\n",
+            status);
+        return status;
+    }
+    if (triggerMode != PRExternalTrigger)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING, 
+            "Trigger mode not set to external so cannot set trigger polarity on device\n");
+        return status;
+    }
     callParamCallbacks();
-
     status = this->setTriggerMode(PRExternalTrigger);
     if (status > asynSuccess)
     {
@@ -682,7 +696,14 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     epicsInt32 adStatus = ADStatusIdle;
 
     status = getIntegerParam(ADTriggerMode, &triggerMode);
-    if (status > asynSuccess)
+    if (status == asynParamUndefined)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Trigger mode parameter not initialised yet, so unable to "
+            "process acquisition state change. Reprocessing acquisition change.\n");
+        this->addToParamQue(ADAcquire, newAcquisitionStatus);
+        return asynSuccess;
+    }
+    else if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode. \\
             Cannot safely change acquisition state\n");
@@ -692,7 +713,14 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     if (triggerMode == PRSoftTrigger) return status;
     // get ADStatus
     status = getIntegerParam(ADStatus, &adStatus);
-    if (status > asynSuccess)
+    if (status == asynParamUndefined)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Detector status parameter not initialised yet, so unable to "
+            "process acquisition state change. Reprocessing acquisition change.\n");
+        this->addToParamQue(ADAcquire, newAcquisitionStatus);
+        return asynSuccess;
+    }
+    else if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. \\
             Cannot safely change acquisition state\n");
@@ -921,16 +949,25 @@ asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
 asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     /* if trigger mode is button trigger then, do the soft trigger else print error */
     epicsInt32 triggerMode = PRInternalITRTrigger;
-    getIntegerParam(ADTriggerMode, &triggerMode);
+    asynStatus status = getIntegerParam(ADTriggerMode, &triggerMode);
+    if (status == asynParamUndefined)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Trigger mode parameter not initialised yet, so unable to "
+            "process soft trigger. Reprocessing soft trigger.\n");
+        this->addToParamQue(PR_SoftTrigger, 0);
+        return asynSuccess;
+    }
+    else if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode for sending soft trigger\n");
+        return status;
+    }
     if (triggerMode == PRSoftTrigger)
     {
         return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
     }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
-        return asynError;
-    }
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+    return asynError;
 }
 
 asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
