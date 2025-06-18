@@ -125,6 +125,7 @@ class ADRaptorEagleXV : public ADPixci
 
  protected:
     epicsInt32 PR_TemperaturePCB;
+    #define FIRST_RAPTOR_EAGLE_XV_PARAM PR_TemperaturePCB
     epicsInt32 PR_ToggleTec;
     epicsInt32 PR_ToggleGain;
     epicsInt32 PR_ToggleFpgaComms;
@@ -132,8 +133,6 @@ class ADRaptorEagleXV : public ADPixci
     epicsInt32 PR_ADCCalibrationFortyDegree;
     epicsInt32 PR_DACCalibrationZeroDegree;
     epicsInt32 PR_DACCalibrationFortyDegree;
-
-#define FIRST_RAPTOR_EAGLE_XV_PARAM PR_TemperaturePcb
 
  private:
     epicsFloat32 ADC_M;     // ADC Slope

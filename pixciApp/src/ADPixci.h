@@ -130,6 +130,7 @@ class ADPixci : public ADDriver
     const char *driverName;
 
     epicsInt32 PR_SoftTrigger;
+    #define FIRST_PIXCI_PARAM PR_SoftTrigger //94
     epicsInt32 PR_TriggerPolarity;
     epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_UpdateTemperature;
@@ -220,8 +221,6 @@ class ADPixci : public ADDriver
      */
     asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value) override;
     /******************************************************************************************************************/
-
-#define FIRST_PIXCI_PARAM PR_SoftTrigger
 
  private:
     /* Event handler for acquire task */
