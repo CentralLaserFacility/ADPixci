@@ -442,8 +442,8 @@ void ADPixci::acquireTask()
                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n", errMsg);
                 setIntegerParam(ADStatus, ADStatusError);
                 setStringParam(ADStatusMessage, "Error reading image from detector: " + errMsg);
-                this->unlock();
                 callParamCallbacks();
+                this->unlock();
                 continue;
             }
             // uniqueId and timeStamp must be implemented for standard ADDriver
@@ -456,7 +456,9 @@ void ADPixci::acquireTask()
             /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
             Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
             or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
+            this->unlock();
             doCallbacksGenericPointer(pImage, NDArrayData, 0);
+            this->lock();
             if (this->pArrays[0])
                 this->pArrays[0]->release();
             this->pArrays[0] = pImage;
@@ -465,13 +467,12 @@ void ADPixci::acquireTask()
         getIntegerParam(ADNumImagesCounter, &numImagesCounter);
         imageCounter++;
         numImagesCounter++;
-
         setIntegerParam(NDArraySize, static_cast<epicsInt32>(dims[0] * dims[1] * sizeof(NDUInt16)));
         setIntegerParam(NDArrayCounter, imageCounter);
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
         setIntegerParam(ADStatus, ADStatusIdle);
-        this->unlock();
         callParamCallbacks();
+        this->unlock();
     }
 }
 
@@ -840,12 +841,14 @@ void ADPixci::paramTask()
         b_val = static_cast<epicsBoolean>(functionAndVal[1]);
         i_val = static_cast<epicsInt32>(functionAndVal[1]);
         d_val = functionAndVal[1];
+        this->lock();
         status = this->handleParamTask(function, d_val, i_val, b_val);
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to handle parameter change. Parameter %d not changed to %f\n", function, d_val);
         }
         callParamCallbacks();
+        this->unlock();
     }
 }
 
