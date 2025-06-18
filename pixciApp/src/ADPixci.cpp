@@ -488,7 +488,7 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
     setStatIfHigher(&status, getIntegerParam(PR_TriggerPolarity, &triggerPolarity));
     if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get parameters for %s update\n", param);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get parameters for %d update\n", param);
         return status;
     }
     if (acquire == 1)
@@ -497,7 +497,7 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                "%s updated, but failed to stop acquisition for reloading configuration\n", param);
+                "%d updated, but failed to stop acquisition for reloading configuration\n", param);
             return status;
         }
     }
@@ -506,21 +506,21 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
     status = this->changeVideoFormatConfig(binX, binY, sizeX, sizeY);
     if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to change video format config for %s update\n", param);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to change video format config for %d update\n", param);
         return status;
     }
     status = setIntegerParam(PR_TriggerPolarity, triggerPolarity);
     setStatIfHigher(&status, this->setTriggerMode(triggerMode));
     if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update trigger mode after update of %s\n", param);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update trigger mode after update of %d\n", param);
         return status;
     }
     status = setupAquisition();
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-            "Failed to set up detector for acquisition after update of %s\n", param);
+            "Failed to set up detector for acquisition after update of %d\n", param);
         return status;
     }
     if (acquire == 1)
@@ -529,7 +529,7 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                "Failed to restart acquisition after update of %s\n", param);
+                "Failed to restart acquisition after update of %d\n", param);
         }
     }
     return status;
