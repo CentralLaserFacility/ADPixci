@@ -538,7 +538,6 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
 asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val)
 {
     asynStatus status = asynSuccess;
-
     if (param == PR_SoftTrigger)
     {
         status = this->sendSoftTrigger();
@@ -917,6 +916,7 @@ void ADPixci::paramTask()
     epicsInt32 i_val = 0;
     epicsBoolean b_val = epicsFalse;
     asynStatus status = asynSuccess;
+    static const char *functionName = "paramTask";
 
     for (;;)
     {
@@ -925,6 +925,7 @@ void ADPixci::paramTask()
         b_val = static_cast<epicsBoolean>(functionAndVal[1]);
         i_val = static_cast<epicsInt32>(functionAndVal[1]);
         d_val = functionAndVal[1];
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s: Parameter: %d, Value: %f\n", functionName, function, d_val);
         this->lock();
         status = this->handleParamTask(function, d_val, i_val, b_val);
         if (status > asynSuccess)
@@ -1040,6 +1041,9 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
     epicsInt32 function = pasynUser->reason;
     static const char *functionName = "writeFloat64";
+
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+        "%s: Parameter: %d, Value: %d\n", functionName, function, value);
 
     if (function == ADGain || function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature ||
         function == ADShutterOpenDelay || function == ADShutterCloseDelay)

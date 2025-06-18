@@ -571,7 +571,6 @@ asynStatus ADRaptorEagleXV::updateInfo()
 
         DAC_M = 40.0f / (dacCountFortyDegree - dacCountZeroDegree);
         DAC_C = 40.0f - (DAC_M * dacCountFortyDegree);
-
         return asynSuccess;
     }
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read manufacturer information from camera\n");
@@ -597,8 +596,8 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
         status = aquireStart();
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to start acquisition in soft trigger mode. \\
-                Will not update trigger mode readback\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to start acquisition in soft trigger mode. "
+                "Will not update trigger mode readback\n");
             return status;
         }
     }
@@ -611,8 +610,8 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
         status = getIntegerParam(ADTriggerMode, &previousTriggerMode);
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get previous trigger mode. \\
-                Acquisition may work incorrectly while in new trigger mode\n");
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get previous trigger mode. "
+                "Acquisition may work incorrectly while in new trigger mode\n");
         }
         if (previousTriggerMode == PRSoftTrigger)
         {
@@ -626,8 +625,8 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
             }
             else if (status > asynSuccess)
             {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get ADAcquire status. \\
-                    Acquisition may work incorrectly while in new trigger mode\n");
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get ADAcquire status. "
+                    "Acquisition may work incorrectly while in new trigger mode\n");
             }
             if (acquisitionStatus == epicsFalse)
             {
@@ -705,8 +704,8 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     }
     else if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode. \\
-            Cannot safely change acquisition state\n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode. "
+            "Cannot safely change acquisition state\n");
         return status;
     }
     // In soft trigger mode acquisition should no be stopped as it can affect WaitForSingleObject. 
@@ -722,8 +721,8 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     }
     else if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. \\
-            Cannot safely change acquisition state\n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. "
+            "Cannot safely change acquisition state\n");
         return status;
     }
     if (newAcquisitionStatus && adStatus == ADStatusIdle)
@@ -748,8 +747,8 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     }
     else
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. \\
-            Detector in wrong state\n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. "
+            "Detector in wrong state\n");
         status = asynError;
     }
     return status;
@@ -1501,6 +1500,9 @@ asynStatus ADRaptorEagleXV::updateInitialPVs(){
 asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
+    const char *functionName = "writeInt32";
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+        "%s: Parameter: %d, Value: %d\n", functionName, function, value);
 
     asynStatus status = asynSuccess;
     if (function == ADAcquire)
