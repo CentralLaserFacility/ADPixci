@@ -274,8 +274,6 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
             this->deviceIsReachable = epicsFalse;
             throw std::runtime_error("Failed to make serial connection: " + errMsg);
         }
-        // Camera is connected and ready for use
-        setIntegerParam(ADStatus, ADStatusIdle);
     }
     // Create an event to notify when a field has been captured by pxd_goSnap, pxd_goLive
     this->g_hEvent = pxd_eventCapturedFieldCreate(UNIT);
@@ -307,6 +305,7 @@ ADPixci::~ADPixci()
 asynStatus ADPixci::setupAquisition()
 {
     asynStatus status = asynSuccess;
+    epicsInt32 adStatus = ADStatusIdle;
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
     epicsInt32 RoiSizeX = 0;
@@ -351,6 +350,16 @@ asynStatus ADPixci::setupAquisition()
     if (status > asynSuccess) 
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not set array size parameters\n", status);
+    }
+    setStatIfHigher(&status, getIntegerParam(ADStatus, &adStatus));
+    if (status > asynSuccess) 
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get ADStatus parameter\n", status);
+        return status;
+    }
+    if (adStatus == ADStatusInitializing)
+    {
+        setStatIfHigher(&status, setIntegerParam(ADStatus, ADStatusIdle));
     }
     callParamCallbacks();
     return status;
@@ -410,12 +419,7 @@ void ADPixci::acquireTask()
     epicsInt32 numImagesCounter = 0;
     epicsInt32 imageCounter = 0;
     epicsInt32 arrayCallbacks = 0;
-    asynStatus acquisitionSetupStatus = setupAquisition();
-    if (acquisitionSetupStatus != asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition setup failed\n");
-    }
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition setup successful\n");
+    epicsInt32 adStatus = ADStatusIdle;
     for (;;)
     {
         // waiting for event to be triggered
@@ -425,6 +429,15 @@ void ADPixci::acquireTask()
         getIntegerParam(NDArraySizeX, &sizeX);
         getIntegerParam(NDArraySizeY, &sizeY);
         getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
+        getIntegerParam(ADStatus, &adStatus);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "acquireTask: adStatus=%d\n", adStatus);
+        if(adStatus == ADStatusInitializing)
+        {
+            // If the driver is still initializing, skip this iteration
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Driver is still initializing, skipping acquisition\n");
+            this->unlock();
+            continue;
+        }
         dims[0] = sizeX;
         dims[1] = sizeY;
 
