@@ -1508,8 +1508,10 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
     asynStatus status = asynSuccess;
     if (function == ADAcquire)
     {
+        this->lock();
         status = updateAcquisition(value);
-        callParamCallbacks(); 
+        callParamCallbacks();
+        this->unlock();
     } /* set  value for default parameters */
     else if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
     {
