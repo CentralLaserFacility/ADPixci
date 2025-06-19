@@ -141,12 +141,12 @@ class ADPixci : public ADDriver
      *
      * @return asynStatus
      */
-    asynStatus setupAquisition();
+    asynStatus setupAcquisition();
 
     /**
      * @brief Starts live capture image to frame buffer.
      */
-    asynStatus aquireStart();
+    asynStatus acquireStart();
 
     /**
      * @brief Stops live capturing.
@@ -295,7 +295,7 @@ class ADPixci : public ADDriver
     virtual asynStatus setExposure(epicsFloat64 exposureTime) = 0;
 
     /**
-     * @brief Get the Aquire Time from the camera
+     * @brief Get the Acquire Time from the camera
      *
      * @return double
      */

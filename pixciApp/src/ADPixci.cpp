@@ -302,7 +302,7 @@ ADPixci::~ADPixci()
     setStringParam(ADStatusMessage, "Camera disconnected.");
 }
 
-asynStatus ADPixci::setupAquisition()
+asynStatus ADPixci::setupAcquisition()
 {
     asynStatus status = asynSuccess;
     epicsInt32 adStatus = ADStatusIdle;
@@ -365,7 +365,7 @@ asynStatus ADPixci::setupAquisition()
     return status;
 }
 
-asynStatus ADPixci::aquireStart()
+asynStatus ADPixci::acquireStart()
 {
     pxbuffer_t buffer = 1L; // Image frame buffer
     // start capture of the image into the frame buffer
@@ -529,7 +529,7 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update trigger mode after update of %d\n", param);
         return status;
     }
-    status = setupAquisition();
+    status = setupAcquisition();
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -538,7 +538,7 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
     }
     if (acquire == 1)
     {   // starting acquisition if acquisition was running before.
-        status = aquireStart();
+        status = acquireStart();
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 

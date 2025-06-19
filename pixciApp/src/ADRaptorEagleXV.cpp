@@ -591,9 +591,9 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
     if (newTriggerMode == PRSoftTrigger)
     {
         /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
-        called. For that aquireStart() function is called.
+        called. For that acquireStart() function is called.
         */
-        status = aquireStart();
+        status = acquireStart();
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to start acquisition in soft trigger mode. "
@@ -604,7 +604,7 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
     else
     {
         /* When changing the mode from button triggered to any other mode, check the ADAcquire status,
-            stop acquision if ADAcquire is in 'Stop' state because in button trigger mode aquireStart()
+            stop acquision if ADAcquire is in 'Stop' state because in button trigger mode acquireStart()
             is called irrespective of ADAcquire status.
         */
         status = getIntegerParam(ADTriggerMode, &previousTriggerMode);
@@ -727,7 +727,7 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     }
     if (newAcquisitionStatus && adStatus == ADStatusIdle)
     {   // Start acquisition 
-        status = aquireStart();
+        status = acquireStart();
         if (status > asynSuccess) return status;
         status = setIntegerParam(ADAcquire, epicsTrue);
         if (status > asynSuccess)

@@ -296,7 +296,7 @@ class ADRaptorEagleXV : public ADPixci
     asynStatus setExposure(epicsFloat64 exposureTime) final;
 
     /**
-     * @brief Get the Aquire Time from the camera
+     * @brief Get the Acquire Time from the camera
      *
      * @return double
      */
