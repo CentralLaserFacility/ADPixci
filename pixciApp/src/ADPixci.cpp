@@ -232,7 +232,8 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     epicsInt32 cameraConnectionStatus = PIXCI_NO_ERROR;
     epicsInt32 serialConnectionStatus = PIXCI_NO_ERROR;
     asynStatus status = asynSuccess;
-
+    this->driverName = "ADPixci";
+    
     setStringParam(ADModel, cameraModel);
     setIntegerParam(ADStatus, ADStatusInitializing);
     // Initialize driver parameters
@@ -252,12 +253,12 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     cameraConnectionStatus = pxd_PIXCIopen(DRIVERPARMS, nullptr, formatFile);
     if (cameraConnectionStatus < PIXCI_NO_ERROR)
     {   // Failed to connect to the camera
-        std::string errMsg = pxd_mesgErrorCode(cameraConnectionStatus);
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName, errMsg);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName, 
+            pxd_mesgErrorCode(cameraConnectionStatus));
         setIntegerParam(ADStatus, ADStatusDisconnected);
-        setStringParam(ADStatusMessage, errMsg);
+        setStringParam(ADStatusMessage, pxd_mesgErrorCode(cameraConnectionStatus));
         this->deviceIsReachable = epicsFalse;
-        throw std::runtime_error("Failed to open camera: " + errMsg);
+        throw std::runtime_error(std::string("Failed to open camera: ") + pxd_mesgErrorCode(cameraConnectionStatus));
     }
     else
     {   // Connected to the camera
@@ -266,13 +267,13 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
         serialConnectionStatus = pxd_serialConfigure(UNIT, RESERVED, BAUDRATE, 8, 0, 1, RESERVED, RESERVED, RESERVED);
         if (serialConnectionStatus < PIXCI_NO_ERROR)
         {   // Failed to make the serial connection
-            std::string errMsg = pxd_mesgErrorCode(serialConnectionStatus);
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot make serial connection: %s\n", driverName,
-                errMsg);
+                pxd_mesgErrorCode(serialConnectionStatus));
             setIntegerParam(ADStatus, ADStatusError);
-            setStringParam(ADStatusMessage, errMsg);
+            setStringParam(ADStatusMessage, pxd_mesgErrorCode(serialConnectionStatus));
             this->deviceIsReachable = epicsFalse;
-            throw std::runtime_error("Failed to make serial connection: " + errMsg);
+            throw std::runtime_error(std::string("Failed to make serial connection: ") +
+                pxd_mesgErrorCode(serialConnectionStatus));
         }
     }
     // Create an event to notify when a field has been captured by pxd_goSnap, pxd_goLive
@@ -291,10 +292,10 @@ ADPixci::~ADPixci()
     disconnectStatusCode = pxd_PIXCIclose();
     if (disconnectStatusCode < PIXCI_NO_ERROR)
     {   // Error on disconnect
-        std::string errMsg = pxd_mesgErrorCode(disconnectStatusCode);
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, errMsg);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, 
+            pxd_mesgErrorCode(disconnectStatusCode));
         setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, errMsg);
+        setStringParam(ADStatusMessage, pxd_mesgErrorCode(disconnectStatusCode));
     }
     // Camera successfully disconnected
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s: Camera disconnected\n", driverName);
@@ -371,10 +372,9 @@ asynStatus ADPixci::acquireStart()
     epicsInt32 error = pxd_goLive(UNIT, buffer);
     if (error < PIXCI_NO_ERROR)
     {   // Error starting acquisition
-        std::string errMsg = pxd_mesgErrorCode(error);
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error : %s\n", errMsg);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error: %s\n", pxd_mesgErrorCode(error));
         setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, errMsg);
+        setStringParam(ADStatusMessage, pxd_mesgErrorCode(error));
         return asynError;
     }
     // acquisition successfully started
@@ -389,10 +389,9 @@ asynStatus ADPixci::acquireStop()
     epicsInt32 error = pxd_goUnLive(UNIT);
     if (error < PIXCI_NO_ERROR)
     {   // Error stopping acquisition
-        std::string errMsg = pxd_mesgErrorCode(error);
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stop error: : %s\n", errMsg);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stop error: : %s\n", pxd_mesgErrorCode(error));
         setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, errMsg);
+        setStringParam(ADStatusMessage, pxd_mesgErrorCode(error));
         return asynError;
     }
     // acquisition successfully stopped
@@ -450,10 +449,11 @@ void ADPixci::acquireTask()
                         dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
             if (err < PIXCI_NO_ERROR)
             {
-                std::string errMsg = pxd_mesgErrorCode(err);
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n", errMsg);
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n", 
+                    pxd_mesgErrorCode(err));
                 setIntegerParam(ADStatus, ADStatusError);
-                setStringParam(ADStatusMessage, "Error reading image from detector: " + errMsg);
+                setStringParam(ADStatusMessage, std::string("Error reading image from detector: ") +
+                    pxd_mesgErrorCode(err));
                 callParamCallbacks();
                 this->unlock();
                 continue;
@@ -660,7 +660,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = reloadConfiguration(param, i_val, binY, sizeX, sizeY);
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
@@ -698,7 +698,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = reloadConfiguration(param, binX, i_val, sizeX, sizeY);
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
@@ -751,7 +751,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
@@ -804,7 +804,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
@@ -857,7 +857,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
@@ -910,7 +910,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = reloadConfiguration(param, binX, binY, sizeX, sizeY);
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
