@@ -748,9 +748,10 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     else
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. "
-            "Detector in wrong state\n");
+            "Detector in wrong state (state: %d)\n", adStatus);
         status = asynError;
     }
+    callParamCallbacks();  // Call callbacks to update the readback
     return status;
 }
 

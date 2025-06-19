@@ -312,7 +312,6 @@ asynStatus ADPixci::setupAcquisition()
     epicsInt32 RoiSizeY = 0;
     epicsInt32 sizeX = pxd_imageXdim();
     epicsInt32 sizeY = pxd_imageYdim();
-    callParamCallbacks(); // TODO: check if this line can be deleted
     setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
     setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d\n", status);
@@ -465,7 +464,7 @@ void ADPixci::acquireTask()
             pImage->timeStamp = currentTime.secPastEpoch + currentTime.nsec / 1.e9;
             updateTimeStamp(&pImage->epicsTS);
             getAttributes(pImage->pAttributeList);
-            setIntegerParam(ADStatus, ADStatusSaving);
+            setIntegerParam(ADStatus, adStatus);
             /*Call doCallbacksGenericPointer() so that registered clients can get the values of the new arrays.
             Drivers must release their mutex by calling this->unlock() before they call doCallbacksGenericPointer(),
             or a deadlock can occur if the plugin makes a call to one of the driver functions.*/
@@ -483,7 +482,6 @@ void ADPixci::acquireTask()
         setIntegerParam(NDArraySize, static_cast<epicsInt32>(dims[0] * dims[1] * sizeof(NDUInt16)));
         setIntegerParam(NDArrayCounter, imageCounter);
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
-        setIntegerParam(ADStatus, ADStatusIdle);
         callParamCallbacks();
         this->unlock();
     }
@@ -648,7 +646,7 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         setStatIfHigher(&status, getIntegerParam(ADSizeY, &sizeY));
         if (status == asynParamUndefined)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not"
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "One or more parameters for processing %d are not "
                 "initialized yet. Reprocessing parameter %d\n", param, param);
             this->addToParamQue(param, i_val);
             return asynSuccess;
