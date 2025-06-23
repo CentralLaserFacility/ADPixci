@@ -233,7 +233,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     epicsInt32 serialConnectionStatus = PIXCI_NO_ERROR;
     asynStatus status = asynSuccess;
     this->driverName = "ADPixci";
-    
+
     setStringParam(ADModel, cameraModel);
     setIntegerParam(ADStatus, ADStatusInitializing);
     // Initialize driver parameters
@@ -1071,7 +1071,7 @@ asynStatus ADPixci::addToParamQue(epicsInt32 function, epicsInt32 value)
     err = this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
     if (err < 0)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to send parameter message: message to large\n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to send parameter message: message too large\n");
         return asynError;
     }
     return asynSuccess;
@@ -1084,7 +1084,7 @@ asynStatus ADPixci::addToParamQue(epicsInt32 function, epicsFloat64 value)
     err = this->paramMsgQue->send(functionAndVal, PARAM_MESSAGE_SIZE);
     if (err < 0)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to send parameter message: message to large\n");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to send parameter message: message too large\n");
         return asynError;
     }
     return asynSuccess;
