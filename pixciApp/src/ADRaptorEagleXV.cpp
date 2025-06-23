@@ -693,6 +693,7 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     asynStatus status = asynSuccess;
     epicsInt32 triggerMode = PRInternalITRTrigger;
     epicsInt32 adStatus = ADStatusIdle;
+    epicsInt32 acquisitionState = epicsFalse;
 
     status = getIntegerParam(ADTriggerMode, &triggerMode);
     if (status == asynParamUndefined)
@@ -749,6 +750,24 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. "
             "Detector in wrong state (state: %d)\n", adStatus);
+        status = getIntegerParam(ADAcquire, &acquisitionState);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "ADAcquire parameter not initialised yet, so assuming "
+                "acquisition is stopped\n");
+            acquisitionState = epicsFalse; // assume acquisition is stopped if parameter is not set
+        }
+        else if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector acquisiton status. "
+                "Assuming it is stopped\n");
+            acquisitionState = epicsFalse;
+        }
+        status = setIntegerParam(ADAcquire, acquisitionState);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set readback for acquisition status\n");
+        }
         status = asynError;
     }
     callParamCallbacks();  // Call callbacks to update the readback
