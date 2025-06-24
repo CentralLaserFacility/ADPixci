@@ -962,7 +962,7 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     // checking if any message packer left to read, and clear the buffer by reading it
     if (pxd_serialRead(unit, RESERVED, nullptr, 0) > 0)
     {
-        count = pxd_serialRead(unit, 0, serialIn, serialInBufferSize);
+        count = pxd_serialRead(unit, RESERVED, serialIn, serialInBufferSize);
         if (count < PIXCI_NO_ERROR)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 

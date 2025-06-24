@@ -117,16 +117,16 @@ asynStatus ADRaptorEagleXV::readSerialRegister(epicsInt8 Register, epicsInt8 *va
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
     char first_bufout[] = {
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
-         static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+        static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+        static_cast<char>(SINGLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
         Register,
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
+        static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
+        static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
+        static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
         END_OF_TRANSMISSION_BYTE
     };
 
@@ -147,16 +147,16 @@ asynStatus ADRaptorEagleXV::readSerialRegister(epicsInt8 Register1, epicsInt8 Re
     char inputMsg[20] = {};
     epicsInt32 inSize = 0;
     char first_bufout[] = {
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
-         static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[0]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[1]),
+        static_cast<char>(DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[2]),
         Register1, Register2,
         END_OF_TRANSMISSION_BYTE
     };
     char last_bufout[] = {
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
-         static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
+        static_cast<char>(READ_SERIAL_PREFIX_BYTES[0]),
+        static_cast<char>(READ_SERIAL_PREFIX_BYTES[1]),
+        static_cast<char>(READ_SERIAL_PREFIX_BYTES[2]),
         END_OF_TRANSMISSION_BYTE
     };
 
