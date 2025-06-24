@@ -84,7 +84,7 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
     }
 }
 
-asynStatus ADRaptorEagleXV::writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val)
+asynStatus ADRaptorEagleXV::writeSerialRegister(epicsInt8 Register, epicsInt8 val)
 {
     char inputMsg[20] = {};
 
@@ -224,11 +224,11 @@ asynStatus ADRaptorEagleXV::setFrameRate(epicsFloat64 frameRate)
     epicsUInt64 frameRateCount = (epicsUInt64)(COUNT_PER_FRAME / frameRate);
     uInt64ToInt8(frameRateCount, frameRateHexVal);
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[0], frameRateHexVal[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[1], frameRateHexVal[1]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[2], frameRateHexVal[2]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[3], frameRateHexVal[3]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, FRAME_RATE_BYTES[4], frameRateHexVal[4]));
+    setStatIfHigher(&status, writeSerialRegister(FRAME_RATE_BYTES[0], frameRateHexVal[0]));
+    setStatIfHigher(&status, writeSerialRegister(FRAME_RATE_BYTES[1], frameRateHexVal[1]));
+    setStatIfHigher(&status, writeSerialRegister(FRAME_RATE_BYTES[2], frameRateHexVal[2]));
+    setStatIfHigher(&status, writeSerialRegister(FRAME_RATE_BYTES[3], frameRateHexVal[3]));
+    setStatIfHigher(&status, writeSerialRegister(FRAME_RATE_BYTES[4], frameRateHexVal[4]));
     return status;
 }
 
@@ -334,8 +334,8 @@ asynStatus ADRaptorEagleXV::setCoolingSetPoint(epicsFloat64 temperature)
     cval[0] = (epicsInt8)((dacCount & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((dacCount & 0x00FF));
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[0], cval[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, TEC_TEMPERATURE_BYTES[1], cval[1]));
+    setStatIfHigher(&status, writeSerialRegister(TEC_TEMPERATURE_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(TEC_TEMPERATURE_BYTES[1], cval[1]));
     return status;
 }
 
@@ -370,9 +370,9 @@ asynStatus ADRaptorEagleXV::toggleTec(epicsBoolean enableTec)
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     if (enableTec)
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | 0x01);  // setting first bit = 1
+        return writeSerialRegister(FPGA_STATUS_BYTE, fpgaStatus | 0x01);  // setting first bit = 1
     else
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(0x01));   // setting first bit = 0
+        return writeSerialRegister(FPGA_STATUS_BYTE, fpgaStatus & ~(0x01));   // setting first bit = 0
 }
 
 epicsBoolean ADRaptorEagleXV::isTecEnabled()
@@ -385,9 +385,9 @@ asynStatus ADRaptorEagleXV::toggleGain(epicsBoolean enableGain)
 {
     epicsUInt8 fpgaStatus = getFpgaStatus();
     if (enableGain)
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus | (1 << 7));  // setting last bit = 1
+        return writeSerialRegister(FPGA_STATUS_BYTE, fpgaStatus | (1 << 7));  // setting last bit = 1
     else
-        return writeSerialRegister(UNIT, FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7));     // setting last bit = 0
+        return writeSerialRegister(FPGA_STATUS_BYTE, fpgaStatus & ~(1 << 7));     // setting last bit = 0
 }
 
 epicsBoolean ADRaptorEagleXV::isGainEnabled()
@@ -403,11 +403,11 @@ asynStatus ADRaptorEagleXV::setExposure(epicsFloat64 exposureTime)
     epicsUInt64 exposureTimeCount = (epicsUInt64)(exposureTime * EXPOSURE_COUNT_TO_TIME / SEC_TO_mS);
     uInt64ToInt8(exposureTimeCount, exposureTimeHexVal);
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[0], exposureTimeHexVal[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[1], exposureTimeHexVal[1]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[2], exposureTimeHexVal[2]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[3], exposureTimeHexVal[3]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, EXPOSURE_BYTES[4], exposureTimeHexVal[4]));
+    setStatIfHigher(&status, writeSerialRegister(EXPOSURE_BYTES[0], exposureTimeHexVal[0]));
+    setStatIfHigher(&status, writeSerialRegister(EXPOSURE_BYTES[1], exposureTimeHexVal[1]));
+    setStatIfHigher(&status, writeSerialRegister(EXPOSURE_BYTES[2], exposureTimeHexVal[2]));
+    setStatIfHigher(&status, writeSerialRegister(EXPOSURE_BYTES[3], exposureTimeHexVal[3]));
+    setStatIfHigher(&status, writeSerialRegister(EXPOSURE_BYTES[4], exposureTimeHexVal[4]));
     return status;
 }
 
@@ -452,7 +452,7 @@ epicsFloat64 ADRaptorEagleXV::convertHexToDelayTime(epicsUInt8 hexVal) {
 asynStatus ADRaptorEagleXV::setShutterOpenDelay(epicsFloat64 delayTime)
 {
     epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
-    return writeSerialRegister(UNIT, SHUTTER_OPEN_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
+    return writeSerialRegister(SHUTTER_OPEN_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
 }
 
 epicsFloat64 ADRaptorEagleXV::getShutterOpenDelay()
@@ -469,7 +469,7 @@ epicsFloat64 ADRaptorEagleXV::getShutterOpenDelay()
 asynStatus ADRaptorEagleXV::setShutterCloseDelay(epicsFloat64 delayTime)
 {
     epicsUInt8 hexVal = convertDelayTimeToHex(delayTime);
-    return writeSerialRegister(UNIT, SHUTTER_CLOSE_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
+    return writeSerialRegister(SHUTTER_CLOSE_DELAY_BYTE, reinterpret_cast<epicsInt8&>(hexVal));
 }
 
 epicsFloat64 ADRaptorEagleXV::getShutterCloseDelay()
@@ -781,8 +781,8 @@ asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
     cval[0] = (epicsInt8)((RoisizeX & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoisizeX & 0x00FF));
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[0], cval[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_SIZE_BYTES[1], cval[1]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_X_SIZE_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_X_SIZE_BYTES[1], cval[1]));
     return status;
 }
 
@@ -793,8 +793,8 @@ asynStatus ADRaptorEagleXV::setRoiSizeY(epicsInt32 RoisizeY)
     cval[0] = (epicsInt8)((RoisizeY & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoisizeY & 0x00FF));
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[0], cval[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_SIZE_BYTES[1], cval[1]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_Y_SIZE_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_Y_SIZE_BYTES[1], cval[1]));
     return status;
 }
 
@@ -805,8 +805,8 @@ asynStatus ADRaptorEagleXV::setRoiOffsetX(epicsInt32 RoiOffsetX)
     cval[0] = (epicsInt8)((RoiOffsetX & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoiOffsetX & 0x00FF));
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[0], cval[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_X_OFFSET_BYTES[1], cval[1]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_X_OFFSET_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_X_OFFSET_BYTES[1], cval[1]));
     return status;
 }
 
@@ -817,8 +817,8 @@ asynStatus ADRaptorEagleXV::setRoiOffsetY(epicsInt32 RoiOffsetY)
     cval[0] = (epicsInt8)((RoiOffsetY & 0x0F00) >> 8);
     cval[1] = (epicsInt8)((RoiOffsetY & 0x00FF));
 
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[0], cval[0]));
-    setStatIfHigher(&status, writeSerialRegister(UNIT, ROI_Y_OFFSET_BYTES[1], cval[1]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_Y_OFFSET_BYTES[0], cval[0]));
+    setStatIfHigher(&status, writeSerialRegister(ROI_Y_OFFSET_BYTES[1], cval[1]));
     return status;
 }
 
@@ -933,7 +933,7 @@ asynStatus ADRaptorEagleXV::setBin(epicsInt32 val, epicsBoolean coordinate)
         break;
     }
 
-    return writeSerialRegister(UNIT, reg, hexval);
+    return writeSerialRegister(reg, hexval);
 }
 
 asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
@@ -962,7 +962,7 @@ asynStatus ADRaptorEagleXV::setTriggerMode(epicsInt32 mode)
         return asynError;
         break;
     }
-    return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, hexval);
+    return writeSerialRegister(TRIGGER_MODE_BYTE, hexval);
 }
 
 asynStatus ADRaptorEagleXV::sendSoftTrigger() {
@@ -983,7 +983,7 @@ asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     }
     if (triggerMode == PRSoftTrigger)
     {
-        return writeSerialRegister(UNIT, TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
+        return writeSerialRegister(TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
     }
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
     return asynError;

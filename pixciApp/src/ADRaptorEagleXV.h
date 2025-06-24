@@ -144,17 +144,16 @@ class ADRaptorEagleXV : public ADPixci
      * @brief write value to the registers of the camera using serial command, might take longer
      * time to execute. Advised to run in seperate thread.
      *
-     * @param unit
-     * @param Register register number , where value has to be written
+     * @param Register register where value has to be written
      * @param val value to be written in the register
      * @return asynStatus
      */
-    asynStatus writeSerialRegister(epicsInt32 unit, epicsInt8 Register, epicsInt8 val);
+    asynStatus writeSerialRegister(epicsInt8 Register, epicsInt8 val);
 
     /**
      * @brief read camera registers over serial communication.
      *
-     * @param reg register address to be read
+     * @param Register register address to be read
      * @param val returned value
      * @return status, asynSuccess if read was successfull , else asynError
      */
