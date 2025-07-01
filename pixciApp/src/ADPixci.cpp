@@ -968,7 +968,6 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     epicsInt32 inMsgwait = 0;
     epicsInt32 inMsgwaitFlag = 0;
 
-    this->unlock();
     // checking if any message packer left to read, and clear the buffer by reading it
     if (pxd_serialRead(unit, RESERVED, nullptr, 0) > 0)
     {
@@ -1005,7 +1004,6 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to serial write to camera unit. Error code: %s.",
             driverName, pxd_mesgErrorCode(count));
-        this->lock();
         return count;
     }
     else
@@ -1027,7 +1025,6 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
                 driverName, pxd_mesgErrorCode(count));
         }
     }
-    this->lock();
     return count;
 }
 
