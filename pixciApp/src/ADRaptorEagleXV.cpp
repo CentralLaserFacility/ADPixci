@@ -52,12 +52,6 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
 {
     asynStatus status = asynSuccess;
     this->driverName = "ADRaptorEagleXV";
-    // rest micro controller
-    status = this->resetMicroController();
-    if(status > asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to reset microcontroller");
-    }
 
     status = setStringParam(ADManufacturer, "Raptor Photonics");
     if (status != asynSuccess)
@@ -167,26 +161,6 @@ asynStatus ADRaptorEagleXV::readSerialRegister(epicsInt8 Register1, epicsInt8 Re
         return asynSuccess;
     }
     return asynError;
-}
-
-asynStatus ADRaptorEagleXV::resetMicroController()
-{
-    char *inputMsg = nullptr;
-    char bufout[6] = {
-        static_cast<char>(RESET_MICRO_BYTES[0]),
-        static_cast<char>(RESET_MICRO_BYTES[1]),
-        static_cast<char>(RESET_MICRO_BYTES[2]),
-        static_cast<char>(RESET_MICRO_BYTES[3]),
-        static_cast<char>(RESET_MICRO_BYTES[4]),
-        static_cast<char>(RESET_MICRO_BYTES[5])
-    };
-    epicsInt32 result = writeReadSerial(UNIT, bufout, sizeof(bufout), inputMsg, 0);
-    if (result < PIXCI_NO_ERROR)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Failed to set system status\n");
-        return asynError;
-    }
-    return asynSuccess;
 }
 
 epicsUInt8 ADRaptorEagleXV::getSystemStatus()

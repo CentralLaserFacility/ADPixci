@@ -171,11 +171,6 @@ class ADRaptorEagleXV : public ADPixci
     asynStatus readSerialRegister(epicsInt8 Register1, epicsInt8 Register2, epicsInt8 *val);
 
     /**
-     * @brief reset the camera's microcontroller over serial communication.
-     */
-    asynStatus resetMicroController();
-
-    /**
      * @brief Get the System Status from camera
      *
      * @return unsigned char 1 byte returned from camera
