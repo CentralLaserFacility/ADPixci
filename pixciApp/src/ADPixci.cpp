@@ -86,119 +86,55 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
     epicsInt32 r = 0, r1 = 0;
     epicsInt32 u = 0, umap = 0, multiple = 0;
     struct xclibs *xc;
-
-#if USEINTERNALAPI
-    if (liblog_active)
-        liblog_aasrbz("pxd_setVideoResolution", "", "D*",
-                      &unitmap, static_cast<size_t>(sizeof(unitmap)),
-                      &xdim, static_cast<size_t>(sizeof(xdim)),
-                      &ydim, static_cast<size_t>(sizeof(ydim)),
-                      &hoffset, static_cast<size_t>(sizeof(hoffset)),
-                      &voffset, static_cast<size_t>(sizeof(voffset)),
-                      NULL);
-#endif
+    
     if (!(xc = pxd_xclibEscape(0, 0, 0)))
         return (PXERNOTOPEN);
-#if 1
-    {
-        pxvidstate_s *vidstatep = NULL;
-        // We might have compiled for multiple formats, but it may not be active.
-        if (xc->pxlib.getAllocState(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstatep) >= 0)
-        {
-            multiple = 1;
-            xc->pxlib.freeStateCopy(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstatep);
-        }
-        for (u = 0, umap = unitmap; u < PXMAX_UNITS && umap; umap >>= 1, u++)
-        {
-            if (!(umap & 1))
-                continue;
-            if ((r1 = xc->pxlib.getAllocState(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, &vidstatep)) < 0)
-            {
-                r = min(r, r1);
-                continue;
-            }
-            vidstatep->vidformat->xviddim[PXLHCM_MAX] = xdim;
-            vidstatep->vidformat->xdatdim[PXLHCM_MAX] = xdim;
-            vidstatep->vidformat->yviddim[PXLHCM_MAX] = ydim;
-            vidstatep->vidformat->ydatdim[PXLHCM_MAX] = ydim;
-            vidstatep->vidformat->xvidoffset[PXLHCM_MAX] = xdim;
-            vidstatep->vidformat->yvidoffset[PXLHCM_MAX] = ydim;
-            vidstatep->vidformat->xviddim[PXLHCM_MOD] = 0;
-            vidstatep->vidformat->xdatdim[PXLHCM_MOD] = 0;
-            vidstatep->vidformat->yviddim[PXLHCM_MOD] = 0;
-            vidstatep->vidformat->ydatdim[PXLHCM_MOD] = 0;
-            vidstatep->vidformat->is.hoffset = hoffset;
-            vidstatep->vidformat->is.voffset = voffset;
-            //
-            vidstatep->vidres->x.setmaxdatsamples = 1;
-            vidstatep->vidres->x.setmaxvidsamples = 1;
-            vidstatep->vidres->y.setmaxdatsamples = 1;
-            vidstatep->vidres->y.setmaxvidsamples = 1;
-            vidstatep->vidres->setmaxdatfields = 1;
-            vidstatep->vidres->setmaxdatphylds = 1;
-            r1 = xc->pxlib.defineState(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, vidstatep);
-            r = min(r, r1);
-            xc->pxlib.freeStateCopy(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, &vidstatep);
-            if (!multiple)
-                break;
-        }
-        r1 = pxd_xclibEscaped(unitmap, 0, 0);
-        r = min(r, r1);
-        return (r);
-    }
-#else
-    {
-#if USEINTERNALAPI  // using internal API
-        xclib_DeclareVidStateStructs2(vidstate, pxdstatep->devinfo[0].s.model);
-        xclib_InitVidStateStructs2(vidstate, pxdstatep->devinfo[0].s.model);
-#else
-        xclib_DeclareVidStateStructs2(vidstate, pxd_infoModel(unitmap));
-        xclib_InitVidStateStructs2(vidstate, pxd_infoModel(unitmap));
-#endif
 
-#if 1 | MULTIPLEFORMATS
-        // We might have compiled for multiple formats, but it may not be active.
-        if (xc->pxlib.getState(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstate) >= 0)
-            multiple = 1;
-        for (u = 0, umap = unitmap; u < PXMAX_UNITS && umap; umap >>= 1, u++)
-        {
-            if (!(umap & 1))
-                continue;
-            xc->pxlib.getState(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, &vidstate);
-            vidstate.vidformat->xviddim[PXLHCM_MAX] = xdim;
-            vidstate.vidformat->xdatdim[PXLHCM_MAX] = xdim;
-            vidstate.vidformat->yviddim[PXLHCM_MAX] = ydim;
-            vidstate.vidformat->ydatdim[PXLHCM_MAX] = ydim;
-            vidstate.vidformat->xvidoffset[PXLHCM_MAX] = xdim;
-            vidstate.vidformat->yvidoffset[PXLHCM_MAX] = ydim;
-            vidstate.vidformat->xviddim[PXLHCM_MOD] = 0;
-            vidstate.vidformat->xdatdim[PXLHCM_MOD] = 0;
-            vidstate.vidformat->yviddim[PXLHCM_MOD] = 0;
-            vidstate.vidformat->ydatdim[PXLHCM_MOD] = 0;
-            vidstate.vidformat->is.hoffset = hoffset;
-            vidstate.vidformat->is.voffset = voffset;
-            //
-            vidstate.vidres->x.setmaxdatsamples = 1;
-            vidstate.vidres->x.setmaxvidsamples = 1;
-            vidstate.vidres->y.setmaxdatsamples = 1;
-            vidstate.vidres->y.setmaxvidsamples = 1;
-            vidstate.vidres->setmaxdatfields = 1;
-            vidstate.vidres->setmaxdatphylds = 1;
-            r1 = xc->pxlib.defineState(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, &vidstate);
-            r = min(r, r1);
-            if (!multiple)
-                break;
-        }
-        r1 = pxd_xclibEscaped(unitmap, 0, 0);
-        r = min(r, r1);
-        return (r);
-#else
-        ?
-#endif
+    pxvidstate_s *vidstatep = NULL;
+    // We might have compiled for multiple formats, but it may not be active.
+    if (xc->pxlib.getAllocState(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstatep) >= 0)
+    {
+        multiple = 1;
+        xc->pxlib.freeStateCopy(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstatep);
     }
-#endif
+    for (u = 0, umap = unitmap; u < PXMAX_UNITS && umap; umap >>= 1, u++)
+    {
+        if (!(umap & 1))
+            continue;
+        if ((r1 = xc->pxlib.getAllocState(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, &vidstatep)) < 0)
+        {
+            r = min(r, r1);
+            continue;
+        }
+        vidstatep->vidformat->xviddim[PXLHCM_MAX] = xdim;
+        vidstatep->vidformat->xdatdim[PXLHCM_MAX] = xdim;
+        vidstatep->vidformat->yviddim[PXLHCM_MAX] = ydim;
+        vidstatep->vidformat->ydatdim[PXLHCM_MAX] = ydim;
+        vidstatep->vidformat->xvidoffset[PXLHCM_MAX] = xdim;
+        vidstatep->vidformat->yvidoffset[PXLHCM_MAX] = ydim;
+        vidstatep->vidformat->xviddim[PXLHCM_MOD] = 0;
+        vidstatep->vidformat->xdatdim[PXLHCM_MOD] = 0;
+        vidstatep->vidformat->yviddim[PXLHCM_MOD] = 0;
+        vidstatep->vidformat->ydatdim[PXLHCM_MOD] = 0;
+        vidstatep->vidformat->is.hoffset = hoffset;
+        vidstatep->vidformat->is.voffset = voffset;
+        //
+        vidstatep->vidres->x.setmaxdatsamples = 1;
+        vidstatep->vidres->x.setmaxvidsamples = 1;
+        vidstatep->vidres->y.setmaxdatsamples = 1;
+        vidstatep->vidres->y.setmaxvidsamples = 1;
+        vidstatep->vidres->setmaxdatfields = 1;
+        vidstatep->vidres->setmaxdatphylds = 1;
+        r1 = xc->pxlib.defineState(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, vidstatep);
+        r = min(r, r1);
+        xc->pxlib.freeStateCopy(&xc->pxlib, 0, multiple ? PXMODE_DIGI + u : PXMODE_DIGI, &vidstatep);
+        if (!multiple)
+            break;
+    }
+    r1 = pxd_xclibEscaped(unitmap, 0, 0);
+    r = min(r, r1);
+    return (r);
 }
-
 #endif  // !defined(PIXCI_LITE)
 
 epicsUInt64 int8ToUInt64(epicsInt8 *cval)
