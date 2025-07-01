@@ -929,6 +929,15 @@ void ADPixci::paramTask()
     asynStatus status = asynSuccess;
     static const char *functionName = "paramTask";
 
+    // Updating all the PVs related to the status of device and the manufacturers data
+    status = this->updateInitialPVs();
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to update initial PVs\n", driverName);
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, "Failed to update initial PVs");
+    }
+
     for (;;)
     {
         this->paramMsgQue->receive(functionAndVal, PARAM_MESSAGE_SIZE);

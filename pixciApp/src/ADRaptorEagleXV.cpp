@@ -79,15 +79,6 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
         setStringParam(ADStatusMessage, "Cannot create parameters");
         throw std::runtime_error("Failed to create parameters");
     }
-    // Updating all the PVs related to the status of device and the manufacturers data
-    status = this->updateInitialPVs();
-    if (status > asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to update initial PVs\n", driverName);
-        setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, "Failed to update initial PVs");
-        throw std::runtime_error("Failed to update initial PVs");
-    }
 }
 
 asynStatus ADRaptorEagleXV::writeSerialRegister(epicsInt8 Register, epicsInt8 val)
