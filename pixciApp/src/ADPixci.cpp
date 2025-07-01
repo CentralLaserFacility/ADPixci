@@ -315,7 +315,6 @@ asynStatus ADPixci::setupAcquisition()
     epicsInt32 sizeY = pxd_imageYdim();
     setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
     setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d\n", status);
     if (status > asynSuccess) 
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get binning parameters\n", status);
