@@ -306,7 +306,6 @@ ADPixci::~ADPixci()
 asynStatus ADPixci::setupAcquisition()
 {
     asynStatus status = asynSuccess;
-    epicsInt32 adStatus = ADStatusIdle;
     epicsInt32 binX = 0;
     epicsInt32 binY = 0;
     epicsInt32 RoiSizeX = 0;
@@ -349,16 +348,6 @@ asynStatus ADPixci::setupAcquisition()
     if (status > asynSuccess) 
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not set array size parameters\n", status);
-    }
-    setStatIfHigher(&status, getIntegerParam(ADStatus, &adStatus));
-    if (status > asynSuccess) 
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get ADStatus parameter\n", status);
-        return status;
-    }
-    if (adStatus == ADStatusInitializing)
-    {
-        setStatIfHigher(&status, setIntegerParam(ADStatus, ADStatusIdle));
     }
     callParamCallbacks();
     return status;

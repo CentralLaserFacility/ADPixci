@@ -571,6 +571,7 @@ asynStatus ADRaptorEagleXV::updateInfo()
 asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
 {
     asynStatus status = asynSuccess;
+    epicsInt32 adStatus = ADStatusIdle;
     epicsInt32 acquisitionStatus = epicsFalse;
     epicsInt32 previousTriggerMode = PRInternalITRTrigger;
     status = this->setTriggerMode(newTriggerMode);
@@ -635,6 +636,17 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Trigger mode set but failed to update readback\n");
+        return status;
+    }
+    setStatIfHigher(&status, getIntegerParam(ADStatus, &adStatus));
+    if (status > asynSuccess) 
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get ADStatus parameter. "
+            "If initializing, please restart\n", status);
+    }
+    if (adStatus == ADStatusInitializing)
+    {
+        setStatIfHigher(&status, setIntegerParam(ADStatus, ADStatusIdle));
     }
     return status;
 }

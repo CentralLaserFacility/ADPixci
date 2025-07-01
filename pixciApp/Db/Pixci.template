@@ -41,8 +41,13 @@ record(bi, "$(P)$(R)TriggerPolarity_RBV")
 # Record for enabling write access of various PVs after the device has first
 # initialised and sent a Trigger Mode back to the IOC
 #
+record(calc, "$(P)$(R)InitializingCalc") {
+   field(INPA, "$(P)$(R)DetectorState_RBV")
+   field(CALC, "A == 1 ? 0 : 1")
+}
+
 record(dfanout, "$(P)$(R)WriteEnabler") {
-   field(DOL, "0")
+   field(DOL, "$(P)$(R)InitializingCalc CP")
    field(OUTA, "$(P)$(R)WriteEnabler.DISV")
    field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
    field(OUTC, "$(P)$(R)TriggerMode.DISP")
@@ -140,14 +145,14 @@ record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
 # Records to disable settings records while acquiring
 #
 record(dfanout, "$(P)$(R)DisableAcquireSettingsWhileAcquiring") {
-   field(DOL, "$(P)$(R)Acquire CP")
+   field(DOL, "$(P)$(R)Acquire_RBV CP")
    field(OUTA, "$(P)$(R)AcquireTime.DISP")
    field(OUTB, "$(P)$(R)AcquirePeriod.DISP")
    field(OMSL, "closed_loop")
 }
 
 record(dfanout, "$(P)$(R)DisableAOISettingsWhileAcquiring") {
-   field(DOL, "$(P)$(R)Acquire CP")
+   field(DOL, "$(P)$(R)Acquire_RBV CP")
    field(OUTA, "$(P)$(R)BinX.DISP")
    field(OUTB, "$(P)$(R)BinY.DISP")
    field(OUTC, "$(P)$(R)SizeX.DISP")
@@ -158,7 +163,7 @@ record(dfanout, "$(P)$(R)DisableAOISettingsWhileAcquiring") {
 }
 
 record(dfanout, "$(P)$(R)DisableTriggerSettingsWhileAcquiring") {
-   field(DOL, "$(P)$(R)Acquire CP")
+   field(DOL, "$(P)$(R)Acquire_RBV CP")
    field(OUTA, "$(P)$(R)TriggerMode.DISP")
    field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
    field(OUTC, "$(P)$(R)ShutterOpenDelay.DISP")
