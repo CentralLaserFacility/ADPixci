@@ -988,7 +988,7 @@ asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     {
         return writeSerialRegister(TRIGGER_MODE_BYTE, SOFT_TRIGGER_BYTE);
     }
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected");
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Button Trigger mode is not selected\n");
     return asynError;
 }
 
@@ -1490,7 +1490,8 @@ asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 
     return status;
 }
 
-asynStatus ADRaptorEagleXV::updateInitialPVs(){
+asynStatus ADRaptorEagleXV::updateInitialPVs()
+{
     asynStatus status = asynSuccess;
     epicsFloat64 acquireFrameRate = 0.0;
     epicsFloat64 readBackAcquireTime = 0.0;
