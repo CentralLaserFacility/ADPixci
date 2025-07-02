@@ -83,9 +83,9 @@ constexpr const epicsUInt8 MANUFACTURER_DATA_BYTES[3] = {0x53, 0xAF, 0x12};
 
 constexpr const epicsUInt8 EXPOSURE_BYTES[5] = {0xED, 0xEE, 0xEF, 0xF0, 0xF1};
 constexpr const epicsUInt8 FRAME_RATE_BYTES[5] = {0xDC, 0xDD, 0xDE, 0xDF, 0xE0};
-constexpr const epicsUInt8 PCB_TEMPERATURE_BYTES[4] = {0X70, 0x00, 0X71, 0x00};
-constexpr const epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[4] = {0X6E, 0x00, 0X6F, 0x00};
-constexpr const epicsUInt8 TEC_TEMPERATURE_BYTES[2] = {0X03, 0X04};
+constexpr const epicsUInt8 PCB_TEMPERATURE_BYTES[4] = {0x70, 0x00, 0x71, 0x00};
+constexpr const epicsUInt8 CCD_SILISCON_TEMPERATURE_BYTES[4] = {0x6E, 0x00, 0x6F, 0x00};
+constexpr const epicsUInt8 TEC_TEMPERATURE_BYTES[2] = {0x03, 0x04};
 constexpr const epicsUInt8 ROI_X_SIZE_BYTES[2] = {0xB4, 0xB5};
 constexpr const epicsUInt8 ROI_Y_SIZE_BYTES[2] = {0xB8, 0xB9};
 constexpr const epicsUInt8 ROI_X_OFFSET_BYTES[2] = {0xB6, 0xB7};
