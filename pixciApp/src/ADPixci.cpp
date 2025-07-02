@@ -101,7 +101,7 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
         return (PXERNOTOPEN);
 #if 1
     {
-        pxvidstate_s *vidstatep = nullptr;
+        pxvidstate_s *vidstatep = NULL;
         // We might have compiled for multiple formats, but it may not be active.
         if (xc->pxlib.getAllocState(&xc->pxlib, 0, PXMODE_DIGI + 1, &vidstatep) >= 0)
         {
