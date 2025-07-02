@@ -239,8 +239,8 @@ class ADPixci : public ADDriver
      * @param sizeY The vertical size of the ROI
      * @return asynStatus
      */
-    asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY, 
-        epicsInt32 sizeX, epicsInt32 sizeY);
+    asynStatus reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX,
+        epicsInt32 sizeY);
 
     /**********************************************Pure virtual functions**********************************************/
 
