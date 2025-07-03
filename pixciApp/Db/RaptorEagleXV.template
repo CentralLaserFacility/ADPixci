@@ -31,7 +31,6 @@ record(mbbi, "$(P)$(R)TriggerMode_RBV")
    field(TWVL, "2")
    field(THST, "Btn. Triggered")
    field(THVL, "3")
-   field(FLNK, "$(P)$(R)WriteEnabler")
 }
 
 ################################################################################

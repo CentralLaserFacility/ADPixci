@@ -107,12 +107,6 @@ class ADPixci : public ADDriver
     ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, epicsInt32 priority, epicsInt32 stackSize,
         const char *cameraModel, const char *formatFile);
 
-    /** Reports on the properties of the attribute.
-     * @param[in] fp File pointer for the report output.
-     * @param[in] details Level of detail desired; currently not implemented.
-     */
-    void report(FILE *fp, epicsInt32 details);
-
     /**
      * @brief Thread that waits for signal from frame grabber during live capture
      */
@@ -136,22 +130,23 @@ class ADPixci : public ADDriver
     const char *driverName;
 
     epicsInt32 PR_SoftTrigger;
+    #define FIRST_PIXCI_PARAM PR_SoftTrigger //94
+    epicsInt32 PR_TriggerPolarity;
     epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_UpdateTemperature;
     epicsInt32 PR_BuildDate;
-    epicsInt32 PR_TriggerPolarity;
 
     /**
      * @brief load initial settings parameters
      *
-     * @return asynStatus asynSuccess or asynError
+     * @return asynStatus
      */
-    asynStatus setupAquisition();
+    asynStatus setupAcquisition();
 
     /**
      * @brief Starts live capture image to frame buffer.
      */
-    asynStatus aquireStart();
+    asynStatus acquireStart();
 
     /**
      * @brief Stops live capturing.
@@ -177,28 +172,35 @@ class ADPixci : public ADDriver
      * is communicated by FIFO. Parameters that doesn't require serial comminication dont need to be
      * added to the queue.
      *
-     * @param function
-     * @param value
+     * @param function function to add to the queue
+     * @param value value change associated with function to add to the queue
+     * @return asynStatus
      */
-    void addToParamQue(epicsInt32 function, epicsInt32 value);
-    void addToParamQue(epicsInt32 function, epicsFloat64 value);
+    asynStatus addToParamQue(epicsInt32 function, epicsInt32 value);
+    asynStatus addToParamQue(epicsInt32 function, epicsFloat64 value);
 
     /**
      * @brief handle the parameter change from the queue
-     * @param parameter the parameter that has to be changed
+     * @param param the parameter that has to be changed
      * @param d_val the value of the parameter as a double
      * @param i_val the value of the parameter as an integer
      * @param b_val the value of the parameter as a boolean
+     * @return asynStatus
      */
-    virtual void handleParamTask(epicsInt32 parameter, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
+    virtual asynStatus handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
     virtual asynStatus updateInitialPVs();
 
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
      * video settings in order to reflect in image.
+     * @param binX binning factor in x direction.
+     * @param binY binning factor in y direction.
+     * @param sizeX size of the image in x direction.
+     * @param sizeY size of the image in y direction.
+     * @return asynStatus
      */
-    virtual void changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY);
+    virtual asynStatus changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY);
 
     /*****************************************Methods overridden from ADDriver*****************************************/
     /**
@@ -220,14 +222,25 @@ class ADPixci : public ADDriver
     asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value) override;
     /******************************************************************************************************************/
 
-#define FIRST_PIXCI_PARAM PR_SoftTrigger
-
  private:
     /* Event handler for acquire task */
     HANDLE g_hEvent;
 
     /* Queue for changing parameters that use serial communication. */
     epicsMessageQueue *paramMsgQue;
+
+    /**
+     * @brief Reloads configuration based on parameter and binning values.
+     *
+     * @param parameter The parameter to reload
+     * @param binX The horizontal binning value
+     * @param binY The vertical binning value
+     * @param sizeX The horizontal size of the ROI
+     * @param sizeY The vertical size of the ROI
+     * @return asynStatus
+     */
+    asynStatus reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX,
+        epicsInt32 sizeY);
 
     /**********************************************Pure virtual functions**********************************************/
 
@@ -282,7 +295,7 @@ class ADPixci : public ADDriver
     virtual asynStatus setExposure(epicsFloat64 exposureTime) = 0;
 
     /**
-     * @brief Get the Aquire Time from the camera
+     * @brief Get the Acquire Time from the camera
      *
      * @return double
      */
