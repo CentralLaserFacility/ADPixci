@@ -992,6 +992,100 @@ asynStatus ADRaptorEagleXV::sendSoftTrigger() {
     return asynError;
 }
 
+asynStatus ADRaptorEagleXV::setReadoutMode(epicsInt32 mode)
+{
+    asynStatus status = asynSuccess;
+    epicsInt8 modeByte = 0x00;
+    switch (mode)
+    {
+        case readoutNormal:
+            modeByte = static_cast<epicsInt8>(READOUT_NORMAL_BYTE);
+            break;
+        case readoutTestPattern:
+            modeByte = static_cast<epicsInt8>(READOUT_TEST_PATTERN_BYTE);
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Invalid readout mode %d\n", mode);
+            return asynError;
+    }
+    return writeSerialRegister(READOUT_MODE_BYTE, modeByte);
+}
+
+epicsInt32 ADRaptorEagleXV::getReadoutMode()
+{
+    asynStatus status = asynSuccess;
+    epicsInt8 modeByte = 0x00;
+    epicsInt32 mode = readoutNormal;
+    status = readSerialRegister(READOUT_MODE_BYTE, &modeByte);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read readout mode\n");
+    }
+    switch (modeByte)
+    {
+        case static_cast<epicsInt8>(READOUT_NORMAL_BYTE):
+            mode = readoutNormal;
+            break;
+        case static_cast<epicsInt8>(READOUT_TEST_PATTERN_BYTE):
+            mode = readoutTestPattern;
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Unknown readout mode\n");
+    }
+    return mode;
+}
+
+asynStatus ADRaptorEagleXV::setPixelReadoutClock(epicsInt32 clockSpeed)
+{
+    asynStatus status = asynSuccess;
+    epicsInt8 readoutClockBytes[2] = {0x00, 0x00};
+    switch (clockSpeed)
+    {
+        case pixelReadoutClock25MHz:
+            readoutClockBytes[0] = static_cast<epicsInt8>(PIXEL_READOUT_2MHz_BYTES[0]);
+            readoutClockBytes[1] = static_cast<epicsInt8>(PIXEL_READOUT_2MHz_BYTES[1]);
+            break;
+        case pixelReadoutClock75kHz:
+            readoutClockBytes[0] = static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[0]);
+            readoutClockBytes[1] = static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[1]);
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Invalid pixel readout mode %d\n", clockSpeed);
+            return asynError;
+    }
+    setStatIfHigher(&status, writeSerialRegister(PIXEL_READOUT_CLOCK_BYTES[0], readoutClockBytes[0]));
+    setStatIfHigher(&status, writeSerialRegister(PIXEL_READOUT_CLOCK_BYTES[1], readoutClockBytes[1]));
+    return status;
+}
+
+epicsInt32 ADRaptorEagleXV::getPixelReadoutClock()
+{
+    asynStatus status = asynSuccess;
+    epicsInt8 readoutClockBytes[2] = {0x00, 0x00};
+    epicsInt32 readoutClock = pixelReadoutClock25MHz;
+    setStatIfHigher(&status, readSerialRegister(PIXEL_READOUT_CLOCK_BYTES[0], &readoutClockBytes[0]));
+    setStatIfHigher(&status, readSerialRegister(PIXEL_READOUT_CLOCK_BYTES[1], &readoutClockBytes[1]));
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to read pixel readout clock\n");
+    }
+    if (readoutClockBytes[0] == static_cast<epicsInt8>(PIXEL_READOUT_2MHz_BYTES[0]) &&
+        readoutClockBytes[1] == static_cast<epicsInt8>(PIXEL_READOUT_2MHz_BYTES[1]))
+    {
+        readoutClock = pixelReadoutClock25MHz;
+    }
+    else if (readoutClockBytes[0] == static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[0]) && 
+        readoutClockBytes[1] == static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[1]))
+    {
+        readoutClock = pixelReadoutClock75kHz;
+    }
+    else
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Unknown pixel readout clock value\n");
+    }
+    return readoutClock;
+}
+
 asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
 {
     asynStatus status = asynSuccess;
