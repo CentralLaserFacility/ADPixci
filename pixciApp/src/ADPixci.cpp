@@ -345,8 +345,7 @@ void ADPixci::acquireTask()
     for (;;)
     {
         // waiting for event to be triggered
-        // TODO: seperate waiting task for linux
-        WaitForSingleObject(this->g_hEvent, INFINITE);
+        WaitForSingleObject(g_hEvent, INFINITE);
         this->lock();
         getIntegerParam(NDArraySizeX, &sizeX);
         getIntegerParam(NDArraySizeY, &sizeY);
