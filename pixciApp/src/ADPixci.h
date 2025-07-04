@@ -46,6 +46,8 @@ constexpr const char *TriggerPolarityParamString = "PR_TRIGGER_POLARITY";
 constexpr const char *UpdateInfoString = "PR_UPDATE_INFO";
 constexpr const char *UpdateTemperatureString = "PR_UPDATE_TEMPERATURE";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
+constexpr const char *ReadoutModeParamString = "PR_READOUT_MODE";
+constexpr const char *PixelReadoutClockParamString = "PR_PIXEL_READOUT_CLOCK";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
 
@@ -135,6 +137,8 @@ class ADPixci : public ADDriver
     epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_UpdateTemperature;
     epicsInt32 PR_BuildDate;
+    epicsInt32 PR_ReadoutMode;
+    epicsInt32 PR_PixelReadoutClock;
 
     /**
      * @brief load initial settings parameters
@@ -420,6 +424,36 @@ class ADPixci : public ADDriver
      *
      */
     virtual asynStatus updateInfo() = 0;
+
+    /**
+     * @brief Set the readout mode for the camera.
+     *
+     * @param mode readout mode to set
+     * @return asynStatus
+     */
+    virtual asynStatus setReadoutMode(epicsInt32 mode) = 0;
+
+    /**
+     * @brief Get the current readout mode of the camera.
+     * 
+     * @return epicsInt32 current readout mode
+     */
+    virtual epicsInt32 getReadoutMode() = 0;
+
+    /**
+     * @brief Set the Pixel readout clock on the camera.
+     *
+     * @param clockSpeed clock speed to set
+     * @return asynStatus
+     */
+    virtual asynStatus setPixelReadoutClock(epicsInt32 clockSpeed) = 0;
+
+    /**
+     * @brief Get the current Pixel readout clock of the camera
+     * 
+     * @return epicsInt32 current pixel readout clock speed
+     */
+    virtual epicsInt32 getPixelReadoutClock() = 0;
 
     /******************************************************************************************************************/
 };

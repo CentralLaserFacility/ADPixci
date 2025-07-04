@@ -74,6 +74,14 @@ constexpr const epicsUInt8 EXTERNAL_RISING_EDGE_BYTE = 0x40;
 constexpr const epicsUInt8 SHUTTER_OPEN_DELAY_BYTE = 0xA6;
 constexpr const epicsUInt8 SHUTTER_CLOSE_DELAY_BYTE = 0xA7;
 
+constexpr const epicsUInt8 READOUT_MODE_BYTE = 0xF7;
+constexpr const epicsUInt8 READOUT_NORMAL_BYTE = 0x01;
+constexpr const epicsUInt8 READOUT_TEST_PATTERN_BYTE = 0x04; 
+
+constexpr const epicsUInt8 PIXEL_READOUT_CLOCK_BYTES[2] = {0xA3, 0xA4};
+constexpr const epicsUInt8 PIXEL_READOUT_2MHz_BYTES[2] = {0x02, 0x02};
+constexpr const epicsUInt8 PIXEL_READOUT_75kHz_BYTES[2] = {0x43, 0x80};
+
 constexpr const epicsUInt8 SINGLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x01};
 constexpr const epicsUInt8 DOUBLE_OUTPUT_BYTE_PREFIX_BYTES[3] = {0x53, 0xE0, 0x02};
 constexpr const epicsUInt8 READ_SERIAL_PREFIX_BYTES[3] = {0x53, 0xE1, 0x01};
@@ -122,6 +130,20 @@ class ADRaptorEagleXV : public ADPixci
         PRExternalTrigger,
         PRSoftTrigger
     } PRTriggerMode_t;
+
+    /* Readout Mode Options*/
+    typedef enum
+    {
+        readoutNormal,
+        readoutTestPattern,
+    } PRReadoutMode_t;
+
+    /* Pixel Readout Clock Options */
+    typedef enum
+    {
+        pixelReadoutClock25MHz,
+        pixelReadoutClock75kHz
+    } PRPixelReadoutClock_t;
 
  protected:
     epicsInt32 PR_TemperaturePCB;
@@ -509,6 +531,44 @@ class ADRaptorEagleXV : public ADPixci
      * @return asynStatus
      */
     asynStatus sendSoftTrigger() final;
+
+    /**
+     * @brief Set the readout mode for the camera.
+     *
+     * @param mode index of the mode,
+     * 0 = Normal readout
+     * 1 = Test pattern enabled
+     * @return asynStatus
+     */
+    asynStatus setReadoutMode(epicsInt32 mode) final;
+
+    /**
+     * @brief Get the current readout mode of the camera.
+     * 
+     * @return epicsInt32 current readout mode,
+     * 0 = Normal readout
+     * 1 = Test pattern enabled
+     */
+    epicsInt32 getReadoutMode() final;
+
+    /**
+     * @brief Set the Pixel readout clock on the camera.
+     *
+     * @param clockSpeed index of the speed,
+     * 0 = 2 MHz
+     * 1 = 75 kHz
+     * @return asynStatus
+     */
+    asynStatus setPixelReadoutClock(epicsInt32 clockSpeed) final;
+
+    /**
+     * @brief Get the current Pixel readout clock of the camera
+     * 
+     * @return epicsInt32 current pixel readout clock speed,
+     * 0 = 2 MHz
+     * 1 = 75 kHz
+     */
+    epicsInt32 getPixelReadoutClock() final;
 
     /**************************Overloaded functions from Pixci class that call Pixci class too*************************/
 

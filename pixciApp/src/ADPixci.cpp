@@ -178,6 +178,9 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     setStatIfHigher(&status, createParam(UpdateInfoString, asynParamInt32, &PR_UpdateInfo));
     setStatIfHigher(&status, createParam(UpdateTemperatureString, asynParamInt32, &PR_UpdateTemperature));
     setStatIfHigher(&status, createParam(BuildDateString, asynParamOctet, &PR_BuildDate));
+    setStatIfHigher(&status, createParam(ReadoutModeParamString, asynParamInt32, &PR_ReadoutMode));
+    setStatIfHigher(&status, createParam(PixelReadoutClockParamString, asynParamInt32, &PR_PixelReadoutClock));
+
     if (status > asynSuccess)
     {   // Parameter initialization failed
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to create parameters\n", driverName);
@@ -483,6 +486,32 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
     else if (param == PR_UpdateTemperature)
     {
         status = this->updateTemperatureActual();
+    }
+    else if (param == PR_ReadoutMode)
+    {
+        status = this->setReadoutMode(i_val);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set readout mode\n");
+        }
+        status = setIntegerParam(PR_ReadoutMode, this->getReadoutMode());
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set readout mode but failed to update readback\n");
+        }
+    }
+    else if (param == PR_PixelReadoutClock)
+    {
+        status = this->setPixelReadoutClock(i_val);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set pixel readout clock\n");
+        }
+        status = setIntegerParam(PR_PixelReadoutClock, this->getPixelReadoutClock());
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Set pixel readout clock but failed to update readback\n");
+        }
     }
     else if (param == ADAcquirePeriod)
     {
@@ -972,8 +1001,8 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     */
     if (function == ADReadStatus || function == ADTriggerMode || function == PR_TriggerPolarity ||
         function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_UpdateTemperature ||
-        function == ADBinX || function == ADBinY || function == ADMinX || function == ADMinY ||
-        function == ADSizeX || function == ADSizeY )
+        function == PR_ReadoutMode || function == PR_PixelReadoutClock || function == ADBinX || function == ADBinY ||
+        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY)
     {
         return addToParamQue(function, value);
     }

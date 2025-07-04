@@ -142,3 +142,30 @@ record(bi, "$(P)$(R)ToggleGain_RBV")
    field(ONAM, "Enabled")
    field(SCAN, "I/O Intr")
 }
+
+################################################################################
+# Override ADPixci to set ZNAM and ONAM of some records
+# 
+record(bo, "$(P)$(R)ReadoutMode")
+{
+   field(ZNAM, "Normal")
+   field(ONAM, "Test Pattern")
+}
+
+record(bi, "$(P)$(R)ReadoutMode_RBV")
+{
+   field(ZNAM, "Normal")
+   field(ONAM, "Test Pattern")
+}
+
+record(bo, "$(P)$(R)PixelReadoutClock")
+{
+   field(ZNAM, "2MHz")
+   field(ONAM, "75kHz")
+}
+
+record(bi, "$(P)$(R)PixelReadoutClock_RBV")
+{
+   field(ZNAM, "2MHz")
+   field(ONAM, "75kHz")
+}

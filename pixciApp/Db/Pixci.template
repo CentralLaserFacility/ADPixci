@@ -53,6 +53,8 @@ record(dfanout, "$(P)$(R)WriteEnabler") {
    field(OUTC, "$(P)$(R)TriggerMode.DISP")
    field(OUTD, "$(P)$(R)Acquire.DISP")
    field(OUTE, "$(P)$(R)SoftTrigger.DISP")
+   field(OUTF, "$(P)$(R)ReadoutMode.DISP")
+   field(OUTG, "$(P)$(R)PixelReadoutClock.DISP")
    field(OMSL, "closed_loop")
 }
 
@@ -84,6 +86,42 @@ record(stringin, "$(P)$(R)BuildDate_RBV")
 {
    field(DTYP, "asynOctetRead")
    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_BUILD_DATE")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Records related to readout mode
+# 
+record(bo, "$(P)$(R)ReadoutMode")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_READOUT_MODE")
+   field(PINI, "1")
+   field(DISP, "1")
+}
+
+record(bi, "$(P)$(R)ReadoutMode_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_READOUT_MODE")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Records related to pixel readout clock
+#
+record(bo, "$(P)$(R)PixelReadoutClock")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_PIXEL_READOUT_CLOCK")
+   field(PINI, "1")
+   field(DISP, "1")
+}
+
+record(bi, "$(P)$(R)PixelReadoutClock_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_PIXEL_READOUT_CLOCK")
    field(SCAN, "I/O Intr")
 }
 
@@ -168,5 +206,7 @@ record(dfanout, "$(P)$(R)DisableTriggerSettingsWhileAcquiring") {
    field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
    field(OUTC, "$(P)$(R)ShutterOpenDelay.DISP")
    field(OUTD, "$(P)$(R)ShutterCloseDelay.DISP")
+   field(OUTE, "$(P)$(R)ReadoutMode.DISP")
+   field(OUTF, "$(P)$(R)PixelReadoutClock.DISP")
    field(OMSL, "closed_loop")
 }
