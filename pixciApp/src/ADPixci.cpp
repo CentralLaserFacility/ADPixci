@@ -329,6 +329,27 @@ asynStatus ADPixci::acquireStop()
     return asynSuccess;
 }
 
+// TODO (irie-stfc): set adstatus back to idle after acquisition done
+// TODO (irie-stfc): figure out how this gets called - new asyn param/refactor existing one
+asynStatus ADPixci::acquireOne()
+{
+    pxbuffer_t buffer = 1L;  // Image frame buffer
+    // start capture of one image into the frame buffer
+    epicsInt32 error = pxd_goSnap(UNIT, buffer);
+    if (error < PIXCI_NO_ERROR)
+    {   // Error starting acquisition
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error: %s\n", pxd_mesgErrorCode(error));
+        setIntegerParam(ADStatus, ADStatusError);
+        setStringParam(ADStatusMessage, pxd_mesgErrorCode(error));
+        return asynError;
+    }
+    // acquisition successfully started
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
+    setIntegerParam(ADStatus, ADStatusAcquire);
+    setStringParam(ADStatusMessage, "Acquisition started\n");
+    return asynSuccess;
+}
+
 /**
  * @brief Acquistion task for live image capturing.
  * Event will be notified whenever a field has been captured by pxd_goSnapor, pxd_goLive.

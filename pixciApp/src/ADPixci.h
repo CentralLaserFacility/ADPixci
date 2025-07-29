@@ -148,7 +148,7 @@ class ADPixci : public ADDriver
     asynStatus setupAcquisition();
 
     /**
-     * @brief Starts live capture image to frame buffer.
+     * @brief Starts live capture of images to the frame buffer.
      */
     asynStatus acquireStart();
 
@@ -156,6 +156,11 @@ class ADPixci : public ADDriver
      * @brief Stops live capturing.
      */
     asynStatus acquireStop();
+
+    /**
+     * @brief Arm detector for capture of one image to the frame buffer.
+     */
+    asynStatus acquireOne();
 
     /**
      * @brief write message to the camera and read the reply after that
