@@ -584,58 +584,6 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set trigger mode\n");
         return status;
     }
-    if (newTriggerMode == PRSoftTrigger)
-    {
-        /* In button triggermode, for WaitForSingleObject function to be notified pxd_goLive should be
-        called. For that acquireStart() function is called.
-        */
-        status = acquireStart();
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to start acquisition in soft trigger mode. "
-                "Will not update trigger mode readback\n");
-            return status;
-        }
-    }
-    else
-    {
-        /* When changing the mode from button triggered to any other mode, check the ADAcquire status,
-            stop acquision if ADAcquire is in 'Stop' state because in button trigger mode acquireStart()
-            is called irrespective of ADAcquire status.
-        */
-        status = getIntegerParam(ADTriggerMode, &previousTriggerMode);
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get previous trigger mode. "
-                "Acquisition may work incorrectly while in new trigger mode\n");
-        }
-        if (previousTriggerMode == PRSoftTrigger)
-        {
-            status = getIntegerParam(ADAcquire, &acquisitionStatus);
-            if (status == asynParamUndefined)
-            {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition parameter not initialised yet, so "
-                    "assuming it is stopped\n");
-                acquisitionStatus = epicsFalse;  // assume acquisition is stopped if parameter is not set
-                status = asynSuccess;
-            }
-            else if (status > asynSuccess)
-            {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get ADAcquire status. "
-                    "Acquisition may work incorrectly while in new trigger mode\n");
-            }
-            if (acquisitionStatus == epicsFalse)
-            {
-                /* acquisiton is stopped if ADAcquire is on stop state*/
-                status = acquireStop();
-                if (status > asynSuccess)
-                {
-                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                        "Failed to stop acquisition while transitioning out of soft trigger mode\n");
-                }
-            }
-        }
-    }
     status = setIntegerParam(ADTriggerMode, newTriggerMode);
     if (status > asynSuccess)
     {
@@ -698,26 +646,9 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
 asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
 {
     asynStatus status = asynSuccess;
-    epicsInt32 triggerMode = PRInternalITRTrigger;
     epicsInt32 adStatus = ADStatusIdle;
     epicsInt32 acquisitionState = epicsFalse;
 
-    status = getIntegerParam(ADTriggerMode, &triggerMode);
-    if (status == asynParamUndefined)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Trigger mode parameter not initialised yet, so unable to "
-            "process acquisition state change. Reprocessing acquisition change.\n");
-        this->addToParamQue(ADAcquire, newAcquisitionStatus);
-        return asynSuccess;
-    }
-    else if (status > asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get trigger mode. "
-            "Cannot safely change acquisition state\n");
-        return status;
-    }
-    // In soft trigger mode acquisition should no be stopped as it can affect WaitForSingleObject.
-    if (triggerMode == PRSoftTrigger) return status;
     // get ADStatus
     status = getIntegerParam(ADStatus, &adStatus);
     if (status == asynParamUndefined)
