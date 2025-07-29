@@ -86,7 +86,7 @@ _cDcl(_dllpxlib, _cfunfcc, epicsInt32) pxd_setVideoResolution(
     epicsInt32 r = 0, r1 = 0;
     epicsInt32 u = 0, umap = 0, multiple = 0;
     struct xclibs *xc;
-    
+
     if (!(xc = pxd_xclibEscape(0, 0, 0)))
         return (PXERNOTOPEN);
 
@@ -192,7 +192,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     cameraConnectionStatus = pxd_PIXCIopen(DRIVERPARMS, nullptr, formatFile);
     if (cameraConnectionStatus < PIXCI_NO_ERROR)
     {   // Failed to connect to the camera
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName, 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Cannot OPEN camera: %s\n", driverName,
             pxd_mesgErrorCode(cameraConnectionStatus));
         setIntegerParam(ADStatus, ADStatusDisconnected);
         setStringParam(ADStatusMessage, pxd_mesgErrorCode(cameraConnectionStatus));
@@ -231,7 +231,7 @@ ADPixci::~ADPixci()
     disconnectStatusCode = pxd_PIXCIclose();
     if (disconnectStatusCode < PIXCI_NO_ERROR)
     {   // Error on disconnect
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName, 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Error on camera disconnect: %s\n", driverName,
             pxd_mesgErrorCode(disconnectStatusCode));
         setIntegerParam(ADStatus, ADStatusError);
         setStringParam(ADStatusMessage, pxd_mesgErrorCode(disconnectStatusCode));
@@ -253,7 +253,7 @@ asynStatus ADPixci::setupAcquisition()
     epicsInt32 sizeY = pxd_imageYdim();
     setStatIfHigher(&status, getIntegerParam(ADBinX, &binX));
     setStatIfHigher(&status, getIntegerParam(ADBinY, &binY));
-    if (status > asynSuccess) 
+    if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get binning parameters\n", status);
         return status;
@@ -268,7 +268,7 @@ asynStatus ADPixci::setupAcquisition()
         binY = 1;
         setStatIfHigher(&status, setIntegerParam(ADBinY, binY));
     }
-    if (status > asynSuccess) 
+    if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not set binning parameters\n", status);
         callParamCallbacks();
@@ -277,16 +277,17 @@ asynStatus ADPixci::setupAcquisition()
 
     setStatIfHigher(&status, getIntegerParam(ADSizeX, &RoiSizeX));
     setStatIfHigher(&status, getIntegerParam(ADSizeY, &RoiSizeY));
-    if (status > asynSuccess) 
+    if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get ROI parameters\n", status);
         return status;
     }
     setStatIfHigher(&status, setIntegerParam(NDArraySizeX, RoiSizeX / binX));
     setStatIfHigher(&status, setIntegerParam(NDArraySizeY, RoiSizeY / binY));
-    if (status > asynSuccess) 
+    if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not set array size parameters\n", status);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+            "Asyn status %d: Could not set array size parameters\n", status);
     }
     callParamCallbacks();
     return status;
@@ -294,7 +295,7 @@ asynStatus ADPixci::setupAcquisition()
 
 asynStatus ADPixci::acquireStart()
 {
-    pxbuffer_t buffer = 1L; // Image frame buffer
+    pxbuffer_t buffer = 1L;  // Image frame buffer
     // start capture of the image into the frame buffer
     epicsInt32 error = pxd_goLive(UNIT, buffer);
     if (error < PIXCI_NO_ERROR)
@@ -354,8 +355,7 @@ void ADPixci::acquireTask()
         getIntegerParam(NDArraySizeY, &sizeY);
         getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
         getIntegerParam(ADStatus, &adStatus);
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "acquireTask: adStatus=%d\n", adStatus);
-        if(adStatus == ADStatusInitializing)
+        if (adStatus == ADStatusInitializing)
         {
             // If the driver is still initializing, skip this iteration
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Driver is still initializing, skipping acquisition\n");
@@ -375,7 +375,7 @@ void ADPixci::acquireTask()
                         dims[0] * dims[1] * sizeof(epicsUInt16), "GRAY");
             if (err < PIXCI_NO_ERROR)
             {
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n", 
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading image from detector: %s\n",
                     pxd_mesgErrorCode(err));
                 setIntegerParam(ADStatus, ADStatusError);
                 setStringParam(ADStatusMessage, std::string("Error reading image from detector: ") +
@@ -413,7 +413,7 @@ void ADPixci::acquireTask()
     }
 }
 
-asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY, 
+asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epicsInt32 binY,
     epicsInt32 sizeX, epicsInt32 sizeY)
 {
     asynStatus status = asynSuccess;
@@ -465,7 +465,7 @@ asynStatus ADPixci::reloadConfiguration(epicsInt32 param, epicsInt32 binX, epics
         status = acquireStart();
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                 "Failed to restart acquisition after update of %d\n", param);
         }
     }
@@ -590,7 +590,8 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         status = setIntegerParam(ADBinX, i_val);     // Updating the binX value.
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Status %d: Set binX but failed to update readback\n", status);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "Status %d: Set binX but failed to update readback\n", status);
             return status;
         }
         status = getIntegerParam(ADBinY, &binY);
@@ -605,7 +606,8 @@ asynStatus ADPixci::handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsI
         }
         else if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Status %d: Failed to read current parameter values\n", status);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "Status %d: Failed to read current parameter values\n", status);
             return status;
         }
         // Reload the configuration with new binX value
@@ -897,12 +899,14 @@ void ADPixci::paramTask()
         b_val = static_cast<epicsBoolean>(functionAndVal[1]);
         i_val = static_cast<epicsInt32>(functionAndVal[1]);
         d_val = functionAndVal[1];
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s: Parameter: %d, Value: %f\n", functionName, function, d_val);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+            "%s: Parameter: %d, Value: %f\n", functionName, function, d_val);
         this->lock();
         status = this->handleParamTask(function, d_val, i_val, b_val);
         if (status > asynSuccess)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to handle parameter change. Parameter %d not changed to %f\n", function, d_val);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "Failed to handle parameter change. Parameter %d not changed to %f\n", function, d_val);
         }
         callParamCallbacks();
         this->unlock();
@@ -926,7 +930,7 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
         count = pxd_serialRead(unit, RESERVED, serialIn, serialInBufferSize);
         if (count < PIXCI_NO_ERROR)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                 "%s: Failed to clear the serial bugger on the camera unit. Error code: %s.",
                 driverName, pxd_mesgErrorCode(count));
         }
@@ -972,8 +976,8 @@ epicsInt32 ADPixci::writeReadSerial(epicsInt32 unit, char *serialOut, epicsInt32
         count = pxd_serialRead(UNIT, RESERVED, serialIn, serialInBufferSize);
         if (count < PIXCI_NO_ERROR)
         {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                "%s: Failed to serial read from the camera unit. Error code: %s.", 
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "%s: Failed to serial read from the camera unit. Error code: %s.",
                 driverName, pxd_mesgErrorCode(count));
         }
     }
@@ -1014,7 +1018,7 @@ asynStatus ADPixci::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     epicsInt32 function = pasynUser->reason;
     static const char *functionName = "writeFloat64";
 
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
         "%s: Parameter: %d, Value: %d\n", functionName, function, value);
 
     if (function == ADGain || function == ADAcquirePeriod || function == ADAcquireTime || function == ADTemperature ||

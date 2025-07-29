@@ -132,7 +132,7 @@ class ADPixci : public ADDriver
     const char *driverName;
 
     epicsInt32 PR_SoftTrigger;
-    #define FIRST_PIXCI_PARAM PR_SoftTrigger //94
+    #define FIRST_PIXCI_PARAM PR_SoftTrigger
     epicsInt32 PR_TriggerPolarity;
     epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_UpdateTemperature;

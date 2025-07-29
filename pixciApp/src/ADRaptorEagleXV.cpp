@@ -63,9 +63,11 @@ ADRaptorEagleXV::ADRaptorEagleXV(const char *portName, epicsInt32 maxBuffers, si
     setStatIfHigher(&status, createParam(ToggleGainString, asynParamInt32, &PR_ToggleGain));
     setStatIfHigher(&status, createParam(ToggleFPGACommsString, asynParamInt32, &PR_ToggleFpgaComms));
     setStatIfHigher(&status, createParam(ADCCalibrationZeroDegreeString, asynParamInt32, &PR_ADCCalibrationZeroDegree));
-    setStatIfHigher(&status, createParam(ADCCalibrationFortyDegreeString, asynParamInt32, &PR_ADCCalibrationFortyDegree));
+    setStatIfHigher(&status, createParam(ADCCalibrationFortyDegreeString, asynParamInt32,
+        &PR_ADCCalibrationFortyDegree));
     setStatIfHigher(&status, createParam(DACCalibrationZeroDegreeString, asynParamInt32, &PR_DACCalibrationZeroDegree));
-    setStatIfHigher(&status, createParam(DACCalibrationFortyDegreeString, asynParamInt32, &PR_DACCalibrationFortyDegree));
+    setStatIfHigher(&status, createParam(DACCalibrationFortyDegreeString, asynParamInt32,
+        &PR_DACCalibrationFortyDegree));
     if (status > asynSuccess)
     {   // Parameter initialization failed
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s: Failed to create parameters\n", driverName);
@@ -237,7 +239,7 @@ epicsFloat64 ADRaptorEagleXV::getFrameRate()
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading frame rate\n");
     }
-    else 
+    else
     {
         epicsUInt64 frameRateCount = int8ToUInt64(cval);
         if (frameRateCount > 0)
@@ -268,8 +270,10 @@ epicsFloat64 ADRaptorEagleXV::getTemperatureActual()
     asynStatus status = asynSuccess;
     epicsInt8 cval[2] = {0, 0};
 
-    setStatIfHigher(&status, readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]));
-    setStatIfHigher(&status, readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]));
+    setStatIfHigher(&status,
+        readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[0], CCD_SILISCON_TEMPERATURE_BYTES[1], &cval[0]));
+    setStatIfHigher(&status,
+        readSerialRegister(CCD_SILISCON_TEMPERATURE_BYTES[2], CCD_SILISCON_TEMPERATURE_BYTES[3], &cval[1]));
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading CCD temperature\n");
@@ -416,7 +420,7 @@ epicsFloat64 ADRaptorEagleXV::getExposure()
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Error reading exposure time\n");
     }
-    else 
+    else
     {
         epicsUInt64 exposureTimeCount = int8ToUInt64(cval);
         if (exposureTimeCount > 0)
@@ -612,7 +616,7 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
             {
                 asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Acquisition parameter not initialised yet, so "
                     "assuming it is stopped\n");
-                acquisitionStatus = epicsFalse; // assume acquisition is stopped if parameter is not set
+                acquisitionStatus = epicsFalse;  // assume acquisition is stopped if parameter is not set
                 status = asynSuccess;
             }
             else if (status > asynSuccess)
@@ -639,7 +643,7 @@ asynStatus ADRaptorEagleXV::updateTriggerMode(epicsInt32 newTriggerMode)
         return status;
     }
     setStatIfHigher(&status, getIntegerParam(ADStatus, &adStatus));
-    if (status > asynSuccess) 
+    if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Asyn status %d: Could not get ADStatus parameter. "
             "If initializing, please restart\n", status);
@@ -677,7 +681,7 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
     }
     if (triggerMode != PRExternalTrigger)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING, 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_WARNING,
             "Trigger mode not set to external so cannot set trigger polarity on device\n");
         return status;
     }
@@ -685,7 +689,7 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
     status = this->setTriggerMode(PRExternalTrigger);
     if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
             "Readback set but failed to write new trigger polarity to camera.\n");
     }
     return status;
@@ -712,7 +716,7 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
             "Cannot safely change acquisition state\n");
         return status;
     }
-    // In soft trigger mode acquisition should no be stopped as it can affect WaitForSingleObject. 
+    // In soft trigger mode acquisition should no be stopped as it can affect WaitForSingleObject.
     if (triggerMode == PRSoftTrigger) return status;
     // get ADStatus
     status = getIntegerParam(ADStatus, &adStatus);
@@ -730,7 +734,7 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
         return status;
     }
     if (newAcquisitionStatus && adStatus == ADStatusIdle)
-    {   // Start acquisition 
+    {   // Start acquisition
         status = acquireStart();
         if (status > asynSuccess) return status;
         status = setIntegerParam(ADAcquire, epicsTrue);
@@ -739,7 +743,7 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
         }
     }
-    else if(!newAcquisitionStatus && adStatus != ADStatusIdle)
+    else if (!newAcquisitionStatus && adStatus != ADStatusIdle)
     {   // Stop acquisition
         status = acquireStop();
         if (status > asynSuccess) return status;
@@ -758,7 +762,7 @@ asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "ADAcquire parameter not initialised yet, so assuming "
                 "acquisition is stopped\n");
-            acquisitionState = epicsFalse; // assume acquisition is stopped if parameter is not set
+            acquisitionState = epicsFalse;  // assume acquisition is stopped if parameter is not set
         }
         else if (status > asynSuccess)
         {
@@ -1074,7 +1078,7 @@ epicsInt32 ADRaptorEagleXV::getPixelReadoutClock()
     {
         readoutClock = pixelReadoutClock25MHz;
     }
-    else if (readoutClockBytes[0] == static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[0]) && 
+    else if (readoutClockBytes[0] == static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[0]) &&
         readoutClockBytes[1] == static_cast<epicsInt8>(PIXEL_READOUT_75kHz_BYTES[1]))
     {
         readoutClock = pixelReadoutClock75kHz;
@@ -1086,14 +1090,16 @@ epicsInt32 ADRaptorEagleXV::getPixelReadoutClock()
     return readoutClock;
 }
 
-asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY, epicsInt32 sizeX, epicsInt32 sizeY)
+asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 binY,
+    epicsInt32 sizeX, epicsInt32 sizeY)
 {
     asynStatus status = asynSuccess;
     std::string cameraModel = "";
     status = getStringParam(ADModel, cameraModel);
     if (status > asynSuccess)
     {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get camera model, so unable to change video format config");
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+            "Failed to get camera model, so unable to change video format config");
         return asynError;
     }
     if (cameraModel == RAPTOR_EAGLE_XV_4710)
@@ -1577,7 +1583,8 @@ asynStatus ADRaptorEagleXV::changeVideoFormatConfig(epicsInt32 binX, epicsInt32 
         }
     }
     else {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "camera model %s not supported, so unable to change video format config", cameraModel.c_str());
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+            "camera model %s not supported, so unable to change video format config", cameraModel.c_str());
         return asynError;
     }
     setStatIfHigher(&status, ADPixci::changeVideoFormatConfig(binX, binY, sizeX, sizeY));
@@ -1619,7 +1626,7 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     epicsInt32 function = pasynUser->reason;
     const char *functionName = "writeInt32";
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
         "%s: Parameter: %d, Value: %d\n", functionName, function, value);
 
     asynStatus status = asynSuccess;
