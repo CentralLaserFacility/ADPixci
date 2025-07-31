@@ -49,6 +49,7 @@ constexpr const char *BuildDateString = "PR_BUILD_DATE";
 constexpr const char *ReadoutModeParamString = "PR_READOUT_MODE";
 constexpr const char *PixelReadoutClockParamString = "PR_PIXEL_READOUT_CLOCK";
 constexpr const char *AcquireOneString = "PR_ACQUIRE_ONE";
+constexpr const char *CancelAcquireString = "PR_CANCEL_ACQUIRE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
 
@@ -141,6 +142,7 @@ class ADPixci : public ADDriver
     epicsInt32 PR_ReadoutMode;
     epicsInt32 PR_PixelReadoutClock;
     epicsInt32 PR_AcquireOne;
+    epicsInt32 PR_CancelAcquire;
 
     /**
      * @brief load initial settings parameters
@@ -163,6 +165,11 @@ class ADPixci : public ADDriver
      * @brief Arm detector for capture of one image to the frame buffer.
      */
     asynStatus acquireOne();
+
+    /**
+     * @brief Cancel the current acquisition completely.
+     */
+    asynStatus cancelAcquire();
 
     /**
      * @brief write message to the camera and read the reply after that

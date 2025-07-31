@@ -181,6 +181,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     setStatIfHigher(&status, createParam(ReadoutModeParamString, asynParamInt32, &PR_ReadoutMode));
     setStatIfHigher(&status, createParam(PixelReadoutClockParamString, asynParamInt32, &PR_PixelReadoutClock));
     setStatIfHigher(&status, createParam(AcquireOneString, asynParamInt32, &PR_AcquireOne));
+    setStatIfHigher(&status, createParam(CancelAcquireString, asynParamInt32, &PR_CancelAcquire));
 
     if (status > asynSuccess)
     {   // Parameter initialization failed
@@ -346,6 +347,52 @@ asynStatus ADPixci::acquireOne()
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
     this->setIntegerParam(this->ADStatus, ADStatusAcquire);
     this->setStringParam(this->ADStatusMessage, "Acquisition started\n");
+    return asynSuccess;
+}
+
+asynStatus ADPixci::cancelAcquire()
+{
+    asynStatus status = asynSuccess;
+    epicsInt32 adStatus = ADStatusIdle;
+    status = this->getIntegerParam(this->ADStatus, &adStatus);
+    if (status == asynParamUndefined)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Detector status parameter not initialised yet, "
+            "so unable to process acquisition state change. Reprocessing acquisition change.\n");
+        this->addToParamQue(this->PR_CancelAcquire, epicsTrue);
+        return asynSuccess;
+    }
+    else if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. "
+            "Cannot safely cancel acquisition\n");
+        return status;
+    }
+    if (adStatus == ADStatusIdle)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Cancel Acquire called while acquisition is idle. "
+            "This is not a valid value for this parameter.\n");
+        return asynError;
+    }
+    epicsInt32 error = pxd_goAbortLive(UNIT);
+    if (error < PIXCI_NO_ERROR)
+    {   // Error stopping acquisition
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition cancel error: : %s\n", pxd_mesgErrorCode(error));
+        this->setIntegerParam(this->ADStatus, ADStatusError);
+        this->setStringParam(this->ADStatusMessage, pxd_mesgErrorCode(error));
+        return asynError;
+    }
+    // acquisition successfully stopped
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition cancelled\n");
+    this->setIntegerParam(this->ADStatus, ADStatusIdle);
+    this->setStringParam(this->ADStatusMessage, "Acquisition cancelled\n");
+    status = this->setIntegerParam(this->ADAcquire, epicsFalse);
+    if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acqusition cancelled but failed to set acquire readback\n");
+        return status;
+    }
+    this->callParamCallbacks();
     return asynSuccess;
 }
 
@@ -1045,6 +1092,12 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     {
         this->lock();
         status = this->updateAcquisition(value, epicsTrue);
+        this->unlock();
+    }
+    else if (function == this->PR_CancelAcquire)
+    {
+        this->lock();
+        status = this->cancelAcquire();
         this->unlock();
     }
     else if (function == this->ADTriggerMode || function == this->PR_TriggerPolarity ||

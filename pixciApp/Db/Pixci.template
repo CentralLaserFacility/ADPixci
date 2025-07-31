@@ -127,13 +127,19 @@ record(bi, "$(P)$(R)PixelReadoutClock_RBV")
 }
 
 ################################################################################
-# Record for acquiring one frame
+# Records for acquiring one frame and cancelling acquisition
 #
 record(bo, "$(P)$(R)AcquireOne") {
    field(DTYP, "asynInt32")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ACQUIRE_ONE")
    field(PINI, "1")
    field(DISP, "1")
+}
+
+record(bo, "$(P)$(R)CancelAcquire") {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CANCEL_ACQUIRE")
+   field(PINI, "1")
 }
 
 ################################################################################
