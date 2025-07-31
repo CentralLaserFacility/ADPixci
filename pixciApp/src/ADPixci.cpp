@@ -303,14 +303,14 @@ asynStatus ADPixci::acquireStart()
     if (error < PIXCI_NO_ERROR)
     {   // Error starting acquisition
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error: %s\n", pxd_mesgErrorCode(error));
-        setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, pxd_mesgErrorCode(error));
+        this->setIntegerParam(this->ADStatus, ADStatusError);
+        this->setStringParam(this->ADStatusMessage, pxd_mesgErrorCode(error));
         return asynError;
     }
     // acquisition successfully started
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
-    setIntegerParam(ADStatus, ADStatusAcquire);
-    setStringParam(ADStatusMessage, "Acquisition started\n");
+    this->setIntegerParam(this->ADStatus, ADStatusAcquire);
+    this->setStringParam(this->ADStatusMessage, "Acquisition started\n");
     return asynSuccess;
 }
 
@@ -320,14 +320,14 @@ asynStatus ADPixci::acquireStop()
     if (error < PIXCI_NO_ERROR)
     {   // Error stopping acquisition
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stop error: : %s\n", pxd_mesgErrorCode(error));
-        setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, pxd_mesgErrorCode(error));
+        this->setIntegerParam(this->ADStatus, ADStatusError);
+        this->setStringParam(this->ADStatusMessage, pxd_mesgErrorCode(error));
         return asynError;
     }
     // acquisition successfully stopped
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition stopped\n");
-    setIntegerParam(ADStatus, ADStatusIdle);
-    setStringParam(ADStatusMessage, "Acquisition stopped\n");
+    this->setIntegerParam(this->ADStatus, ADStatusIdle);
+    this->setStringParam(this->ADStatusMessage, "Acquisition stopped\n");
     return asynSuccess;
 }
 
