@@ -55,11 +55,11 @@ record(dfanout, "$(P)$(R)WriteEnabler1") {
    field(OUTE, "$(P)$(R)SoftTrigger.DISP")
    field(OUTF, "$(P)$(R)ReadoutMode.DISP")
    field(OUTG, "$(P)$(R)PixelReadoutClock.DISP")
-   field(OUTH, "$(P)$(R)WriteEnabler2")
    field(OMSL, "closed_loop")
 }
 
 record(dfanout, "$(P)$(R)WriteEnabler2") {
+   field(DOL, "$(P)$(R)InitializingCalc CP")
    field(OUTA, "$(P)$(R)WriteEnabler2.DISV")
    field(OUTB, "$(P)$(R)AcquireOne.DISP")
    field(OUTC, "$(P)$(R)CancelAcquire.DISP")
@@ -141,7 +141,7 @@ record(bo, "$(P)$(R)AcquireOne") {
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ACQUIRE_ONE")
    field(PINI, "1")
    field(DISP, "1")
-   field(FLNK, "$(P)$(R)DisableStop")
+   info(asyn:READBACK, "1")
 }
 
 record(bo, "$(P)$(R)CancelAcquire") {
@@ -149,13 +149,7 @@ record(bo, "$(P)$(R)CancelAcquire") {
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CANCEL_ACQUIRE")
    field(PINI, "1")
    field(DISP, "1")
-}
-
-record(bo, "$(P)$(R)DisableStop")
-{
-   field(DOL, "$(P)$(R)AcquireOne")
-   field(OUT, "Acquire.DISP")
-   field(OMSL, "closed_loop")
+   info(asyn:READBACK, "1")
 }
 
 ################################################################################

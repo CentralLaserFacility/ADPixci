@@ -387,6 +387,7 @@ asynStatus ADPixci::cancelAcquire()
     this->setIntegerParam(this->ADStatus, ADStatusIdle);
     this->setStringParam(this->ADStatusMessage, "Acquisition cancelled\n");
     status = this->setIntegerParam(this->ADAcquire, epicsFalse);
+    setStatIfHigher(&status, this->setIntegerParam(this->PR_AcquireOne, epicsFalse));
     if (status > asynSuccess)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acqusition cancelled but failed to set acquire readback\n");
@@ -481,8 +482,8 @@ void ADPixci::acquireTask()
         getIntegerParam(PR_AcquireOne, &acquireOne);
         if (acquireOne == 1)
         {
-            setIntegerParam(ADAcquire, 0);
-            setIntegerParam(PR_AcquireOne, 0);
+            setIntegerParam(ADAcquire, epicsFalse);
+            setIntegerParam(PR_AcquireOne, epicsFalse);
             setIntegerParam(ADStatus, ADStatusIdle);
             setStringParam(ADStatusMessage, "Acquisition stopped after one image");
         }
