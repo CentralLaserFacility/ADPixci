@@ -330,8 +330,6 @@ asynStatus ADPixci::acquireStop()
     return asynSuccess;
 }
 
-// TODO (irie-stfc): set adstatus back to idle after acquisition done
-// TODO (irie-stfc): figure out how this gets called - new asyn param/refactor existing one
 asynStatus ADPixci::acquireOne()
 {
     pxbuffer_t buffer = 1L;  // Image frame buffer
@@ -340,14 +338,14 @@ asynStatus ADPixci::acquireOne()
     if (error < PIXCI_NO_ERROR)
     {   // Error starting acquisition
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition start error: %s\n", pxd_mesgErrorCode(error));
-        setIntegerParam(ADStatus, ADStatusError);
-        setStringParam(ADStatusMessage, pxd_mesgErrorCode(error));
+        this->setIntegerParam(this->ADStatus, ADStatusError);
+        this->setStringParam(this->ADStatusMessage, pxd_mesgErrorCode(error));
         return asynError;
     }
     // acquisition successfully started
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "Acquisition started");
-    setIntegerParam(ADStatus, ADStatusAcquire);
-    setStringParam(ADStatusMessage, "Acquisition started\n");
+    this->setIntegerParam(this->ADStatus, ADStatusAcquire);
+    this->setStringParam(this->ADStatusMessage, "Acquisition started\n");
     return asynSuccess;
 }
 
@@ -1037,25 +1035,25 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
-    if (function == ADAcquire)
+    if (function == this->ADAcquire)
     {
         this->lock();
-        status = updateAcquisition(value, epicsFalse);
-        callParamCallbacks();
+        status = this->updateAcquisition(value, epicsFalse);
         this->unlock();
     } /* set  value for default parameters */
-    else if (function == PR_AcquireOne)
+    else if (function == this->PR_AcquireOne)
     {
         this->lock();
         status = this->updateAcquisition(value, epicsTrue);
         this->unlock();
     }
-    else if (function == ADReadStatus || function == ADTriggerMode || function == PR_TriggerPolarity ||
-        function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_UpdateTemperature ||
-        function == PR_ReadoutMode || function == PR_PixelReadoutClock || function == ADBinX || function == ADBinY ||
-        function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY)
+    else if (function == this->ADTriggerMode || function == this->PR_TriggerPolarity ||
+        function == this->PR_SoftTrigger || function == this->PR_UpdateInfo || function == this->PR_UpdateTemperature ||
+        function == this->PR_ReadoutMode || function == this->PR_PixelReadoutClock || function == this->ADReadStatus ||
+        function == this->ADBinX || function == this->ADBinY || function == this->ADMinX || function == this->ADMinY ||
+        function == this->ADSizeX || function == this->ADSizeY)
     {
-        return addToParamQue(function, value);
+        return this->addToParamQue(function, value);
     }
     return ADDriver::writeInt32(pasynUser, value);
 }
@@ -1124,12 +1122,12 @@ asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBool
     epicsInt32 acquisitionState = epicsFalse;
 
     // get ADStatus
-    status = getIntegerParam(ADStatus, &adStatus);
+    status = getIntegerParam(this->ADStatus, &adStatus);
     if (status == asynParamUndefined)
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Detector status parameter not initialised yet, so unable to "
             "process acquisition state change. Reprocessing acquisition change.\n");
-        this->addToParamQue(ADAcquire, newAcquisitionStatus);
+        this->addToParamQue(this->ADAcquire, newAcquisitionStatus);
         return asynSuccess;
     }
     else if (status > asynSuccess)
@@ -1142,9 +1140,9 @@ asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBool
     {   // Start acquisition
         if (justOne)
         {
-            status = acquireOne();
+            status = this->acquireOne();
             if (status > asynSuccess) return status;
-            status = setIntegerParam(PR_AcquireOne, epicsTrue);
+            status = this->setIntegerParam(this->PR_AcquireOne, epicsTrue);
             if (status > asynSuccess)
             {
                 asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
@@ -1152,10 +1150,10 @@ asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBool
         }
         else
         {
-            status = acquireStart();
+            status = this->acquireStart();
             if (status > asynSuccess) return status;
         }
-        status = setIntegerParam(ADAcquire, epicsTrue);
+        status = this->setIntegerParam(this->ADAcquire, epicsTrue);
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
@@ -1163,9 +1161,9 @@ asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBool
     }
     else if (!newAcquisitionStatus && adStatus != ADStatusIdle)
     {   // Stop acquisition
-        status = acquireStop();
+        status = this->acquireStop();
         if (status > asynSuccess) return status;
-        status = setIntegerParam(ADAcquire, epicsFalse);
+        status = this->setIntegerParam(this->ADAcquire, epicsFalse);
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stopped but failed to set readback\n");
@@ -1175,7 +1173,7 @@ asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBool
     {
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. "
             "Detector in wrong state (state: %d)\n", adStatus);
-        status = getIntegerParam(ADAcquire, &acquisitionState);
+        status = this->getIntegerParam(this->ADAcquire, &acquisitionState);
         if (status == asynParamUndefined)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "ADAcquire parameter not initialised yet, so assuming "
@@ -1188,14 +1186,14 @@ asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBool
                 "Assuming it is stopped\n");
             acquisitionState = epicsFalse;
         }
-        status = setIntegerParam(ADAcquire, acquisitionState);
+        status = this->setIntegerParam(this->ADAcquire, acquisitionState);
         if (status > asynSuccess)
         {
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set readback for acquisition status\n");
         }
         status = asynError;
     }
-    callParamCallbacks();  // Call callbacks to update the readback
+    this->callParamCallbacks();  // Call callbacks to update the readback
     return status;
 }
 

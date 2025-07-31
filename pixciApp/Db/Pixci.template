@@ -132,8 +132,7 @@ record(bi, "$(P)$(R)PixelReadoutClock_RBV")
 record(bo, "$(P)$(R)AcquireOne") {
    field(DTYP, "asynInt32")
    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ACQUIRE_ONE")
-   field(ZNAM, "Done")
-   field(ONAM, "Acquiring")
+   field(PINI, "1")
    field(DISP, "1")
 }
 
