@@ -55,6 +55,7 @@ record(dfanout, "$(P)$(R)WriteEnabler") {
    field(OUTE, "$(P)$(R)SoftTrigger.DISP")
    field(OUTF, "$(P)$(R)ReadoutMode.DISP")
    field(OUTG, "$(P)$(R)PixelReadoutClock.DISP")
+   field(OUTH, "$(P)$(R)AcquireOne.DISP")
    field(OMSL, "closed_loop")
 }
 
@@ -126,6 +127,17 @@ record(bi, "$(P)$(R)PixelReadoutClock_RBV")
 }
 
 ################################################################################
+# Record for acquiring one frame
+#
+record(bo, "$(P)$(R)AcquireOne") {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ACQUIRE_ONE")
+   field(ZNAM, "Done")
+   field(ONAM, "Acquiring")
+   field(DISP, "1")
+}
+
+################################################################################
 # Override ADCore records for acquire settings
 #
 record(bo, "$(P)$(R)Acquire") {
@@ -186,6 +198,7 @@ record(dfanout, "$(P)$(R)DisableAcquireSettingsWhileAcquiring") {
    field(DOL, "$(P)$(R)Acquire_RBV CP")
    field(OUTA, "$(P)$(R)AcquireTime.DISP")
    field(OUTB, "$(P)$(R)AcquirePeriod.DISP")
+   field(OUTC, "$(P)$(R)AcquireOne.DISP")
    field(OMSL, "closed_loop")
 }
 

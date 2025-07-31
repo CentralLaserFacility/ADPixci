@@ -180,6 +180,7 @@ ADPixci::ADPixci(const char *portName, epicsInt32 maxBuffers, size_t maxMemory, 
     setStatIfHigher(&status, createParam(BuildDateString, asynParamOctet, &PR_BuildDate));
     setStatIfHigher(&status, createParam(ReadoutModeParamString, asynParamInt32, &PR_ReadoutMode));
     setStatIfHigher(&status, createParam(PixelReadoutClockParamString, asynParamInt32, &PR_PixelReadoutClock));
+    setStatIfHigher(&status, createParam(AcquireOneString, asynParamInt32, &PR_AcquireOne));
 
     if (status > asynSuccess)
     {   // Parameter initialization failed
@@ -367,6 +368,8 @@ void ADPixci::acquireTask()
     epicsInt32 imageCounter = 0;
     epicsInt32 arrayCallbacks = 0;
     epicsInt32 adStatus = ADStatusIdle;
+    epicsInt32 acquireOne = 0;
+
     for (;;)
     {
         // waiting for event to be triggered
@@ -429,6 +432,16 @@ void ADPixci::acquireTask()
         setIntegerParam(NDArraySize, static_cast<epicsInt32>(dims[0] * dims[1] * sizeof(NDUInt16)));
         setIntegerParam(NDArrayCounter, imageCounter);
         setIntegerParam(ADNumImagesCounter, numImagesCounter);
+
+        getIntegerParam(PR_AcquireOne, &acquireOne);
+        if (acquireOne == 1)
+        {
+            setIntegerParam(ADAcquire, 0);
+            setIntegerParam(PR_AcquireOne, 0);
+            setIntegerParam(ADStatus, ADStatusIdle);
+            setStringParam(ADStatusMessage, "Acquisition stopped after one image");
+        }
+
         callParamCallbacks();
         this->unlock();
     }
@@ -1024,7 +1037,20 @@ asynStatus ADPixci::writeInt32(asynUser *pasynUser, epicsInt32 value)
     addParamQue(funcation, value) is used to add the parameters change in a que. paramTask thread will
     read the que and execute respective function in FIFO mode. ex: ADTriggerMode.
     */
-    if (function == ADReadStatus || function == ADTriggerMode || function == PR_TriggerPolarity ||
+    if (function == ADAcquire)
+    {
+        this->lock();
+        status = updateAcquisition(value, epicsFalse);
+        callParamCallbacks();
+        this->unlock();
+    } /* set  value for default parameters */
+    else if (function == PR_AcquireOne)
+    {
+        this->lock();
+        status = this->updateAcquisition(value, epicsTrue);
+        this->unlock();
+    }
+    else if (function == ADReadStatus || function == ADTriggerMode || function == PR_TriggerPolarity ||
         function == PR_SoftTrigger || function == PR_UpdateInfo || function == PR_UpdateTemperature ||
         function == PR_ReadoutMode || function == PR_PixelReadoutClock || function == ADBinX || function == ADBinY ||
         function == ADMinX || function == ADMinY || function == ADSizeX || function == ADSizeY)
@@ -1088,6 +1114,88 @@ asynStatus ADPixci::updateInitialPVs()
     setStatIfHigher(&status, setIntegerParam(ADSizeY, sizeY));
 
     callParamCallbacks();
+    return status;
+}
+
+asynStatus ADPixci::updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBoolean justOne)
+{
+    asynStatus status = asynSuccess;
+    epicsInt32 adStatus = ADStatusIdle;
+    epicsInt32 acquisitionState = epicsFalse;
+
+    // get ADStatus
+    status = getIntegerParam(ADStatus, &adStatus);
+    if (status == asynParamUndefined)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Detector status parameter not initialised yet, so unable to "
+            "process acquisition state change. Reprocessing acquisition change.\n");
+        this->addToParamQue(ADAcquire, newAcquisitionStatus);
+        return asynSuccess;
+    }
+    else if (status > asynSuccess)
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. "
+            "Cannot safely change acquisition state\n");
+        return status;
+    }
+    if (newAcquisitionStatus && adStatus == ADStatusIdle)
+    {   // Start acquisition
+        if (justOne)
+        {
+            status = acquireOne();
+            if (status > asynSuccess) return status;
+            status = setIntegerParam(PR_AcquireOne, epicsTrue);
+            if (status > asynSuccess)
+            {
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
+            }
+        }
+        else
+        {
+            status = acquireStart();
+            if (status > asynSuccess) return status;
+        }
+        status = setIntegerParam(ADAcquire, epicsTrue);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
+        }
+    }
+    else if (!newAcquisitionStatus && adStatus != ADStatusIdle)
+    {   // Stop acquisition
+        status = acquireStop();
+        if (status > asynSuccess) return status;
+        status = setIntegerParam(ADAcquire, epicsFalse);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stopped but failed to set readback\n");
+        }
+    }
+    else
+    {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. "
+            "Detector in wrong state (state: %d)\n", adStatus);
+        status = getIntegerParam(ADAcquire, &acquisitionState);
+        if (status == asynParamUndefined)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "ADAcquire parameter not initialised yet, so assuming "
+                "acquisition is stopped\n");
+            acquisitionState = epicsFalse;  // assume acquisition is stopped if parameter is not set
+        }
+        else if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector acquisiton status. "
+                "Assuming it is stopped\n");
+            acquisitionState = epicsFalse;
+        }
+        status = setIntegerParam(ADAcquire, acquisitionState);
+        if (status > asynSuccess)
+        {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set readback for acquisition status\n");
+        }
+        status = asynError;
+    }
+    callParamCallbacks();  // Call callbacks to update the readback
     return status;
 }
 

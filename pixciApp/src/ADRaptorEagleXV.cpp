@@ -643,75 +643,6 @@ asynStatus ADRaptorEagleXV::updateTriggerPolarity(epicsInt32 newTriggerPolarity)
     return status;
 }
 
-asynStatus ADRaptorEagleXV::updateAcquisition(epicsInt32 newAcquisitionStatus)
-{
-    asynStatus status = asynSuccess;
-    epicsInt32 adStatus = ADStatusIdle;
-    epicsInt32 acquisitionState = epicsFalse;
-
-    // get ADStatus
-    status = getIntegerParam(ADStatus, &adStatus);
-    if (status == asynParamUndefined)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Detector status parameter not initialised yet, so unable to "
-            "process acquisition state change. Reprocessing acquisition change.\n");
-        this->addToParamQue(ADAcquire, newAcquisitionStatus);
-        return asynSuccess;
-    }
-    else if (status > asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. "
-            "Cannot safely change acquisition state\n");
-        return status;
-    }
-    if (newAcquisitionStatus && adStatus == ADStatusIdle)
-    {   // Start acquisition
-        status = acquireStart();
-        if (status > asynSuccess) return status;
-        status = setIntegerParam(ADAcquire, epicsTrue);
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition started but failed to set readback\n");
-        }
-    }
-    else if (!newAcquisitionStatus && adStatus != ADStatusIdle)
-    {   // Stop acquisition
-        status = acquireStop();
-        if (status > asynSuccess) return status;
-        status = setIntegerParam(ADAcquire, epicsFalse);
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Acquisition stopped but failed to set readback\n");
-        }
-    }
-    else
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to update acquisition status. "
-            "Detector in wrong state (state: %d)\n", adStatus);
-        status = getIntegerParam(ADAcquire, &acquisitionState);
-        if (status == asynParamUndefined)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "ADAcquire parameter not initialised yet, so assuming "
-                "acquisition is stopped\n");
-            acquisitionState = epicsFalse;  // assume acquisition is stopped if parameter is not set
-        }
-        else if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector acquisiton status. "
-                "Assuming it is stopped\n");
-            acquisitionState = epicsFalse;
-        }
-        status = setIntegerParam(ADAcquire, acquisitionState);
-        if (status > asynSuccess)
-        {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to set readback for acquisition status\n");
-        }
-        status = asynError;
-    }
-    callParamCallbacks();  // Call callbacks to update the readback
-    return status;
-}
-
 asynStatus ADRaptorEagleXV::setRoiSizeX(epicsInt32 RoisizeX)
 {
     asynStatus status = asynSuccess;
@@ -1561,17 +1492,11 @@ asynStatus ADRaptorEagleXV::writeInt32(asynUser *pasynUser, epicsInt32 value)
         "%s: Parameter: %d, Value: %d\n", functionName, function, value);
 
     asynStatus status = asynSuccess;
-    if (function == ADAcquire)
-    {
-        this->lock();
-        status = updateAcquisition(value);
-        callParamCallbacks();
-        this->unlock();
-    } /* set  value for default parameters */
-    else if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
+    if (function == PR_ToggleTec || function == PR_ToggleGain || function == PR_ToggleFpgaComms)
     {
         status = addToParamQue(function, value);
-    } else {
+    }
+    else {
         status = ADPixci::writeInt32(pasynUser, value);
     }
     return status;

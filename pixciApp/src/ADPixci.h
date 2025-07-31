@@ -48,6 +48,7 @@ constexpr const char *UpdateTemperatureString = "PR_UPDATE_TEMPERATURE";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
 constexpr const char *ReadoutModeParamString = "PR_READOUT_MODE";
 constexpr const char *PixelReadoutClockParamString = "PR_PIXEL_READOUT_CLOCK";
+constexpr const char *AcquireOneString = "PR_ACQUIRE_ONE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
 
@@ -139,6 +140,7 @@ class ADPixci : public ADDriver
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_ReadoutMode;
     epicsInt32 PR_PixelReadoutClock;
+    epicsInt32 PR_AcquireOne;
 
     /**
      * @brief load initial settings parameters
@@ -198,7 +200,20 @@ class ADPixci : public ADDriver
      */
     virtual asynStatus handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
+    /**
+     * @brief update initial PVs needed for boot up
+     * @return asynStatusd
+     */
     virtual asynStatus updateInitialPVs();
+
+    /**
+     * @brief Handle acquisition updates
+     * 
+     * @param value 1 to start acquisition, 0 to stop acquisition
+     * @param justOne if true, only one image will be acquired
+     * @return asynStatus
+     */
+    asynStatus updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBoolean justOne);
 
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
