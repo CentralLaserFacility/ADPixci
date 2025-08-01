@@ -61,6 +61,7 @@ classDiagram
 ## Contributing
 
 To contribute to this repository please fork it, develop your code in your fork, and then create a pull request back into this repository. \
+Please use cpplint to check your source code matches the code conventions of the repository with the config file `pixciApp/src/CPPLINT.cfg` before opening a PR. \
 From there, two CLF developers will review and merge your feature or fix.
 
 ### Adding a new detector
