@@ -11,5 +11,5 @@ jobs:
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     uses: CentralLaserFacility/CLF-github-actions/.github/workflows/release-on-github-workflow.yml@main
     with:
-      runner: "temp"
+      runner: ubuntu-latest
       custom_version: ${{ github.event.pull_request.title }}
