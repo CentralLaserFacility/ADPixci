@@ -353,27 +353,6 @@ asynStatus ADPixci::acquireOne()
 asynStatus ADPixci::cancelAcquire()
 {
     asynStatus status = asynSuccess;
-    epicsInt32 adStatus = ADStatusIdle;
-    status = this->getIntegerParam(this->ADStatus, &adStatus);
-    if (status == asynParamUndefined)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "Detector status parameter not initialised yet, "
-            "so unable to process acquisition state change. Reprocessing acquisition change.\n");
-        this->addToParamQue(this->PR_CancelAcquire, epicsTrue);
-        return asynSuccess;
-    }
-    else if (status > asynSuccess)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Failed to get detector status. "
-            "Cannot safely cancel acquisition\n");
-        return status;
-    }
-    if (adStatus == ADStatusIdle)
-    {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "Cancel Acquire called while acquisition is idle. "
-            "This is not a valid value for this parameter.\n");
-        return asynError;
-    }
     epicsInt32 error = pxd_goAbortLive(UNIT);
     if (error < PIXCI_NO_ERROR)
     {   // Error stopping acquisition
