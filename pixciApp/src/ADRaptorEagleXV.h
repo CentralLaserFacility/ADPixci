@@ -73,7 +73,7 @@ constexpr const epicsUInt8 SHUTTER_CLOSE_DELAY_BYTE = 0xA7;
 
 constexpr const epicsUInt8 READOUT_MODE_BYTE = 0xF7;
 constexpr const epicsUInt8 READOUT_NORMAL_BYTE = 0x01;
-constexpr const epicsUInt8 READOUT_TEST_PATTERN_BYTE = 0x04; 
+constexpr const epicsUInt8 READOUT_TEST_PATTERN_BYTE = 0x04;
 
 constexpr const epicsUInt8 PIXEL_READOUT_CLOCK_BYTES[2] = {0xA3, 0xA4};
 constexpr const epicsUInt8 PIXEL_READOUT_2MHz_BYTES[2] = {0x02, 0x02};
@@ -348,7 +348,7 @@ class ADRaptorEagleXV : public ADPixci
      * @return asynStatus
      */
     asynStatus updateTriggerMode(epicsInt32 newTriggerMode);
-    
+
     /**
      * @brief Handle trigger polarity updates
      * 
@@ -356,14 +356,6 @@ class ADRaptorEagleXV : public ADPixci
      * @return asynStatus
      */
     asynStatus updateTriggerPolarity(epicsInt32 newTriggerPolarity);
-
-    /**
-     * @brief Handle acquisition updates
-     * 
-     * @param value 1 to start acquisition, 0 to stop acquisition
-     * @return asynStatus
-     */
-    asynStatus updateAcquisition(epicsInt32 value);
 
     /*****************************Functions from Pixci class that are only implemented here****************************/
 

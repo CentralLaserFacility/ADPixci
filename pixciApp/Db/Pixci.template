@@ -46,15 +46,24 @@ record(calc, "$(P)$(R)InitializingCalc") {
    field(CALC, "A == 1 ? 0 : 1")
 }
 
-record(dfanout, "$(P)$(R)WriteEnabler") {
+record(dfanout, "$(P)$(R)WriteEnabler1") {
    field(DOL, "$(P)$(R)InitializingCalc CP")
-   field(OUTA, "$(P)$(R)WriteEnabler.DISV")
+   field(OUTA, "$(P)$(R)WriteEnabler1.DISV")
    field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
    field(OUTC, "$(P)$(R)TriggerMode.DISP")
    field(OUTD, "$(P)$(R)Acquire.DISP")
    field(OUTE, "$(P)$(R)SoftTrigger.DISP")
    field(OUTF, "$(P)$(R)ReadoutMode.DISP")
    field(OUTG, "$(P)$(R)PixelReadoutClock.DISP")
+   field(FLNK, "$(P)$(R)WriteEnabler2")
+   field(OMSL, "closed_loop")
+}
+
+record(dfanout, "$(P)$(R)WriteEnabler2") {
+   field(DOL, "$(P)$(R)InitializingCalc")
+   field(OUTA, "$(P)$(R)WriteEnabler2.DISV")
+   field(OUTB, "$(P)$(R)AcquireOne.DISP")
+   field(OUTC, "$(P)$(R)CancelAcquire.DISP")
    field(OMSL, "closed_loop")
 }
 
@@ -126,6 +135,25 @@ record(bi, "$(P)$(R)PixelReadoutClock_RBV")
 }
 
 ################################################################################
+# Records for acquiring one frame and cancelling acquisition
+#
+record(bo, "$(P)$(R)AcquireOne") {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ACQUIRE_ONE")
+   field(PINI, "1")
+   field(DISP, "1")
+   info(asyn:READBACK, "1")
+}
+
+record(bo, "$(P)$(R)CancelAcquire") {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CANCEL_ACQUIRE")
+   field(PINI, "1")
+   field(DISP, "1")
+   info(asyn:READBACK, "1")
+}
+
+################################################################################
 # Override ADCore records for acquire settings
 #
 record(bo, "$(P)$(R)Acquire") {
@@ -186,6 +214,7 @@ record(dfanout, "$(P)$(R)DisableAcquireSettingsWhileAcquiring") {
    field(DOL, "$(P)$(R)Acquire_RBV CP")
    field(OUTA, "$(P)$(R)AcquireTime.DISP")
    field(OUTB, "$(P)$(R)AcquirePeriod.DISP")
+   field(OUTC, "$(P)$(R)AcquireOne.DISP")
    field(OMSL, "closed_loop")
 }
 

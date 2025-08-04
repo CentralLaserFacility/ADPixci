@@ -45,6 +45,8 @@ constexpr const char *UpdateTemperatureString = "PR_UPDATE_TEMPERATURE";
 constexpr const char *BuildDateString = "PR_BUILD_DATE";
 constexpr const char *ReadoutModeParamString = "PR_READOUT_MODE";
 constexpr const char *PixelReadoutClockParamString = "PR_PIXEL_READOUT_CLOCK";
+constexpr const char *AcquireOneString = "PR_ACQUIRE_ONE";
+constexpr const char *CancelAcquireString = "PR_CANCEL_ACQUIRE";
 
 constexpr const epicsInt32 PIXCI_NO_ERROR = 0;  // Errors are defined as integers below zero.
 
@@ -129,13 +131,15 @@ class ADPixci : public ADDriver
     const char *driverName;
 
     epicsInt32 PR_SoftTrigger;
-    #define FIRST_PIXCI_PARAM PR_SoftTrigger //94
+    #define FIRST_PIXCI_PARAM PR_SoftTrigger
     epicsInt32 PR_TriggerPolarity;
     epicsInt32 PR_UpdateInfo;
     epicsInt32 PR_UpdateTemperature;
     epicsInt32 PR_BuildDate;
     epicsInt32 PR_ReadoutMode;
     epicsInt32 PR_PixelReadoutClock;
+    epicsInt32 PR_AcquireOne;
+    epicsInt32 PR_CancelAcquire;
 
     /**
      * @brief load initial settings parameters
@@ -145,7 +149,7 @@ class ADPixci : public ADDriver
     asynStatus setupAcquisition();
 
     /**
-     * @brief Starts live capture image to frame buffer.
+     * @brief Starts live capture of images to the frame buffer.
      */
     asynStatus acquireStart();
 
@@ -153,6 +157,16 @@ class ADPixci : public ADDriver
      * @brief Stops live capturing.
      */
     asynStatus acquireStop();
+
+    /**
+     * @brief Arm detector for capture of one image to the frame buffer.
+     */
+    asynStatus acquireOne();
+
+    /**
+     * @brief Cancel the current acquisition completely.
+     */
+    asynStatus cancelAcquire();
 
     /**
      * @brief write message to the camera and read the reply after that
@@ -190,7 +204,20 @@ class ADPixci : public ADDriver
      */
     virtual asynStatus handleParamTask(epicsInt32 param, epicsFloat64 d_val, epicsInt32 i_val, epicsBoolean b_val);
 
+    /**
+     * @brief update initial PVs needed for boot up
+     * @return asynStatusd
+     */
     virtual asynStatus updateInitialPVs();
+
+    /**
+     * @brief Handle acquisition updates
+     * 
+     * @param value 1 to start acquisition, 0 to stop acquisition
+     * @param justOne if true, only one image will be acquired
+     * @return asynStatus
+     */
+    asynStatus updateAcquisition(epicsInt32 newAcquisitionStatus, epicsBoolean justOne);
 
     /**
      * @brief reload of video settings file. Change in some of the video parameters require reload of
