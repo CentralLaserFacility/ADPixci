@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <macros>
+    <CAM>13PS1</CAM>
+  </macros>
+  <width>325</width>
+  <height>510</height>
+  <widget type="group" version="2.0.0">
+    <name>Exposure Settings</name>
+    <y>350</y>
+    <width>326</width>
+    <height>130</height>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_6</name>
+      <pv_name>$(CAM):cam1:AcquirePeriod</pv_name>
+      <x>82</x>
+      <y>42</y>
+      <width>70</width>
+      <font>
+        <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_13</name>
+      <pv_name>$(CAM):cam1:AcquirePeriod_RBV</pv_name>
+      <x>164</x>
+      <y>42</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_16</name>
+      <text>Interval</text>
+      <x>22</x>
+      <y>42</y>
+      <width>50</width>
+      <height>35</height>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_14</name>
+      <pv_name>$(CAM):cam1:AcquireTime_RBV</pv_name>
+      <x>164</x>
+      <y>12</y>
+      <width>70</width>
+      <font>
+        <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_7</name>
+      <pv_name>$(CAM):cam1:AcquireTime</pv_name>
+      <x>82</x>
+      <y>12</y>
+      <width>70</width>
+      <font>
+        <font name="Fine Print" family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_17</name>
+      <text>Time</text>
+      <x>22</x>
+      <y>12</y>
+      <width>51</width>
+      <height>15</height>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_18</name>
+      <text>Image Rate</text>
+      <x>22</x>
+      <y>77</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_15</name>
+      <pv_name>$(CAM):image1:ArrayRate_RBV</pv_name>
+      <x>164</x>
+      <y>77</y>
+      <width>70</width>
+      <font>
+        <font family="Liberation Sans" style="REGULAR" size="12.0">
+        </font>
+      </font>
+    </widget>
+  </widget>
+  <widget type="navtabs" version="2.0.0">
+    <name>Navigation Tabs</name>
+    <tabs>
+      <tab>
+        <name>AOI</name>
+        <file>image_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Image</name>
+        <file>image_widget_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Trigger</name>
+        <file>trigger_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Gain</name>
+        <file>gain_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Temp</name>
+        <file>temperature_settings.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+      <tab>
+        <name>Info</name>
+        <file>manufacturer_data.bob</file>
+        <macros>
+        </macros>
+        <group_name></group_name>
+      </tab>
+    </tabs>
+    <x>8</x>
+    <y>40</y>
+    <width>310</width>
+    <height>310</height>
+    <direction>0</direction>
+    <tab_width>50</tab_width>
+  </widget>
+  <widget type="byte_monitor" version="2.0.0">
+    <name>Byte Monitor</name>
+    <x>470</x>
+    <y>270</y>
+    <width>1</width>
+    <height>1</height>
+  </widget>
+  <widget type="multi_state_led" version="2.0.0">
+    <name>LED (Multi State)</name>
+    <x>460</x>
+    <y>250</y>
+    <width>1</width>
+    <height>1</height>
+    <states>
+      <state>
+        <value>0</value>
+        <label>State 1</label>
+        <color>
+          <color name="Off" red="60" green="100" blue="60">
+          </color>
+        </color>
+      </state>
+      <state>
+        <value>1</value>
+        <label>State 2</label>
+        <color>
+          <color name="On" red="0" green="255" blue="0">
+          </color>
+        </color>
+      </state>
+    </states>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_2</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Acquire</text>
+    <x>150</x>
+    <width>60</width>
+    <height>20</height>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_3</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>0</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(CAM):cam1:Acquire</pv_name>
+    <text>Stop</text>
+    <x>220</x>
+    <width>60</width>
+    <height>20</height>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="led" version="2.0.0">
+    <name>LED_1</name>
+    <pv_name>$(CAM):cam1:Acquire_RBV</pv_name>
+    <x>290</x>
+    <square>true</square>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_20</name>
+    <text>Image counter</text>
+    <width>90</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_17</name>
+    <pv_name>$(CAM):cam1:ArrayCounter_RBV</pv_name>
+    <x>100</x>
+    <width>40</width>
+    <format>1</format>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_1</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://export</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>loc://export&lt;VLong&gt;(0)</pv_name>
+    <text>Export</text>
+    <x>8</x>
+    <y>475</y>
+    <scripts>
+      <script file="EmbeddedPy">
+        <text><![CDATA[from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, FileUtil, ConsoleUtil
+from java.lang import Thread, Runnable
+from javax.swing import SwingWorker
+from org.csstudio.display.builder.model import Widget
+from java.awt.image import BufferedImage
+from java.awt import Color
+from java.io import File
+from javax.imageio import ImageIO
+
+local_trigger =  PVUtil.getDouble(pvs[0])
+rdata = PVUtil.getLongArray(pvs[1])
+sizex =  PVUtil.getLong(pvs[2])
+sizey =  PVUtil.getLong(pvs[3])
+	
+filePath = ""
+
+def writeData():
+	#### write data function
+	f = File(filePath)
+	img = BufferedImage(sizex ,sizey ,BufferedImage.TYPE_BYTE_GRAY)
+	k=0
+	png_pixel_limit = 255	
+	##### get data
+	data = map(int, rdata)
+
+	for i in range(sizey):
+		for j in range(sizex):
+			val = data[k]
+			# sanity check on values, overlays can cause values greater than
+			# 255 and sometimes cameras have values less than 0
+			if val < 0:
+				val = 0
+			if val > png_pixel_limit :
+				val = png_pixel_limit
+			colour = Color(val,val,val)
+			img.setRGB(j,i,colour.getRGB())
+			k=k+1
+	ImageIO.write(img, "png", f);
+
+
+##### export in separate thread
+class export(SwingWorker):
+	def doInBackground(self):
+		writeData()
+	def done(self):
+		pass
+
+if local_trigger == 1:
+	#### open save as dialog box
+	filePath = ScriptUtil.showSaveAsDialog(widget, "*.png")
+	#### start thread
+	export().execute()]]></text>
+        <pv_name>loc://export</pv_name>
+        <pv_name trigger="false">$(CAM):image1:ArrayData</pv_name>
+        <pv_name trigger="false">$(CAM):image1:ArraySize0_RBV</pv_name>
+        <pv_name trigger="false">$(CAM):image1:ArraySize1_RBV</pv_name>
+      </script>
+    </scripts>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+</display>

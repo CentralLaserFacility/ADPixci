@@ -1,0 +1,241 @@
+# Pixci.template
+# Database template for ADPixci, overrides some records from ADBase (ADCore) 
+# and adds Pixci specific records
+#
+
+include "ADBase.template"
+
+################################################################################
+# Records for sending a soft trigger and setting external trigger mode polarity
+#
+record(bo, "$(P)$(R)SoftTrigger")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_SOFT_TRIGGER")
+   field(ZNAM, "Done")
+   field(ONAM, "Trigger")
+   field(DISP, "1")
+}
+
+record(bo, "$(P)$(R)TriggerPolarity")
+{
+   field(PINI, "1")
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
+   field(ZNAM, "Rising Edge")
+   field(ONAM, "Falling Edge")
+   field(DISP, "1")
+   info(autosaveFields, "VAL")
+}
+
+record(bi, "$(P)$(R)TriggerPolarity_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_TRIGGER_POLARITY")
+   field(ZNAM, "Rising Edge")
+   field(ONAM, "Falling Edge")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Record for enabling write access of various PVs after the device has first
+# initialised and sent a Trigger Mode back to the IOC
+#
+record(calc, "$(P)$(R)InitializingCalc") {
+   field(INPA, "$(P)$(R)DetectorState_RBV")
+   field(CALC, "A == 1 ? 0 : 1")
+}
+
+record(dfanout, "$(P)$(R)WriteEnabler1") {
+   field(DOL, "$(P)$(R)InitializingCalc CP")
+   field(OUTA, "$(P)$(R)WriteEnabler1.DISV")
+   field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
+   field(OUTC, "$(P)$(R)TriggerMode.DISP")
+   field(OUTD, "$(P)$(R)Acquire.DISP")
+   field(OUTE, "$(P)$(R)SoftTrigger.DISP")
+   field(OUTF, "$(P)$(R)ReadoutMode.DISP")
+   field(OUTG, "$(P)$(R)PixelReadoutClock.DISP")
+   field(FLNK, "$(P)$(R)WriteEnabler2")
+   field(OMSL, "closed_loop")
+}
+
+record(dfanout, "$(P)$(R)WriteEnabler2") {
+   field(DOL, "$(P)$(R)InitializingCalc")
+   field(OUTA, "$(P)$(R)WriteEnabler2.DISV")
+   field(OUTB, "$(P)$(R)AcquireOne.DISP")
+   field(OUTC, "$(P)$(R)CancelAcquire.DISP")
+   field(OMSL, "closed_loop")
+}
+
+################################################################################
+# Record to update the maunfacturer information 
+#
+record(bo, "$(P)$(R)UpdateInfo")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_INFO")
+   field(PINI, "1")
+}
+
+################################################################################
+# Record to update temperature readings from the device at a regular interval
+#
+record(bo, "$(P)$(R)UpdateTemperature")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_UPDATE_TEMPERATURE")
+   field(PINI, "1")
+   field(SCAN, "5 second")
+}
+
+################################################################################
+# Build info and camera model records
+#  
+record(stringin, "$(P)$(R)BuildDate_RBV")
+{
+   field(DTYP, "asynOctetRead")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_BUILD_DATE")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Records related to readout mode
+# 
+record(bo, "$(P)$(R)ReadoutMode")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_READOUT_MODE")
+   field(PINI, "1")
+   field(DISP, "1")
+}
+
+record(bi, "$(P)$(R)ReadoutMode_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_READOUT_MODE")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Records related to pixel readout clock
+#
+record(bo, "$(P)$(R)PixelReadoutClock")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_PIXEL_READOUT_CLOCK")
+   field(PINI, "1")
+   field(DISP, "1")
+}
+
+record(bi, "$(P)$(R)PixelReadoutClock_RBV")
+{
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_PIXEL_READOUT_CLOCK")
+   field(SCAN, "I/O Intr")
+}
+
+################################################################################
+# Records for acquiring one frame and cancelling acquisition
+#
+record(bo, "$(P)$(R)AcquireOne") {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_ACQUIRE_ONE")
+   field(PINI, "1")
+   field(DISP, "1")
+   info(asyn:READBACK, "1")
+}
+
+record(bo, "$(P)$(R)CancelAcquire") {
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))PR_CANCEL_ACQUIRE")
+   field(PINI, "1")
+   field(DISP, "1")
+   info(asyn:READBACK, "1")
+}
+
+################################################################################
+# Override ADCore records for acquire settings
+#
+record(bo, "$(P)$(R)Acquire") {
+   field(DISP, "1")
+}
+
+record(ai, "$(P)$(R)AcquireTime_RBV")
+{
+   field(EGU, "ms")
+}
+
+record(ao, "$(P)$(R)AcquireTime")
+{
+   field(EGU, "ms")
+}
+
+record(ao, "$(P)$(R)AcquirePeriod")
+{
+   field(EGU, "s")
+}
+
+record(ai, "$(P)$(R)AcquirePeriod_RBV")
+{
+   field(EGU, "s")
+}
+
+################################################################################
+# Override ADCore shutter delay records to add EGU
+#
+record(ao, "$(P)$(R)ShutterOpenDelay")
+{
+   field(EGU, "ms")
+   field(DRVL, "0")
+   field(DRVH, "155.640")
+}
+
+record(ai, "$(P)$(R)ShutterOpenDelay_RBV")
+{
+   field(EGU, "ms")
+}
+
+record(ao, "$(P)$(R)ShutterCloseDelay")
+{
+   field(EGU, "ms")
+   field(DRVL, "0")
+   field(DRVH, "155.640")
+}
+
+record(ai, "$(P)$(R)ShutterCloseDelay_RBV")
+{
+   field(EGU, "ms")
+}
+
+################################################################################
+# Records to disable settings records while acquiring
+#
+record(dfanout, "$(P)$(R)DisableAcquireSettingsWhileAcquiring") {
+   field(DOL, "$(P)$(R)Acquire_RBV CP")
+   field(OUTA, "$(P)$(R)AcquireTime.DISP")
+   field(OUTB, "$(P)$(R)AcquirePeriod.DISP")
+   field(OUTC, "$(P)$(R)AcquireOne.DISP")
+   field(OMSL, "closed_loop")
+}
+
+record(dfanout, "$(P)$(R)DisableAOISettingsWhileAcquiring") {
+   field(DOL, "$(P)$(R)Acquire_RBV CP")
+   field(OUTA, "$(P)$(R)BinX.DISP")
+   field(OUTB, "$(P)$(R)BinY.DISP")
+   field(OUTC, "$(P)$(R)SizeX.DISP")
+   field(OUTD, "$(P)$(R)SizeY.DISP")
+   field(OUTE, "$(P)$(R)MinX.DISP")
+   field(OUTF, "$(P)$(R)MinY.DISP")
+   field(OMSL, "closed_loop")
+}
+
+record(dfanout, "$(P)$(R)DisableTriggerSettingsWhileAcquiring") {
+   field(DOL, "$(P)$(R)Acquire_RBV CP")
+   field(OUTA, "$(P)$(R)TriggerMode.DISP")
+   field(OUTB, "$(P)$(R)TriggerPolarity.DISP")
+   field(OUTC, "$(P)$(R)ShutterOpenDelay.DISP")
+   field(OUTD, "$(P)$(R)ShutterCloseDelay.DISP")
+   field(OUTE, "$(P)$(R)ReadoutMode.DISP")
+   field(OUTF, "$(P)$(R)PixelReadoutClock.DISP")
+   field(OMSL, "closed_loop")
+}
